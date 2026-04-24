@@ -9,15 +9,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.config.RuoYiConfig;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.file.FileUploadUtils;
+import com.ruoyi.common.utils.file.FileUtils;
+import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.qt.domain.QtClothingItem;
 import com.ruoyi.qt.service.IQtClothingItemService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
@@ -83,8 +87,20 @@ public class QtClothingItemController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:item:add')")
     @Log(title = "服装配置", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody QtClothingItem qtClothingItem)
+    public AjaxResult add(QtClothingItem qtClothingItem,
+            @RequestParam(value = "effectImageFile", required = false) MultipartFile effectImageFile)
     {
+        if (effectImageFile != null && !effectImageFile.isEmpty())
+        {
+            try
+            {
+                qtClothingItem.setEffectImagePath(uploadImage(effectImageFile));
+            }
+            catch (Exception e)
+            {
+                return AjaxResult.error(e.getMessage());
+            }
+        }
         return toAjax(qtClothingItemService.insertQtClothingItem(qtClothingItem));
     }
 
@@ -94,8 +110,22 @@ public class QtClothingItemController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:item:edit')")
     @Log(title = "服装配置", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@RequestBody QtClothingItem qtClothingItem)
+    public AjaxResult edit(QtClothingItem qtClothingItem,
+            @RequestParam(value = "effectImageFile", required = false) MultipartFile effectImageFile)
     {
+        if (effectImageFile != null && !effectImageFile.isEmpty())
+        {
+            try
+            {
+                QtClothingItem oldItem = qtClothingItemService.selectQtClothingItemByItemId(qtClothingItem.getItemId());
+                qtClothingItem.setEffectImagePath(uploadImage(effectImageFile));
+                deleteLocalImageIfExists(oldItem == null ? null : oldItem.getEffectImagePath(), qtClothingItem.getEffectImagePath());
+            }
+            catch (Exception e)
+            {
+                return AjaxResult.error(e.getMessage());
+            }
+        }
         return toAjax(qtClothingItemService.updateQtClothingItem(qtClothingItem));
     }
 
@@ -154,5 +184,25 @@ public class QtClothingItemController extends BaseController
             imagePath = "/" + imagePath;
         }
         item.setEffectImageUrl(serverConfig.getUrl() + "/profile" + imagePath);
+    }
+
+    private String uploadImage(MultipartFile effectImageFile) throws Exception
+    {
+        String uploadPath = RuoYiConfig.getUploadPath() + "/qt/clothing-item";
+        return FileUploadUtils.upload(uploadPath, effectImageFile, MimeTypeUtils.IMAGE_EXTENSION);
+    }
+
+    private void deleteLocalImageIfExists(String oldImagePath, String newImagePath)
+    {
+        if (StringUtils.isEmpty(oldImagePath) || oldImagePath.startsWith("http://") || oldImagePath.startsWith("https://"))
+        {
+            return;
+        }
+        if (oldImagePath.equals(newImagePath))
+        {
+            return;
+        }
+        String physicalPath = RuoYiConfig.getProfile() + FileUtils.stripPrefix(oldImagePath);
+        FileUtils.deleteFile(physicalPath);
     }
 }

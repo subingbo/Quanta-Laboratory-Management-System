@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.qt.mapper.QtInterviewMapper">
+
+    <resultMap id="QtInterviewApplicationResult" type="QtInterviewApplication">
+        <id property="applicationId" column="application_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="realName" column="real_name"/>
+        <result property="gender" column="gender"/>
+        <result property="className" column="class_name"/>
+        <result property="firstChoice" column="first_choice"/>
+        <result property="secondChoice" column="second_choice"/>
+        <result property="photoUrl" column="photo_url"/>
+        <result property="applyStatus" column="apply_status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="QtInterviewProfileResult" type="QtInterviewProfile">
+        <id property="profileId" column="profile_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="applicationId" column="application_id"/>
+        <result property="selfIntro" column="self_intro"/>
+        <result property="codingExperience" column="coding_experience"/>
+        <result property="codingExperienceDesc" column="coding_experience_desc"/>
+        <result property="quantaUnderstanding" column="quanta_understanding"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <resultMap id="QtInterviewResultResult" type="QtInterviewResult">
+        <id property="resultId" column="result_id"/>
+        <result property="applicationId" column="application_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="roundId" column="round_id"/>
+        <result property="roundName" column="round_name"/>
+        <result property="department" column="department"/>
+        <result property="resultStatus" column="result_status"/>
+        <result property="score" column="score"/>
+        <result property="feedback" column="feedback"/>
+        <result property="interviewTime" column="interview_time"/>
+        <result property="publishedTime" column="published_time"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectApplicationByUserId" resultMap="QtInterviewApplicationResult">
+        select application_id, user_id, real_name, gender, class_name, first_choice, second_choice, photo_url, apply_status,
+               create_by, create_time, update_by, update_time
+        from qt_interview_application
+        where user_id = #{userId}
+        limit 1
+    </select>
+
+    <insert id="insertInterviewApplication" parameterType="QtInterviewApplication" useGeneratedKeys="true" keyProperty="applicationId">
+        insert into qt_interview_application
+        (user_id, real_name, gender, class_name, first_choice, second_choice, photo_url, apply_status, create_by, create_time, update_by, update_time)
+        values
+        (#{userId}, #{realName}, #{gender}, #{className}, #{firstChoice}, #{secondChoice}, #{photoUrl}, #{applyStatus},
+         #{createBy}, now(), #{updateBy}, now())
+    </insert>
+
+    <update id="updateInterviewApplication" parameterType="QtInterviewApplication">
+        update qt_interview_application
+        set real_name = #{realName},
+            gender = #{gender},
+            class_name = #{className},
+            first_choice = #{firstChoice},
+            second_choice = #{secondChoice},
+            <if test="photoUrl != null and photoUrl != ''">photo_url = #{photoUrl},</if>
+            apply_status = #{applyStatus},
+            update_by = #{updateBy},
+            update_time = now()
+        where application_id = #{applicationId}
+    </update>
+
+    <select id="selectProfileByUserId" resultMap="QtInterviewProfileResult">
+        select profile_id, user_id, application_id, self_intro, coding_experience, coding_experience_desc, quanta_understanding,
+               create_by, create_time, update_by, update_time
+        from qt_interview_profile
+        where user_id = #{userId}
+        limit 1
+    </select>
+
+    <insert id="insertInterviewProfile" parameterType="QtInterviewProfile">
+        insert into qt_interview_profile
+        (user_id, application_id, self_intro, coding_experience, coding_experience_desc, quanta_understanding, create_by, create_time, update_by, update_time)
+        values
+        (#{userId}, #{applicationId}, #{selfIntro}, #{codingExperience}, #{codingExperienceDesc}, #{quantaUnderstanding},
+         #{createBy}, now(), #{updateBy}, now())
+    </insert>
+
+    <update id="updateInterviewProfile" parameterType="QtInterviewProfile">
+        update qt_interview_profile
+        set application_id = #{applicationId},
+            self_intro = #{selfIntro},
+            coding_experience = #{codingExperience},
+            coding_experience_desc = #{codingExperienceDesc},
+            quanta_understanding = #{quantaUnderstanding},
+            update_by = #{updateBy},
+            update_time = now()
+        where profile_id = #{profileId}
+    </update>
+
+    <select id="selectResultsByUserId" resultMap="QtInterviewResultResult">
+        select r.result_id, r.application_id, r.user_id, r.round_id, rd.round_name, r.department, r.result_status, r.score,
+               r.feedback, r.interview_time, r.published_time, r.create_by, r.create_time, r.update_by, r.update_time
+        from qt_interview_result r
+        left join qt_interview_round rd on r.round_id = rd.round_id
+        where r.user_id = #{userId}
+        order by rd.round_no asc, r.create_time asc
+    </select>
+</mapper>

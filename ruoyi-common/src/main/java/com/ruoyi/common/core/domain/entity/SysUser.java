@@ -108,6 +108,15 @@ public class SysUser extends BaseEntity
     /** 成员届次 */
     private String memberCohort;
 
+    /** 学号 */
+    private String studentNo;
+
+    /** 班级 */
+    private String className;
+
+    /** 是否塔员(0新生 1塔员) */
+    private String isQuantaMember;
+
     public SysUser()
     {
 
@@ -362,6 +371,36 @@ public class SysUser extends BaseEntity
         this.memberCohort = memberCohort;
     }
 
+    public String getStudentNo()
+    {
+        return studentNo;
+    }
+
+    public void setStudentNo(String studentNo)
+    {
+        this.studentNo = studentNo;
+    }
+
+    public String getClassName()
+    {
+        return className;
+    }
+
+    public void setClassName(String className)
+    {
+        this.className = className;
+    }
+
+    public String getIsQuantaMember()
+    {
+        return isQuantaMember;
+    }
+
+    public void setIsQuantaMember(String isQuantaMember)
+    {
+        this.isQuantaMember = isQuantaMember;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -388,6 +427,9 @@ public class SysUser extends BaseEntity
             .append("memberDepartment", getMemberDepartment())
             .append("memberTitle", getMemberTitle())
             .append("memberCohort", getMemberCohort())
+            .append("studentNo", getStudentNo())
+            .append("className", getClassName())
+            .append("isQuantaMember", getIsQuantaMember())
             .append("dept", getDept())
             .toString();
     }

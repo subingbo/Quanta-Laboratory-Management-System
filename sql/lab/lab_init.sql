@@ -197,4 +197,96 @@ CREATE TABLE IF NOT EXISTS qt_book_borrow (
     CONSTRAINT ck_lbb_due_time CHECK (due_time > borrow_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图书借阅记录';
 
+-- 6) 面试投递
+ALTER TABLE sys_user
+    ADD COLUMN IF NOT EXISTS student_no VARCHAR(32) NULL COMMENT '学号',
+    ADD COLUMN IF NOT EXISTS class_name VARCHAR(64) NULL COMMENT '班级',
+    ADD COLUMN IF NOT EXISTS is_quanta_member CHAR(1) NOT NULL DEFAULT '0' COMMENT '是否塔员(0新生 1塔员)';
+
+CREATE UNIQUE INDEX IF NOT EXISTS uk_sys_user_student_no ON sys_user(student_no);
+
+CREATE TABLE IF NOT EXISTS qt_interview_application (
+    application_id BIGINT NOT NULL AUTO_INCREMENT COMMENT '投递ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID(sys_user.user_id)',
+    real_name VARCHAR(64) NOT NULL COMMENT '姓名',
+    gender CHAR(1) NOT NULL COMMENT '性别(0男 1女 2未知)',
+    class_name VARCHAR(64) NOT NULL COMMENT '班级',
+    first_choice VARCHAR(16) NOT NULL COMMENT '第一志愿(BACKEND/PRODUCT/DESIGN/FRONTEND/ANDROID)',
+    second_choice VARCHAR(16) NOT NULL COMMENT '第二志愿(BACKEND/PRODUCT/DESIGN/FRONTEND/ANDROID)',
+    photo_url VARCHAR(255) NOT NULL COMMENT '证件照URL/本地访问路径',
+    apply_status VARCHAR(16) NOT NULL DEFAULT 'SUBMITTED' COMMENT '投递状态(SUBMITTED/PROCESSING/OFFERED/REJECTED)',
+    create_by VARCHAR(64) NULL,
+    create_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+    update_by VARCHAR(64) NULL,
+    update_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (application_id),
+    UNIQUE KEY uk_qia_user_id (user_id),
+    KEY idx_qia_choice (first_choice, second_choice),
+    CONSTRAINT fk_qia_user FOREIGN KEY (user_id) REFERENCES sys_user(user_id),
+    CONSTRAINT ck_qia_choice_diff CHECK (first_choice <> second_choice)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='面试投递主表';
+
+CREATE TABLE IF NOT EXISTS qt_interview_profile (
+    profile_id BIGINT NOT NULL AUTO_INCREMENT COMMENT '扩展信息ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID(sys_user.user_id)',
+    application_id BIGINT NOT NULL COMMENT '投递ID(qt_interview_application.application_id)',
+    self_intro TEXT NULL COMMENT '个人介绍',
+    coding_experience CHAR(1) NOT NULL DEFAULT '0' COMMENT '是否接触过编程(0否 1是)',
+    coding_experience_desc VARCHAR(500) NULL COMMENT '编程经历补充说明',
+    quanta_understanding TEXT NULL COMMENT '对Quanta的了解',
+    create_by VARCHAR(64) NULL,
+    create_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+    update_by VARCHAR(64) NULL,
+    update_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (profile_id),
+    UNIQUE KEY uk_qip_user_id (user_id),
+    UNIQUE KEY uk_qip_application_id (application_id),
+    CONSTRAINT fk_qip_user FOREIGN KEY (user_id) REFERENCES sys_user(user_id),
+    CONSTRAINT fk_qip_application FOREIGN KEY (application_id) REFERENCES qt_interview_application(application_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='面试投递扩展信息';
+
+CREATE TABLE IF NOT EXISTS qt_interview_round (
+    round_id BIGINT NOT NULL AUTO_INCREMENT COMMENT '轮次ID',
+    round_no INT NOT NULL COMMENT '轮次序号(1,2,3...)',
+    round_name VARCHAR(64) NOT NULL COMMENT '轮次名称(一面/二面/终面)',
+    enabled CHAR(1) NOT NULL DEFAULT '1' COMMENT '是否启用(0否 1是)',
+    create_by VARCHAR(64) NULL,
+    create_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+    update_by VARCHAR(64) NULL,
+    update_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (round_id),
+    UNIQUE KEY uk_qir_round_no (round_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='面试轮次定义';
+
+CREATE TABLE IF NOT EXISTS qt_interview_result (
+    result_id BIGINT NOT NULL AUTO_INCREMENT COMMENT '结果ID',
+    application_id BIGINT NOT NULL COMMENT '投递ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID(sys_user.user_id)',
+    round_id BIGINT NOT NULL COMMENT '轮次ID(qt_interview_round.round_id)',
+    department VARCHAR(16) NOT NULL COMMENT '面试部门(BACKEND/PRODUCT/DESIGN/FRONTEND/ANDROID)',
+    result_status VARCHAR(16) NOT NULL COMMENT '结果(PENDING/PASS/FAIL/WAITING)',
+    score DECIMAL(5,2) NULL COMMENT '面试分数(可选)',
+    feedback VARCHAR(1000) NULL COMMENT '面试评价/反馈',
+    interview_time DATETIME NULL COMMENT '面试时间',
+    published_time DATETIME NULL COMMENT '结果发布时间',
+    create_by VARCHAR(64) NULL,
+    create_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+    update_by VARCHAR(64) NULL,
+    update_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (result_id),
+    UNIQUE KEY uk_qir_user_round (user_id, round_id),
+    KEY idx_qir_app (application_id),
+    KEY idx_qir_user_status (user_id, result_status),
+    CONSTRAINT fk_qirs_app FOREIGN KEY (application_id) REFERENCES qt_interview_application(application_id),
+    CONSTRAINT fk_qirs_user FOREIGN KEY (user_id) REFERENCES sys_user(user_id),
+    CONSTRAINT fk_qirs_round FOREIGN KEY (round_id) REFERENCES qt_interview_round(round_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='面试每轮结果';
+
+INSERT INTO qt_interview_round (round_no, round_name, enabled, create_by, create_time)
+VALUES
+(1, '一面', '1', 'admin', NOW()),
+(2, '二面', '1', 'admin', NOW()),
+(3, '终面', '1', 'admin', NOW())
+ON DUPLICATE KEY UPDATE round_name = VALUES(round_name), enabled = VALUES(enabled), update_time = NOW();
+
 SET FOREIGN_KEY_CHECKS = 1;
