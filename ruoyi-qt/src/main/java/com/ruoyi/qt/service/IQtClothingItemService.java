@@ -1,7 +1,7 @@
-package com.ruoyi.system.service;
+package com.ruoyi.qt.service;
 
 import java.util.List;
-import com.ruoyi.system.domain.QtClothingItem;
+import com.ruoyi.qt.domain.QtClothingItem;
 
 /**
  * 服装配置Service接口

@@ -2,6 +2,7 @@ package com.ruoyi.web.controller.common;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -35,6 +36,7 @@ public class CommonController
     private ServerConfig serverConfig;
 
     private static final String FILE_DELIMITER = ",";
+    private static final Set<String> ALLOWED_UPLOAD_SUB_DIRS = Set.of("qt/clothing-item", "qt/payment-qr");
 
     /**
      * 通用下载请求
@@ -72,12 +74,12 @@ public class CommonController
      * 通用上传请求（单个）
      */
     @PostMapping("/upload")
-    public AjaxResult uploadFile(MultipartFile file) throws Exception
+    public AjaxResult uploadFile(MultipartFile file, String subDir) throws Exception
     {
         try
         {
             // 上传文件路径
-            String filePath = RuoYiConfig.getUploadPath();
+            String filePath = resolveUploadPath(subDir);
             // 上传并返回新文件名称
             String fileName = FileUploadUtils.upload(filePath, file);
             String url = serverConfig.getUrl() + fileName;
@@ -98,12 +100,12 @@ public class CommonController
      * 通用上传请求（多个）
      */
     @PostMapping("/uploads")
-    public AjaxResult uploadFiles(List<MultipartFile> files) throws Exception
+    public AjaxResult uploadFiles(List<MultipartFile> files, String subDir) throws Exception
     {
         try
         {
             // 上传文件路径
-            String filePath = RuoYiConfig.getUploadPath();
+            String filePath = resolveUploadPath(subDir);
             List<String> urls = new ArrayList<String>();
             List<String> fileNames = new ArrayList<String>();
             List<String> newFileNames = new ArrayList<String>();
@@ -129,6 +131,21 @@ public class CommonController
         {
             return AjaxResult.error(e.getMessage());
         }
+    }
+
+    private String resolveUploadPath(String subDir)
+    {
+        String basePath = RuoYiConfig.getUploadPath();
+        if (StringUtils.isEmpty(subDir))
+        {
+            return basePath;
+        }
+        String normalizedSubDir = subDir.replace("\\", "/").trim();
+        if (normalizedSubDir.startsWith("/") || normalizedSubDir.contains("..") || !ALLOWED_UPLOAD_SUB_DIRS.contains(normalizedSubDir))
+        {
+            throw new IllegalArgumentException("非法上传目录");
+        }
+        return basePath + "/" + normalizedSubDir;
     }
 
     /**

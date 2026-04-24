@@ -1,4 +1,4 @@
-package com.ruoyi.system.controller;
+package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,13 +13,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.ruoyi.common.annotation.Log;
+import com.ruoyi.common.config.RuoYiConfig;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.system.domain.QtPaymentConfig;
-import com.ruoyi.system.service.IQtPaymentConfigService;
+import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.qt.domain.QtPaymentConfig;
+import com.ruoyi.qt.service.IQtPaymentConfigService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.framework.config.ServerConfig;
 
 /**
  * 固定付款码配置Controller
@@ -33,6 +36,8 @@ public class QtPaymentConfigController extends BaseController
 {
     @Autowired
     private IQtPaymentConfigService qtPaymentConfigService;
+    @Autowired
+    private ServerConfig serverConfig;
 
     /**
      * 查询固定付款码配置列表
@@ -43,6 +48,7 @@ public class QtPaymentConfigController extends BaseController
     {
         startPage();
         List<QtPaymentConfig> list = qtPaymentConfigService.selectQtPaymentConfigList(qtPaymentConfig);
+        fillImageUrl(list);
         return getDataTable(list);
     }
 
@@ -66,7 +72,9 @@ public class QtPaymentConfigController extends BaseController
     @GetMapping(value = "/{configId}")
     public AjaxResult getInfo(@PathVariable("configId") Long configId)
     {
-        return success(qtPaymentConfigService.selectQtPaymentConfigByConfigId(configId));
+        QtPaymentConfig config = qtPaymentConfigService.selectQtPaymentConfigByConfigId(configId);
+        fillImageUrl(config);
+        return success(config);
     }
 
     /**
@@ -100,5 +108,51 @@ public class QtPaymentConfigController extends BaseController
     public AjaxResult remove(@PathVariable Long[] configIds)
     {
         return toAjax(qtPaymentConfigService.deleteQtPaymentConfigByConfigIds(configIds));
+    }
+
+    /**
+     * 清空付款码图片（逻辑删除）
+     */
+    @PreAuthorize("@ss.hasPermi('system:config:edit')")
+    @Log(title = "固定付款码配置", businessType = BusinessType.UPDATE)
+    @DeleteMapping("/image/{configId}")
+    public AjaxResult removeImage(@PathVariable Long configId)
+    {
+        QtPaymentConfig config = new QtPaymentConfig();
+        config.setConfigId(configId);
+        config.setQrImagePath("");
+        config.setUpdateBy(getUsername());
+        return toAjax(qtPaymentConfigService.updateQtPaymentConfig(config));
+    }
+
+    private void fillImageUrl(List<QtPaymentConfig> list)
+    {
+        for (QtPaymentConfig config : list)
+        {
+            fillImageUrl(config);
+        }
+    }
+
+    private void fillImageUrl(QtPaymentConfig config)
+    {
+        if (config == null || StringUtils.isEmpty(config.getQrImagePath()))
+        {
+            return;
+        }
+        String imagePath = config.getQrImagePath();
+        if (imagePath.startsWith("http://") || imagePath.startsWith("https://"))
+        {
+            config.setQrImageUrl(imagePath);
+            return;
+        }
+        if (imagePath.startsWith(RuoYiConfig.getProfile()))
+        {
+            imagePath = imagePath.substring(RuoYiConfig.getProfile().length());
+        }
+        if (!imagePath.startsWith("/"))
+        {
+            imagePath = "/" + imagePath;
+        }
+        config.setQrImageUrl(serverConfig.getUrl() + "/profile" + imagePath);
     }
 }

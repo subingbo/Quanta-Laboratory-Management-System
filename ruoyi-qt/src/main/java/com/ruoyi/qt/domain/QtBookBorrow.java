@@ -1,4 +1,4 @@
-package com.ruoyi.system.domain;
+package com.ruoyi.qt.domain;
 
 import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -46,6 +46,42 @@ public class QtBookBorrow extends BaseEntity
     /** 状态(BORROWED/RETURNED/OVERDUE) */
     @Excel(name = "状态(BORROWED/RETURNED/OVERDUE)")
     private String status;
+
+    /** 图书名称 */
+    @Excel(name = "图书名称")
+    private String bookName;
+
+    /** ISBN */
+    @Excel(name = "ISBN")
+    private String isbn;
+
+    /** 作者 */
+    @Excel(name = "作者")
+    private String author;
+
+    /** 用户账号 */
+    @Excel(name = "用户账号")
+    private String userName;
+
+    /** 用户昵称 */
+    @Excel(name = "用户昵称")
+    private String nickName;
+
+    /** 成员编号 */
+    @Excel(name = "成员编号")
+    private String memberNo;
+
+    /** 成员部门 */
+    @Excel(name = "成员部门")
+    private String memberDepartment;
+
+    /** 成员职称 */
+    @Excel(name = "成员职称")
+    private String memberTitle;
+
+    /** 成员届次 */
+    @Excel(name = "成员届次")
+    private String memberCohort;
 
     public void setBorrowId(Long borrowId) 
     {
@@ -117,6 +153,96 @@ public class QtBookBorrow extends BaseEntity
         return status;
     }
 
+    public String getBookName()
+    {
+        return bookName;
+    }
+
+    public void setBookName(String bookName)
+    {
+        this.bookName = bookName;
+    }
+
+    public String getIsbn()
+    {
+        return isbn;
+    }
+
+    public void setIsbn(String isbn)
+    {
+        this.isbn = isbn;
+    }
+
+    public String getAuthor()
+    {
+        return author;
+    }
+
+    public void setAuthor(String author)
+    {
+        this.author = author;
+    }
+
+    public String getUserName()
+    {
+        return userName;
+    }
+
+    public void setUserName(String userName)
+    {
+        this.userName = userName;
+    }
+
+    public String getNickName()
+    {
+        return nickName;
+    }
+
+    public void setNickName(String nickName)
+    {
+        this.nickName = nickName;
+    }
+
+    public String getMemberNo()
+    {
+        return memberNo;
+    }
+
+    public void setMemberNo(String memberNo)
+    {
+        this.memberNo = memberNo;
+    }
+
+    public String getMemberDepartment()
+    {
+        return memberDepartment;
+    }
+
+    public void setMemberDepartment(String memberDepartment)
+    {
+        this.memberDepartment = memberDepartment;
+    }
+
+    public String getMemberTitle()
+    {
+        return memberTitle;
+    }
+
+    public void setMemberTitle(String memberTitle)
+    {
+        this.memberTitle = memberTitle;
+    }
+
+    public String getMemberCohort()
+    {
+        return memberCohort;
+    }
+
+    public void setMemberCohort(String memberCohort)
+    {
+        this.memberCohort = memberCohort;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -127,6 +253,15 @@ public class QtBookBorrow extends BaseEntity
             .append("dueTime", getDueTime())
             .append("returnTime", getReturnTime())
             .append("status", getStatus())
+            .append("bookName", getBookName())
+            .append("isbn", getIsbn())
+            .append("author", getAuthor())
+            .append("userName", getUserName())
+            .append("nickName", getNickName())
+            .append("memberNo", getMemberNo())
+            .append("memberDepartment", getMemberDepartment())
+            .append("memberTitle", getMemberTitle())
+            .append("memberCohort", getMemberCohort())
             .append("remark", getRemark())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())

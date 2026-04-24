@@ -1,7 +1,7 @@
-package com.ruoyi.system.service;
+package com.ruoyi.qt.service;
 
 import java.util.List;
-import com.ruoyi.system.domain.QtBook;
+import com.ruoyi.qt.domain.QtBook;
 
 /**
  * 实验室图书Service接口

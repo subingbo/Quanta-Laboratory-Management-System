@@ -1,12 +1,12 @@
-package com.ruoyi.system.service.impl;
+package com.ruoyi.qt.service.impl;
 
 import java.util.List;
 import com.ruoyi.common.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.system.mapper.QtWorkstationMapper;
-import com.ruoyi.system.domain.QtWorkstation;
-import com.ruoyi.system.service.IQtWorkstationService;
+import com.ruoyi.qt.mapper.QtWorkstationMapper;
+import com.ruoyi.qt.domain.QtWorkstation;
+import com.ruoyi.qt.service.IQtWorkstationService;
 
 /**
  * 实验室工位Service业务层处理

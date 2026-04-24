@@ -1,7 +1,7 @@
-package com.ruoyi.system.mapper;
+package com.ruoyi.qt.mapper;
 
 import java.util.List;
-import com.ruoyi.system.domain.QtClothingOrder;
+import com.ruoyi.qt.domain.QtClothingOrder;
 
 /**
  * 实验室服装订单Mapper接口
@@ -26,6 +26,14 @@ public interface QtClothingOrderMapper
      * @return 实验室服装订单集合
      */
     public List<QtClothingOrder> selectQtClothingOrderList(QtClothingOrder qtClothingOrder);
+
+    /**
+     * 查询实验室服装订单详情列表
+     *
+     * @param qtClothingOrder 实验室服装订单
+     * @return 实验室服装订单集合
+     */
+    public List<QtClothingOrder> selectQtClothingOrderDetailList(QtClothingOrder qtClothingOrder);
 
     /**
      * 新增实验室服装订单

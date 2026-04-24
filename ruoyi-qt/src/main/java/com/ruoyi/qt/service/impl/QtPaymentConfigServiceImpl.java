@@ -1,12 +1,12 @@
-package com.ruoyi.system.service.impl;
+package com.ruoyi.qt.service.impl;
 
 import java.util.List;
 import com.ruoyi.common.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.system.mapper.QtPaymentConfigMapper;
-import com.ruoyi.system.domain.QtPaymentConfig;
-import com.ruoyi.system.service.IQtPaymentConfigService;
+import com.ruoyi.qt.mapper.QtPaymentConfigMapper;
+import com.ruoyi.qt.domain.QtPaymentConfig;
+import com.ruoyi.qt.service.IQtPaymentConfigService;
 
 /**
  * 固定付款码配置Service业务层处理

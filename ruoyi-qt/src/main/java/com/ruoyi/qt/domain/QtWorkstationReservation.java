@@ -1,4 +1,4 @@
-package com.ruoyi.system.domain;
+package com.ruoyi.qt.domain;
 
 import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -45,6 +45,38 @@ public class QtWorkstationReservation extends BaseEntity
     /** 用途 */
     @Excel(name = "用途")
     private String purpose;
+
+    /** 工位编号 */
+    @Excel(name = "工位编号")
+    private String workstationCode;
+
+    /** 工位位置 */
+    @Excel(name = "工位位置")
+    private String locationDesc;
+
+    /** 用户账号 */
+    @Excel(name = "用户账号")
+    private String userName;
+
+    /** 用户昵称 */
+    @Excel(name = "用户昵称")
+    private String nickName;
+
+    /** 成员编号 */
+    @Excel(name = "成员编号")
+    private String memberNo;
+
+    /** 成员部门 */
+    @Excel(name = "成员部门")
+    private String memberDepartment;
+
+    /** 成员职称 */
+    @Excel(name = "成员职称")
+    private String memberTitle;
+
+    /** 成员届次 */
+    @Excel(name = "成员届次")
+    private String memberCohort;
 
     public void setReservationId(Long reservationId) 
     {
@@ -116,6 +148,86 @@ public class QtWorkstationReservation extends BaseEntity
         return purpose;
     }
 
+    public String getWorkstationCode()
+    {
+        return workstationCode;
+    }
+
+    public void setWorkstationCode(String workstationCode)
+    {
+        this.workstationCode = workstationCode;
+    }
+
+    public String getLocationDesc()
+    {
+        return locationDesc;
+    }
+
+    public void setLocationDesc(String locationDesc)
+    {
+        this.locationDesc = locationDesc;
+    }
+
+    public String getUserName()
+    {
+        return userName;
+    }
+
+    public void setUserName(String userName)
+    {
+        this.userName = userName;
+    }
+
+    public String getNickName()
+    {
+        return nickName;
+    }
+
+    public void setNickName(String nickName)
+    {
+        this.nickName = nickName;
+    }
+
+    public String getMemberNo()
+    {
+        return memberNo;
+    }
+
+    public void setMemberNo(String memberNo)
+    {
+        this.memberNo = memberNo;
+    }
+
+    public String getMemberDepartment()
+    {
+        return memberDepartment;
+    }
+
+    public void setMemberDepartment(String memberDepartment)
+    {
+        this.memberDepartment = memberDepartment;
+    }
+
+    public String getMemberTitle()
+    {
+        return memberTitle;
+    }
+
+    public void setMemberTitle(String memberTitle)
+    {
+        this.memberTitle = memberTitle;
+    }
+
+    public String getMemberCohort()
+    {
+        return memberCohort;
+    }
+
+    public void setMemberCohort(String memberCohort)
+    {
+        this.memberCohort = memberCohort;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -126,6 +238,14 @@ public class QtWorkstationReservation extends BaseEntity
             .append("reserveEnd", getReserveEnd())
             .append("status", getStatus())
             .append("purpose", getPurpose())
+            .append("workstationCode", getWorkstationCode())
+            .append("locationDesc", getLocationDesc())
+            .append("userName", getUserName())
+            .append("nickName", getNickName())
+            .append("memberNo", getMemberNo())
+            .append("memberDepartment", getMemberDepartment())
+            .append("memberTitle", getMemberTitle())
+            .append("memberCohort", getMemberCohort())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())

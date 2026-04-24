@@ -1,7 +1,7 @@
-package com.ruoyi.system.mapper;
+package com.ruoyi.qt.mapper;
 
 import java.util.List;
-import com.ruoyi.system.domain.QtActivitySignup;
+import com.ruoyi.qt.domain.QtActivitySignup;
 
 /**
  * 活动报名Mapper接口
@@ -26,6 +26,14 @@ public interface QtActivitySignupMapper
      * @return 活动报名集合
      */
     public List<QtActivitySignup> selectQtActivitySignupList(QtActivitySignup qtActivitySignup);
+
+    /**
+     * 查询活动报名详情列表
+     *
+     * @param qtActivitySignup 活动报名
+     * @return 活动报名集合
+     */
+    public List<QtActivitySignup> selectQtActivitySignupDetailList(QtActivitySignup qtActivitySignup);
 
     /**
      * 新增活动报名

@@ -96,6 +96,18 @@ public class SysUser extends BaseEntity
     /** 角色ID */
     private Long roleId;
 
+    /** 成员编号 */
+    private String memberNo;
+
+    /** 成员部门 */
+    private String memberDepartment;
+
+    /** 成员职称 */
+    private String memberTitle;
+
+    /** 成员届次 */
+    private String memberCohort;
+
     public SysUser()
     {
 
@@ -310,6 +322,46 @@ public class SysUser extends BaseEntity
         this.roleId = roleId;
     }
 
+    public String getMemberNo()
+    {
+        return memberNo;
+    }
+
+    public void setMemberNo(String memberNo)
+    {
+        this.memberNo = memberNo;
+    }
+
+    public String getMemberDepartment()
+    {
+        return memberDepartment;
+    }
+
+    public void setMemberDepartment(String memberDepartment)
+    {
+        this.memberDepartment = memberDepartment;
+    }
+
+    public String getMemberTitle()
+    {
+        return memberTitle;
+    }
+
+    public void setMemberTitle(String memberTitle)
+    {
+        this.memberTitle = memberTitle;
+    }
+
+    public String getMemberCohort()
+    {
+        return memberCohort;
+    }
+
+    public void setMemberCohort(String memberCohort)
+    {
+        this.memberCohort = memberCohort;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -332,6 +384,10 @@ public class SysUser extends BaseEntity
             .append("updateBy", getUpdateBy())
             .append("updateTime", getUpdateTime())
             .append("remark", getRemark())
+            .append("memberNo", getMemberNo())
+            .append("memberDepartment", getMemberDepartment())
+            .append("memberTitle", getMemberTitle())
+            .append("memberCohort", getMemberCohort())
             .append("dept", getDept())
             .toString();
     }

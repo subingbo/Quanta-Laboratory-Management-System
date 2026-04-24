@@ -1,12 +1,12 @@
-package com.ruoyi.system.service.impl;
+package com.ruoyi.qt.service.impl;
 
 import java.util.List;
 import com.ruoyi.common.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.system.mapper.QtWorkstationReservationMapper;
-import com.ruoyi.system.domain.QtWorkstationReservation;
-import com.ruoyi.system.service.IQtWorkstationReservationService;
+import com.ruoyi.qt.mapper.QtWorkstationReservationMapper;
+import com.ruoyi.qt.domain.QtWorkstationReservation;
+import com.ruoyi.qt.service.IQtWorkstationReservationService;
 
 /**
  * 工位预约记录Service业务层处理
@@ -42,6 +42,12 @@ public class QtWorkstationReservationServiceImpl implements IQtWorkstationReserv
     public List<QtWorkstationReservation> selectQtWorkstationReservationList(QtWorkstationReservation qtWorkstationReservation)
     {
         return qtWorkstationReservationMapper.selectQtWorkstationReservationList(qtWorkstationReservation);
+    }
+
+    @Override
+    public List<QtWorkstationReservation> selectQtWorkstationReservationDetailList(QtWorkstationReservation qtWorkstationReservation)
+    {
+        return qtWorkstationReservationMapper.selectQtWorkstationReservationDetailList(qtWorkstationReservation);
     }
 
     /**

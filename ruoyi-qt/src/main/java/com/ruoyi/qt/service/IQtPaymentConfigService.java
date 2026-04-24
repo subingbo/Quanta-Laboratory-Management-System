@@ -1,7 +1,7 @@
-package com.ruoyi.system.service;
+package com.ruoyi.qt.service;
 
 import java.util.List;
-import com.ruoyi.system.domain.QtPaymentConfig;
+import com.ruoyi.qt.domain.QtPaymentConfig;
 
 /**
  * 固定付款码配置Service接口

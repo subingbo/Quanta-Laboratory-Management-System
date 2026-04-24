@@ -1,4 +1,4 @@
-package com.ruoyi.system.controller;
+package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,13 +13,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.ruoyi.common.annotation.Log;
+import com.ruoyi.common.config.RuoYiConfig;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.system.domain.QtClothingItem;
-import com.ruoyi.system.service.IQtClothingItemService;
+import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.qt.domain.QtClothingItem;
+import com.ruoyi.qt.service.IQtClothingItemService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.framework.config.ServerConfig;
 
 /**
  * 服装配置Controller
@@ -33,6 +36,8 @@ public class QtClothingItemController extends BaseController
 {
     @Autowired
     private IQtClothingItemService qtClothingItemService;
+    @Autowired
+    private ServerConfig serverConfig;
 
     /**
      * 查询服装配置列表
@@ -43,6 +48,7 @@ public class QtClothingItemController extends BaseController
     {
         startPage();
         List<QtClothingItem> list = qtClothingItemService.selectQtClothingItemList(qtClothingItem);
+        fillImageUrl(list);
         return getDataTable(list);
     }
 
@@ -66,7 +72,9 @@ public class QtClothingItemController extends BaseController
     @GetMapping(value = "/{itemId}")
     public AjaxResult getInfo(@PathVariable("itemId") Long itemId)
     {
-        return success(qtClothingItemService.selectQtClothingItemByItemId(itemId));
+        QtClothingItem item = qtClothingItemService.selectQtClothingItemByItemId(itemId);
+        fillImageUrl(item);
+        return success(item);
     }
 
     /**
@@ -100,5 +108,51 @@ public class QtClothingItemController extends BaseController
     public AjaxResult remove(@PathVariable Long[] itemIds)
     {
         return toAjax(qtClothingItemService.deleteQtClothingItemByItemIds(itemIds));
+    }
+
+    /**
+     * 清空服装效果图（逻辑删除）
+     */
+    @PreAuthorize("@ss.hasPermi('system:item:edit')")
+    @Log(title = "服装配置", businessType = BusinessType.UPDATE)
+    @DeleteMapping("/image/{itemId}")
+    public AjaxResult removeImage(@PathVariable Long itemId)
+    {
+        QtClothingItem item = new QtClothingItem();
+        item.setItemId(itemId);
+        item.setEffectImagePath("");
+        item.setUpdateBy(getUsername());
+        return toAjax(qtClothingItemService.updateQtClothingItem(item));
+    }
+
+    private void fillImageUrl(List<QtClothingItem> list)
+    {
+        for (QtClothingItem item : list)
+        {
+            fillImageUrl(item);
+        }
+    }
+
+    private void fillImageUrl(QtClothingItem item)
+    {
+        if (item == null || StringUtils.isEmpty(item.getEffectImagePath()))
+        {
+            return;
+        }
+        String imagePath = item.getEffectImagePath();
+        if (imagePath.startsWith("http://") || imagePath.startsWith("https://"))
+        {
+            item.setEffectImageUrl(imagePath);
+            return;
+        }
+        if (imagePath.startsWith(RuoYiConfig.getProfile()))
+        {
+            imagePath = imagePath.substring(RuoYiConfig.getProfile().length());
+        }
+        if (!imagePath.startsWith("/"))
+        {
+            imagePath = "/" + imagePath;
+        }
+        item.setEffectImageUrl(serverConfig.getUrl() + "/profile" + imagePath);
     }
 }

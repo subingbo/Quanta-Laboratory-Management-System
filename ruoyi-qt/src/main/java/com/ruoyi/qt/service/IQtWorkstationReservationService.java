@@ -1,7 +1,7 @@
-package com.ruoyi.system.service;
+package com.ruoyi.qt.service;
 
 import java.util.List;
-import com.ruoyi.system.domain.QtWorkstationReservation;
+import com.ruoyi.qt.domain.QtWorkstationReservation;
 
 /**
  * 工位预约记录Service接口
@@ -26,6 +26,14 @@ public interface IQtWorkstationReservationService
      * @return 工位预约记录集合
      */
     public List<QtWorkstationReservation> selectQtWorkstationReservationList(QtWorkstationReservation qtWorkstationReservation);
+
+    /**
+     * 查询工位预约记录详情列表
+     *
+     * @param qtWorkstationReservation 工位预约记录
+     * @return 工位预约记录集合
+     */
+    public List<QtWorkstationReservation> selectQtWorkstationReservationDetailList(QtWorkstationReservation qtWorkstationReservation);
 
     /**
      * 新增工位预约记录

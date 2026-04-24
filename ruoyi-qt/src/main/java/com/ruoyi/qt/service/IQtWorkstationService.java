@@ -1,7 +1,7 @@
-package com.ruoyi.system.service;
+package com.ruoyi.qt.service;
 
 import java.util.List;
-import com.ruoyi.system.domain.QtWorkstation;
+import com.ruoyi.qt.domain.QtWorkstation;
 
 /**
  * 实验室工位Service接口

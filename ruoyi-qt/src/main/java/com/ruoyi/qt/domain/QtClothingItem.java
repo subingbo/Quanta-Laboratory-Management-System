@@ -1,4 +1,4 @@
-package com.ruoyi.system.domain;
+package com.ruoyi.qt.domain;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -25,6 +25,9 @@ public class QtClothingItem extends BaseEntity
     /** 服装效果图路径 */
     @Excel(name = "服装效果图路径")
     private String effectImagePath;
+
+    /** 服装效果图完整URL */
+    private String effectImageUrl;
 
     /** 可选颜色(JSON数组) */
     @Excel(name = "可选颜色(JSON数组)")
@@ -68,6 +71,16 @@ public class QtClothingItem extends BaseEntity
         return effectImagePath;
     }
 
+    public String getEffectImageUrl()
+    {
+        return effectImageUrl;
+    }
+
+    public void setEffectImageUrl(String effectImageUrl)
+    {
+        this.effectImageUrl = effectImageUrl;
+    }
+
     public void setColorOptionsJson(String colorOptionsJson) 
     {
         this.colorOptionsJson = colorOptionsJson;
@@ -104,6 +117,7 @@ public class QtClothingItem extends BaseEntity
             .append("itemId", getItemId())
             .append("itemName", getItemName())
             .append("effectImagePath", getEffectImagePath())
+            .append("effectImageUrl", getEffectImageUrl())
             .append("colorOptionsJson", getColorOptionsJson())
             .append("sizeOptionsJson", getSizeOptionsJson())
             .append("status", getStatus())

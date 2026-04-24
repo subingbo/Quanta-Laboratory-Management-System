@@ -1,4 +1,4 @@
-package com.ruoyi.system.domain;
+package com.ruoyi.qt.domain;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -69,6 +69,46 @@ public class QtClothingOrder extends BaseEntity
     /** 状态(DRAFT/SUBMITTED/APPROVED/REJECTED/CANCELED) */
     @Excel(name = "状态(DRAFT/SUBMITTED/APPROVED/REJECTED/CANCELED)")
     private String status;
+
+    /** 款式名称 */
+    @Excel(name = "款式名称")
+    private String itemName;
+
+    /** 效果图路径 */
+    @Excel(name = "效果图路径")
+    private String effectImagePath;
+
+    /** 付款配置名称 */
+    @Excel(name = "付款配置名称")
+    private String paymentName;
+
+    /** 付款码图片路径 */
+    @Excel(name = "付款码图片路径")
+    private String qrImagePath;
+
+    /** 用户账号 */
+    @Excel(name = "用户账号")
+    private String userName;
+
+    /** 用户昵称 */
+    @Excel(name = "用户昵称")
+    private String nickName;
+
+    /** 成员编号 */
+    @Excel(name = "成员编号")
+    private String memberNo;
+
+    /** 成员部门 */
+    @Excel(name = "成员部门")
+    private String memberDepartment;
+
+    /** 成员职称 */
+    @Excel(name = "成员职称")
+    private String memberTitle;
+
+    /** 成员届次 */
+    @Excel(name = "成员届次")
+    private String memberCohort;
 
     public void setOrderId(Long orderId) 
     {
@@ -200,6 +240,106 @@ public class QtClothingOrder extends BaseEntity
         return status;
     }
 
+    public String getItemName()
+    {
+        return itemName;
+    }
+
+    public void setItemName(String itemName)
+    {
+        this.itemName = itemName;
+    }
+
+    public String getEffectImagePath()
+    {
+        return effectImagePath;
+    }
+
+    public void setEffectImagePath(String effectImagePath)
+    {
+        this.effectImagePath = effectImagePath;
+    }
+
+    public String getPaymentName()
+    {
+        return paymentName;
+    }
+
+    public void setPaymentName(String paymentName)
+    {
+        this.paymentName = paymentName;
+    }
+
+    public String getQrImagePath()
+    {
+        return qrImagePath;
+    }
+
+    public void setQrImagePath(String qrImagePath)
+    {
+        this.qrImagePath = qrImagePath;
+    }
+
+    public String getUserName()
+    {
+        return userName;
+    }
+
+    public void setUserName(String userName)
+    {
+        this.userName = userName;
+    }
+
+    public String getNickName()
+    {
+        return nickName;
+    }
+
+    public void setNickName(String nickName)
+    {
+        this.nickName = nickName;
+    }
+
+    public String getMemberNo()
+    {
+        return memberNo;
+    }
+
+    public void setMemberNo(String memberNo)
+    {
+        this.memberNo = memberNo;
+    }
+
+    public String getMemberDepartment()
+    {
+        return memberDepartment;
+    }
+
+    public void setMemberDepartment(String memberDepartment)
+    {
+        this.memberDepartment = memberDepartment;
+    }
+
+    public String getMemberTitle()
+    {
+        return memberTitle;
+    }
+
+    public void setMemberTitle(String memberTitle)
+    {
+        this.memberTitle = memberTitle;
+    }
+
+    public String getMemberCohort()
+    {
+        return memberCohort;
+    }
+
+    public void setMemberCohort(String memberCohort)
+    {
+        this.memberCohort = memberCohort;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -216,6 +356,16 @@ public class QtClothingOrder extends BaseEntity
             .append("paymentProofPath", getPaymentProofPath())
             .append("paymentTime", getPaymentTime())
             .append("status", getStatus())
+            .append("itemName", getItemName())
+            .append("effectImagePath", getEffectImagePath())
+            .append("paymentName", getPaymentName())
+            .append("qrImagePath", getQrImagePath())
+            .append("userName", getUserName())
+            .append("nickName", getNickName())
+            .append("memberNo", getMemberNo())
+            .append("memberDepartment", getMemberDepartment())
+            .append("memberTitle", getMemberTitle())
+            .append("memberCohort", getMemberCohort())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())

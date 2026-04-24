@@ -1,7 +1,7 @@
-package com.ruoyi.system.service;
+package com.ruoyi.qt.service;
 
 import java.util.List;
-import com.ruoyi.system.domain.QtActivitySignup;
+import com.ruoyi.qt.domain.QtActivitySignup;
 
 /**
  * 活动报名Service接口
@@ -26,6 +26,14 @@ public interface IQtActivitySignupService
      * @return 活动报名集合
      */
     public List<QtActivitySignup> selectQtActivitySignupList(QtActivitySignup qtActivitySignup);
+
+    /**
+     * 查询活动报名详情列表
+     *
+     * @param qtActivitySignup 活动报名
+     * @return 活动报名集合
+     */
+    public List<QtActivitySignup> selectQtActivitySignupDetailList(QtActivitySignup qtActivitySignup);
 
     /**
      * 新增活动报名

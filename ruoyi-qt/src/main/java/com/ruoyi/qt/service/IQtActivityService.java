@@ -1,7 +1,7 @@
-package com.ruoyi.system.service;
+package com.ruoyi.qt.service;
 
 import java.util.List;
-import com.ruoyi.system.domain.QtActivity;
+import com.ruoyi.qt.domain.QtActivity;
 
 /**
  * 实验室活动Service接口

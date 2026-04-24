@@ -1,4 +1,4 @@
-package com.ruoyi.system.controller;
+package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,8 +16,8 @@ import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.system.domain.QtActivitySignup;
-import com.ruoyi.system.service.IQtActivitySignupService;
+import com.ruoyi.qt.domain.QtActivitySignup;
+import com.ruoyi.qt.service.IQtActivitySignupService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 
@@ -43,6 +43,18 @@ public class QtActivitySignupController extends BaseController
     {
         startPage();
         List<QtActivitySignup> list = qtActivitySignupService.selectQtActivitySignupList(qtActivitySignup);
+        return getDataTable(list);
+    }
+
+    /**
+     * 查询活动报名详情列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:signup:list')")
+    @GetMapping("/detailList")
+    public TableDataInfo detailList(QtActivitySignup qtActivitySignup)
+    {
+        startPage();
+        List<QtActivitySignup> list = qtActivitySignupService.selectQtActivitySignupDetailList(qtActivitySignup);
         return getDataTable(list);
     }
 

@@ -1,7 +1,7 @@
-package com.ruoyi.system.service;
+package com.ruoyi.qt.service;
 
 import java.util.List;
-import com.ruoyi.system.domain.QtBookBorrow;
+import com.ruoyi.qt.domain.QtBookBorrow;
 
 /**
  * 图书借阅记录Service接口
@@ -26,6 +26,14 @@ public interface IQtBookBorrowService
      * @return 图书借阅记录集合
      */
     public List<QtBookBorrow> selectQtBookBorrowList(QtBookBorrow qtBookBorrow);
+
+    /**
+     * 查询图书借阅记录详情列表
+     *
+     * @param qtBookBorrow 图书借阅记录
+     * @return 图书借阅记录集合
+     */
+    public List<QtBookBorrow> selectQtBookBorrowDetailList(QtBookBorrow qtBookBorrow);
 
     /**
      * 新增图书借阅记录

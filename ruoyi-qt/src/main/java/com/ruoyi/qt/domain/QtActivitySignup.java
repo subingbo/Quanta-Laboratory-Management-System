@@ -1,4 +1,4 @@
-package com.ruoyi.system.domain;
+package com.ruoyi.qt.domain;
 
 import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -41,6 +41,48 @@ public class QtActivitySignup extends BaseEntity
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Excel(name = "取消时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date cancelTime;
+
+    /** 活动标题 */
+    @Excel(name = "活动标题")
+    private String activityTitle;
+
+    /** 活动开始时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "活动开始时间", width = 30, dateFormat = "yyyy-MM-dd HH:mm:ss")
+    private Date activityStart;
+
+    /** 活动结束时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "活动结束时间", width = 30, dateFormat = "yyyy-MM-dd HH:mm:ss")
+    private Date activityEnd;
+
+    /** 活动地点 */
+    @Excel(name = "活动地点")
+    private String locationDesc;
+
+    /** 用户账号 */
+    @Excel(name = "用户账号")
+    private String userName;
+
+    /** 用户昵称 */
+    @Excel(name = "用户昵称")
+    private String nickName;
+
+    /** 成员编号 */
+    @Excel(name = "成员编号")
+    private String memberNo;
+
+    /** 成员部门 */
+    @Excel(name = "成员部门")
+    private String memberDepartment;
+
+    /** 成员职称 */
+    @Excel(name = "成员职称")
+    private String memberTitle;
+
+    /** 成员届次 */
+    @Excel(name = "成员届次")
+    private String memberCohort;
 
     public void setSignupId(Long signupId) 
     {
@@ -102,6 +144,106 @@ public class QtActivitySignup extends BaseEntity
         return cancelTime;
     }
 
+    public String getActivityTitle()
+    {
+        return activityTitle;
+    }
+
+    public void setActivityTitle(String activityTitle)
+    {
+        this.activityTitle = activityTitle;
+    }
+
+    public Date getActivityStart()
+    {
+        return activityStart;
+    }
+
+    public void setActivityStart(Date activityStart)
+    {
+        this.activityStart = activityStart;
+    }
+
+    public Date getActivityEnd()
+    {
+        return activityEnd;
+    }
+
+    public void setActivityEnd(Date activityEnd)
+    {
+        this.activityEnd = activityEnd;
+    }
+
+    public String getLocationDesc()
+    {
+        return locationDesc;
+    }
+
+    public void setLocationDesc(String locationDesc)
+    {
+        this.locationDesc = locationDesc;
+    }
+
+    public String getUserName()
+    {
+        return userName;
+    }
+
+    public void setUserName(String userName)
+    {
+        this.userName = userName;
+    }
+
+    public String getNickName()
+    {
+        return nickName;
+    }
+
+    public void setNickName(String nickName)
+    {
+        this.nickName = nickName;
+    }
+
+    public String getMemberNo()
+    {
+        return memberNo;
+    }
+
+    public void setMemberNo(String memberNo)
+    {
+        this.memberNo = memberNo;
+    }
+
+    public String getMemberDepartment()
+    {
+        return memberDepartment;
+    }
+
+    public void setMemberDepartment(String memberDepartment)
+    {
+        this.memberDepartment = memberDepartment;
+    }
+
+    public String getMemberTitle()
+    {
+        return memberTitle;
+    }
+
+    public void setMemberTitle(String memberTitle)
+    {
+        this.memberTitle = memberTitle;
+    }
+
+    public String getMemberCohort()
+    {
+        return memberCohort;
+    }
+
+    public void setMemberCohort(String memberCohort)
+    {
+        this.memberCohort = memberCohort;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -111,6 +253,16 @@ public class QtActivitySignup extends BaseEntity
             .append("status", getStatus())
             .append("signupTime", getSignupTime())
             .append("cancelTime", getCancelTime())
+            .append("activityTitle", getActivityTitle())
+            .append("activityStart", getActivityStart())
+            .append("activityEnd", getActivityEnd())
+            .append("locationDesc", getLocationDesc())
+            .append("userName", getUserName())
+            .append("nickName", getNickName())
+            .append("memberNo", getMemberNo())
+            .append("memberDepartment", getMemberDepartment())
+            .append("memberTitle", getMemberTitle())
+            .append("memberCohort", getMemberCohort())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())

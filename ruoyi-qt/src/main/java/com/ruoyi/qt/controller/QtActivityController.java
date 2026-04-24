@@ -1,4 +1,4 @@
-package com.ruoyi.system.controller;
+package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,8 +16,8 @@ import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.system.domain.QtActivity;
-import com.ruoyi.system.service.IQtActivityService;
+import com.ruoyi.qt.domain.QtActivity;
+import com.ruoyi.qt.service.IQtActivityService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 

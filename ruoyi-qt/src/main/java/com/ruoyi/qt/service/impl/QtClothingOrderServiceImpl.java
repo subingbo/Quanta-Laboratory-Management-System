@@ -1,12 +1,12 @@
-package com.ruoyi.system.service.impl;
+package com.ruoyi.qt.service.impl;
 
 import java.util.List;
 import com.ruoyi.common.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.system.mapper.QtClothingOrderMapper;
-import com.ruoyi.system.domain.QtClothingOrder;
-import com.ruoyi.system.service.IQtClothingOrderService;
+import com.ruoyi.qt.mapper.QtClothingOrderMapper;
+import com.ruoyi.qt.domain.QtClothingOrder;
+import com.ruoyi.qt.service.IQtClothingOrderService;
 
 /**
  * 实验室服装订单Service业务层处理
@@ -42,6 +42,12 @@ public class QtClothingOrderServiceImpl implements IQtClothingOrderService
     public List<QtClothingOrder> selectQtClothingOrderList(QtClothingOrder qtClothingOrder)
     {
         return qtClothingOrderMapper.selectQtClothingOrderList(qtClothingOrder);
+    }
+
+    @Override
+    public List<QtClothingOrder> selectQtClothingOrderDetailList(QtClothingOrder qtClothingOrder)
+    {
+        return qtClothingOrderMapper.selectQtClothingOrderDetailList(qtClothingOrder);
     }
 
     /**

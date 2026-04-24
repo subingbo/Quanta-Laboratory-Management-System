@@ -1,7 +1,7 @@
-package com.ruoyi.system.service;
+package com.ruoyi.qt.service;
 
 import java.util.List;
-import com.ruoyi.system.domain.QtClothingOrder;
+import com.ruoyi.qt.domain.QtClothingOrder;
 
 /**
  * 实验室服装订单Service接口
@@ -26,6 +26,14 @@ public interface IQtClothingOrderService
      * @return 实验室服装订单集合
      */
     public List<QtClothingOrder> selectQtClothingOrderList(QtClothingOrder qtClothingOrder);
+
+    /**
+     * 查询实验室服装订单详情列表
+     *
+     * @param qtClothingOrder 实验室服装订单
+     * @return 实验室服装订单集合
+     */
+    public List<QtClothingOrder> selectQtClothingOrderDetailList(QtClothingOrder qtClothingOrder);
 
     /**
      * 新增实验室服装订单

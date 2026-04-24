@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ruoyi.system.mapper.QtBookMapper">
+<mapper namespace="com.ruoyi.qt.mapper.QtBookMapper">
     
     <resultMap type="QtBook" id="QtBookResult">
         <result property="bookId"    column="book_id"    />

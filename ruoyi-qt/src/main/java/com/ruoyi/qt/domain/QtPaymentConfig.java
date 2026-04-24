@@ -1,4 +1,4 @@
-package com.ruoyi.system.domain;
+package com.ruoyi.qt.domain;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -25,6 +25,9 @@ public class QtPaymentConfig extends BaseEntity
     /** 收款码图片路径(后台上传) */
     @Excel(name = "收款码图片路径(后台上传)")
     private String qrImagePath;
+
+    /** 收款码图片完整URL */
+    private String qrImageUrl;
 
     /** 启用状态(0停用 1启用) */
     @Excel(name = "启用状态(0停用 1启用)")
@@ -60,6 +63,16 @@ public class QtPaymentConfig extends BaseEntity
         return qrImagePath;
     }
 
+    public String getQrImageUrl()
+    {
+        return qrImageUrl;
+    }
+
+    public void setQrImageUrl(String qrImageUrl)
+    {
+        this.qrImageUrl = qrImageUrl;
+    }
+
     public void setEnabled(String enabled) 
     {
         this.enabled = enabled;
@@ -76,6 +89,7 @@ public class QtPaymentConfig extends BaseEntity
             .append("configId", getConfigId())
             .append("paymentName", getPaymentName())
             .append("qrImagePath", getQrImagePath())
+            .append("qrImageUrl", getQrImageUrl())
             .append("enabled", getEnabled())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())

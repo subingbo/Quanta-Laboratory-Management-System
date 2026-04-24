@@ -1,7 +1,7 @@
-package com.ruoyi.system.mapper;
+package com.ruoyi.qt.mapper;
 
 import java.util.List;
-import com.ruoyi.system.domain.QtPaymentConfig;
+import com.ruoyi.qt.domain.QtPaymentConfig;
 
 /**
  * 固定付款码配置Mapper接口

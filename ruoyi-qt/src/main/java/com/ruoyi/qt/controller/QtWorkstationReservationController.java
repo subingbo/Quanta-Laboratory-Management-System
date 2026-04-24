@@ -1,4 +1,4 @@
-package com.ruoyi.system.controller;
+package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,8 +16,8 @@ import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.system.domain.QtWorkstationReservation;
-import com.ruoyi.system.service.IQtWorkstationReservationService;
+import com.ruoyi.qt.domain.QtWorkstationReservation;
+import com.ruoyi.qt.service.IQtWorkstationReservationService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 
@@ -43,6 +43,18 @@ public class QtWorkstationReservationController extends BaseController
     {
         startPage();
         List<QtWorkstationReservation> list = qtWorkstationReservationService.selectQtWorkstationReservationList(qtWorkstationReservation);
+        return getDataTable(list);
+    }
+
+    /**
+     * 查询工位预约记录详情列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:reservation:list')")
+    @GetMapping("/detailList")
+    public TableDataInfo detailList(QtWorkstationReservation qtWorkstationReservation)
+    {
+        startPage();
+        List<QtWorkstationReservation> list = qtWorkstationReservationService.selectQtWorkstationReservationDetailList(qtWorkstationReservation);
         return getDataTable(list);
     }
 

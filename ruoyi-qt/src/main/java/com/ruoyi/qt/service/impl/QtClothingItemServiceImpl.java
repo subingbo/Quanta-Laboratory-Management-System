@@ -1,12 +1,12 @@
-package com.ruoyi.system.service.impl;
+package com.ruoyi.qt.service.impl;
 
 import java.util.List;
 import com.ruoyi.common.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.system.mapper.QtClothingItemMapper;
-import com.ruoyi.system.domain.QtClothingItem;
-import com.ruoyi.system.service.IQtClothingItemService;
+import com.ruoyi.qt.mapper.QtClothingItemMapper;
+import com.ruoyi.qt.domain.QtClothingItem;
+import com.ruoyi.qt.service.IQtClothingItemService;
 
 /**
  * 服装配置Service业务层处理

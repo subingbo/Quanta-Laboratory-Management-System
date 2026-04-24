@@ -1,12 +1,12 @@
-package com.ruoyi.system.service.impl;
+package com.ruoyi.qt.service.impl;
 
 import java.util.List;
 import com.ruoyi.common.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.system.mapper.QtActivitySignupMapper;
-import com.ruoyi.system.domain.QtActivitySignup;
-import com.ruoyi.system.service.IQtActivitySignupService;
+import com.ruoyi.qt.mapper.QtActivitySignupMapper;
+import com.ruoyi.qt.domain.QtActivitySignup;
+import com.ruoyi.qt.service.IQtActivitySignupService;
 
 /**
  * 活动报名Service业务层处理
@@ -42,6 +42,12 @@ public class QtActivitySignupServiceImpl implements IQtActivitySignupService
     public List<QtActivitySignup> selectQtActivitySignupList(QtActivitySignup qtActivitySignup)
     {
         return qtActivitySignupMapper.selectQtActivitySignupList(qtActivitySignup);
+    }
+
+    @Override
+    public List<QtActivitySignup> selectQtActivitySignupDetailList(QtActivitySignup qtActivitySignup)
+    {
+        return qtActivitySignupMapper.selectQtActivitySignupDetailList(qtActivitySignup);
     }
 
     /**

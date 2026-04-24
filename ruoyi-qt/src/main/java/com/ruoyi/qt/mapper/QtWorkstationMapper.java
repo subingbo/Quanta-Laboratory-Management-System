@@ -1,7 +1,7 @@
-package com.ruoyi.system.mapper;
+package com.ruoyi.qt.mapper;
 
 import java.util.List;
-import com.ruoyi.system.domain.QtWorkstation;
+import com.ruoyi.qt.domain.QtWorkstation;
 
 /**
  * 实验室工位Mapper接口

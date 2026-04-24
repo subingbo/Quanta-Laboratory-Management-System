@@ -1,12 +1,12 @@
-package com.ruoyi.system.service.impl;
+package com.ruoyi.qt.service.impl;
 
 import java.util.List;
 import com.ruoyi.common.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.system.mapper.QtBookBorrowMapper;
-import com.ruoyi.system.domain.QtBookBorrow;
-import com.ruoyi.system.service.IQtBookBorrowService;
+import com.ruoyi.qt.mapper.QtBookBorrowMapper;
+import com.ruoyi.qt.domain.QtBookBorrow;
+import com.ruoyi.qt.service.IQtBookBorrowService;
 
 /**
  * 图书借阅记录Service业务层处理
@@ -42,6 +42,12 @@ public class QtBookBorrowServiceImpl implements IQtBookBorrowService
     public List<QtBookBorrow> selectQtBookBorrowList(QtBookBorrow qtBookBorrow)
     {
         return qtBookBorrowMapper.selectQtBookBorrowList(qtBookBorrow);
+    }
+
+    @Override
+    public List<QtBookBorrow> selectQtBookBorrowDetailList(QtBookBorrow qtBookBorrow)
+    {
+        return qtBookBorrowMapper.selectQtBookBorrowDetailList(qtBookBorrow);
     }
 
     /**

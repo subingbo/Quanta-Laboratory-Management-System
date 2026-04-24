@@ -1,4 +1,4 @@
-package com.ruoyi.system.controller;
+package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,8 +16,8 @@ import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.system.domain.QtClothingOrder;
-import com.ruoyi.system.service.IQtClothingOrderService;
+import com.ruoyi.qt.domain.QtClothingOrder;
+import com.ruoyi.qt.service.IQtClothingOrderService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 
@@ -43,6 +43,18 @@ public class QtClothingOrderController extends BaseController
     {
         startPage();
         List<QtClothingOrder> list = qtClothingOrderService.selectQtClothingOrderList(qtClothingOrder);
+        return getDataTable(list);
+    }
+
+    /**
+     * 查询实验室服装订单详情列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:order:list')")
+    @GetMapping("/detailList")
+    public TableDataInfo detailList(QtClothingOrder qtClothingOrder)
+    {
+        startPage();
+        List<QtClothingOrder> list = qtClothingOrderService.selectQtClothingOrderDetailList(qtClothingOrder);
         return getDataTable(list);
     }
 
