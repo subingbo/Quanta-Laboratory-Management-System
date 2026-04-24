@@ -1,0 +1,96 @@
+package com.ruoyi.system.service.impl;
+
+import java.util.List;
+import com.ruoyi.common.utils.DateUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.ruoyi.system.mapper.QtPaymentConfigMapper;
+import com.ruoyi.system.domain.QtPaymentConfig;
+import com.ruoyi.system.service.IQtPaymentConfigService;
+
+/**
+ * 固定付款码配置Service业务层处理
+ * 
+ * @author ruoyi
+ * @date 2026-04-24
+ */
+@Service
+public class QtPaymentConfigServiceImpl implements IQtPaymentConfigService 
+{
+    @Autowired
+    private QtPaymentConfigMapper qtPaymentConfigMapper;
+
+    /**
+     * 查询固定付款码配置
+     * 
+     * @param configId 固定付款码配置主键
+     * @return 固定付款码配置
+     */
+    @Override
+    public QtPaymentConfig selectQtPaymentConfigByConfigId(Long configId)
+    {
+        return qtPaymentConfigMapper.selectQtPaymentConfigByConfigId(configId);
+    }
+
+    /**
+     * 查询固定付款码配置列表
+     * 
+     * @param qtPaymentConfig 固定付款码配置
+     * @return 固定付款码配置
+     */
+    @Override
+    public List<QtPaymentConfig> selectQtPaymentConfigList(QtPaymentConfig qtPaymentConfig)
+    {
+        return qtPaymentConfigMapper.selectQtPaymentConfigList(qtPaymentConfig);
+    }
+
+    /**
+     * 新增固定付款码配置
+     * 
+     * @param qtPaymentConfig 固定付款码配置
+     * @return 结果
+     */
+    @Override
+    public int insertQtPaymentConfig(QtPaymentConfig qtPaymentConfig)
+    {
+        qtPaymentConfig.setCreateTime(DateUtils.getNowDate());
+        return qtPaymentConfigMapper.insertQtPaymentConfig(qtPaymentConfig);
+    }
+
+    /**
+     * 修改固定付款码配置
+     * 
+     * @param qtPaymentConfig 固定付款码配置
+     * @return 结果
+     */
+    @Override
+    public int updateQtPaymentConfig(QtPaymentConfig qtPaymentConfig)
+    {
+        qtPaymentConfig.setUpdateTime(DateUtils.getNowDate());
+        return qtPaymentConfigMapper.updateQtPaymentConfig(qtPaymentConfig);
+    }
+
+    /**
+     * 批量删除固定付款码配置
+     * 
+     * @param configIds 需要删除的固定付款码配置主键
+     * @return 结果
+     */
+    @Override
+    public int deleteQtPaymentConfigByConfigIds(Long[] configIds)
+    {
+        return qtPaymentConfigMapper.deleteQtPaymentConfigByConfigIds(configIds);
+    }
+
+    /**
+     * 删除固定付款码配置信息
+     * 
+     * @param configId 固定付款码配置主键
+     * @return 结果
+     */
+    @Override
+    public int deleteQtPaymentConfigByConfigId(Long configId)
+    {
+        return qtPaymentConfigMapper.deleteQtPaymentConfigByConfigId(configId);
+    }
+}
