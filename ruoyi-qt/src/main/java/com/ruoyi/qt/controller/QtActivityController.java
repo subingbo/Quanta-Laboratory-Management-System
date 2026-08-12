@@ -2,7 +2,7 @@ package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.access.prepost.PreAuthorize;
+// import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,7 +37,7 @@ public class QtActivityController extends BaseController
     /**
      * 查询实验室活动列表
      */
-    @PreAuthorize("@ss.hasPermi('system:activity:list')")
+    // @PreAuthorize("@ss.hasPermi('system:activity:list')")
     @GetMapping("/list")
     public TableDataInfo list(QtActivity qtActivity)
     {
@@ -49,7 +49,7 @@ public class QtActivityController extends BaseController
     /**
      * 导出实验室活动列表
      */
-    @PreAuthorize("@ss.hasPermi('system:activity:export')")
+    // @PreAuthorize("@ss.hasPermi('system:activity:export')")
     @Log(title = "实验室活动", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtActivity qtActivity)
@@ -62,7 +62,7 @@ public class QtActivityController extends BaseController
     /**
      * 获取实验室活动详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:activity:query')")
+    // @PreAuthorize("@ss.hasPermi('system:activity:query')")
     @GetMapping(value = "/{activityId}")
     public AjaxResult getInfo(@PathVariable("activityId") Long activityId)
     {
@@ -72,18 +72,26 @@ public class QtActivityController extends BaseController
     /**
      * 新增实验室活动
      */
-    @PreAuthorize("@ss.hasPermi('system:activity:add')")
+    // @PreAuthorize("@ss.hasPermi('system:activity:add')")
     @Log(title = "实验室活动", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody QtActivity qtActivity)
     {
+        if (qtActivity.getCreatorUserId() == null)
+        {
+            qtActivity.setCreatorUserId(getUserId());
+        }
+        if (qtActivity.getCreateBy() == null || qtActivity.getCreateBy().isEmpty())
+        {
+            qtActivity.setCreateBy(getUsername());
+        }
         return toAjax(qtActivityService.insertQtActivity(qtActivity));
     }
 
     /**
      * 修改实验室活动
      */
-    @PreAuthorize("@ss.hasPermi('system:activity:edit')")
+    // @PreAuthorize("@ss.hasPermi('system:activity:edit')")
     @Log(title = "实验室活动", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtActivity qtActivity)
@@ -94,7 +102,7 @@ public class QtActivityController extends BaseController
     /**
      * 删除实验室活动
      */
-    @PreAuthorize("@ss.hasPermi('system:activity:remove')")
+    // @PreAuthorize("@ss.hasPermi('system:activity:remove')")
     @Log(title = "实验室活动", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{activityIds}")
     public AjaxResult remove(@PathVariable Long[] activityIds)

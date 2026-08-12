@@ -9,21 +9,21 @@
       <el-input v-model.trim="form.realName" placeholder="真实姓名" />
       <el-input v-model.trim="form.className" placeholder="班级" />
       <el-select v-model="form.gender" placeholder="性别">
-        <el-option label="男" value="男" />
-        <el-option label="女" value="女" />
+        <el-option label="男" value="0" />
+        <el-option label="女" value="1" />
       </el-select>
       <el-select v-model="form.firstChoice" placeholder="第一志愿">
-        <el-option v-for="dept in departments" :key="dept" :label="dept" :value="dept" />
+        <el-option v-for="dept in departments" :key="dept.value" :label="dept.label" :value="dept.value" />
       </el-select>
       <el-select v-model="form.secondChoice" placeholder="第二志愿">
-        <el-option v-for="dept in departments" :key="dept" :label="dept" :value="dept" />
+        <el-option v-for="dept in departments" :key="dept.value" :label="dept.label" :value="dept.value" />
       </el-select>
       <el-input v-model.trim="form.selfIntro" type="textarea" :rows="4" placeholder="自我介绍" />
       <el-input v-model.trim="form.codingExperienceDesc" type="textarea" :rows="3" placeholder="技术经历（没有也可以写学习兴趣）" />
       <el-input v-model.trim="form.quantaUnderstanding" type="textarea" :rows="3" placeholder="你对 Quanta 的理解" />
       <label class="upload-card">
         <i class="el-icon-camera" />
-        <span>{{ photoFile ? photoFile.name : '上传证件照' }}</span>
+        <span>{{ photoLabel }}</span>
         <input type="file" accept="image/*" @change="onPhotoChange" />
       </label>
       <button class="primary-pill block-btn" type="button" :disabled="submitting" @click="submitApply">
@@ -36,6 +36,20 @@
 <script>
 import MobileShell from '@/components/MobileShell.vue'
 import { applyInterview, getMyInterviewApplication } from '@/api/qt'
+import { deptLabel } from '@/utils/helpers'
+
+const SUBMIT_KEYS = [
+  'realName',
+  'gender',
+  'className',
+  'firstChoice',
+  'secondChoice',
+  'selfIntro',
+  'codingExperience',
+  'codingExperienceDesc',
+  'quantaUnderstanding',
+  'photoUrl'
+]
 
 export default {
   name: 'Join',
@@ -44,7 +58,14 @@ export default {
     return {
       submitting: false,
       photoFile: null,
-      departments: ['产品部', '研发部', '设计部', '前端', '后端', '安卓'],
+      hasExistingPhoto: false,
+      departments: [
+        { label: '后端', value: 'BACKEND' },
+        { label: '产品', value: 'PRODUCT' },
+        { label: '设计', value: 'DESIGN' },
+        { label: '前端', value: 'FRONTEND' },
+        { label: '安卓', value: 'ANDROID' }
+      ],
       form: {
         realName: '',
         gender: '',
@@ -54,14 +75,33 @@ export default {
         selfIntro: '',
         codingExperience: '0',
         codingExperienceDesc: '',
-        quantaUnderstanding: ''
+        quantaUnderstanding: '',
+        photoUrl: ''
       }
+    }
+  },
+  computed: {
+    photoLabel() {
+      if (this.photoFile) {
+        return this.photoFile.name
+      }
+      return this.hasExistingPhoto ? '已上传证件照（可重新选择）' : '上传证件照'
     }
   },
   created() {
     getMyInterviewApplication().then(res => {
       const data = res.data || {}
-      this.form = Object.assign(this.form, data.application || {}, data.profile || {})
+      const application = data.application || {}
+      const profile = data.profile || {}
+      SUBMIT_KEYS.forEach(key => {
+        if (application[key] !== undefined && application[key] !== null && application[key] !== '') {
+          this.form[key] = application[key]
+        }
+        if (profile[key] !== undefined && profile[key] !== null && profile[key] !== '') {
+          this.form[key] = profile[key]
+        }
+      })
+      this.hasExistingPhoto = !!application.photoUrl
     }).catch(() => {})
   },
   methods: {
@@ -77,10 +117,15 @@ export default {
         this.$message.warning('两个志愿不能相同')
         return
       }
+      if (!this.photoFile && !this.form.photoUrl) {
+        this.$message.warning('请上传证件照')
+        return
+      }
       const data = new FormData()
-      Object.keys(this.form).forEach(key => {
-        if (this.form[key] !== undefined && this.form[key] !== null) {
-          data.append(key, this.form[key])
+      SUBMIT_KEYS.forEach(key => {
+        const value = this.form[key]
+        if (value !== undefined && value !== null && value !== '') {
+          data.append(key, value)
         }
       })
       if (this.photoFile) {
@@ -93,7 +138,8 @@ export default {
       }).finally(() => {
         this.submitting = false
       })
-    }
+    },
+    deptLabel
   }
 }
 </script>
@@ -142,10 +188,14 @@ export default {
   gap: 8px;
   font-weight: 900;
   margin-bottom: 18px;
+  position: relative;
 }
 
 .upload-card input {
-  display: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .block-btn {

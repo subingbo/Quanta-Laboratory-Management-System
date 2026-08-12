@@ -27,6 +27,11 @@ public class LoginBody
      */
     private String uuid;
 
+    /**
+     * 登录身份：0新生 / 1塔员（可选，传入则校验与账号身份一致）
+     */
+    private String loginType;
+
     public String getUsername()
     {
         return username;
@@ -65,5 +70,15 @@ public class LoginBody
     public void setUuid(String uuid)
     {
         this.uuid = uuid;
+    }
+
+    public String getLoginType()
+    {
+        return loginType;
+    }
+
+    public void setLoginType(String loginType)
+    {
+        this.loginType = loginType;
     }
 }

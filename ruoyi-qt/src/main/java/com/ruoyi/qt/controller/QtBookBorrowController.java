@@ -2,7 +2,7 @@ package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.access.prepost.PreAuthorize;
+// import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,7 +37,7 @@ public class QtBookBorrowController extends BaseController
     /**
      * 查询图书借阅记录列表
      */
-    @PreAuthorize("@ss.hasPermi('system:borrow:list')")
+    // @PreAuthorize("@ss.hasPermi('system:borrow:list')")
     @GetMapping("/list")
     public TableDataInfo list(QtBookBorrow qtBookBorrow)
     {
@@ -49,7 +49,7 @@ public class QtBookBorrowController extends BaseController
     /**
      * 查询图书借阅记录详情列表
      */
-    @PreAuthorize("@ss.hasPermi('system:borrow:list')")
+    // @PreAuthorize("@ss.hasPermi('system:borrow:list')")
     @GetMapping("/detailList")
     public TableDataInfo detailList(QtBookBorrow qtBookBorrow)
     {
@@ -61,7 +61,7 @@ public class QtBookBorrowController extends BaseController
     /**
      * 导出图书借阅记录列表
      */
-    @PreAuthorize("@ss.hasPermi('system:borrow:export')")
+    // @PreAuthorize("@ss.hasPermi('system:borrow:export')")
     @Log(title = "图书借阅记录", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtBookBorrow qtBookBorrow)
@@ -74,7 +74,7 @@ public class QtBookBorrowController extends BaseController
     /**
      * 获取图书借阅记录详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:borrow:query')")
+    // @PreAuthorize("@ss.hasPermi('system:borrow:query')")
     @GetMapping(value = "/{borrowId}")
     public AjaxResult getInfo(@PathVariable("borrowId") Long borrowId)
     {
@@ -84,7 +84,7 @@ public class QtBookBorrowController extends BaseController
     /**
      * 新增图书借阅记录
      */
-    @PreAuthorize("@ss.hasPermi('system:borrow:add')")
+    // @PreAuthorize("@ss.hasPermi('system:borrow:add')")
     @Log(title = "图书借阅记录", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody QtBookBorrow qtBookBorrow)
@@ -95,7 +95,7 @@ public class QtBookBorrowController extends BaseController
     /**
      * 修改图书借阅记录
      */
-    @PreAuthorize("@ss.hasPermi('system:borrow:edit')")
+    // @PreAuthorize("@ss.hasPermi('system:borrow:edit')")
     @Log(title = "图书借阅记录", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtBookBorrow qtBookBorrow)
@@ -106,7 +106,7 @@ public class QtBookBorrowController extends BaseController
     /**
      * 删除图书借阅记录
      */
-    @PreAuthorize("@ss.hasPermi('system:borrow:remove')")
+    // @PreAuthorize("@ss.hasPermi('system:borrow:remove')")
     @Log(title = "图书借阅记录", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{borrowIds}")
     public AjaxResult remove(@PathVariable Long[] borrowIds)

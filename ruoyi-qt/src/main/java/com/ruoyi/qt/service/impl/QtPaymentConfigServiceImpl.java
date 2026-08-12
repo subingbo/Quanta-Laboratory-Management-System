@@ -2,6 +2,7 @@ package com.ruoyi.qt.service.impl;
 
 import java.util.List;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.qt.mapper.QtPaymentConfigMapper;
@@ -67,6 +68,7 @@ public class QtPaymentConfigServiceImpl implements IQtPaymentConfigService
     public int updateQtPaymentConfig(QtPaymentConfig qtPaymentConfig)
     {
         qtPaymentConfig.setUpdateTime(DateUtils.getNowDate());
+        qtPaymentConfig.setUpdateBy(SecurityUtils.getUsername());
         return qtPaymentConfigMapper.updateQtPaymentConfig(qtPaymentConfig);
     }
 

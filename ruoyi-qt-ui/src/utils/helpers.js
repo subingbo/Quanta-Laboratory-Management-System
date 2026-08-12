@@ -44,7 +44,23 @@ export function statusText(status) {
     BORROWED: '借阅中',
     RETURNED: '已归还',
     OVERDUE: '已逾期',
-    SUBMITTED: '已提交'
+    SUBMITTED: '已提交',
+    PROCESSING: '面试中',
+    OFFERED: '已录取',
+    PASS: '通过',
+    FAIL: '未通过',
+    WAITING: '候补'
   }
   return map[status] || status || '未设置'
+}
+
+export function deptLabel(code) {
+  const map = {
+    BACKEND: '后端',
+    PRODUCT: '产品',
+    DESIGN: '设计',
+    FRONTEND: '前端',
+    ANDROID: '安卓'
+  }
+  return map[code] || code || ''
 }

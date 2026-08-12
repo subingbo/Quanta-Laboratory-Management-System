@@ -37,7 +37,7 @@
 
 <script>
 import MobileShell from '@/components/MobileShell.vue'
-import { listUsers } from '@/api/qt'
+import { listLabMembers } from '@/api/qt'
 
 export default {
   name: 'Contacts',
@@ -59,7 +59,7 @@ export default {
   methods: {
     fetchUsers() {
       this.loading = true
-      listUsers(this.query).then(res => {
+      listLabMembers(this.query).then(res => {
         this.users = res.rows || []
       }).catch(() => {
         this.users = []

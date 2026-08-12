@@ -3,7 +3,7 @@
     <section class="status-card">
       <span>{{ application.applyStatus ? statusText(application.applyStatus) : '未投递' }}</span>
       <h2>{{ application.realName || 'Quanta 招新' }}</h2>
-      <p>{{ application.firstChoice || '第一志愿' }} / {{ application.secondChoice || '第二志愿' }}</p>
+      <p>{{ deptLabel(application.firstChoice) || '第一志愿' }} / {{ deptLabel(application.secondChoice) || '第二志愿' }}</p>
       <button type="button" @click="$router.push('/join')">{{ application.applicationId ? '修改投递' : '立即投递' }}</button>
     </section>
 
@@ -16,7 +16,7 @@
       <article v-for="result in results" :key="result.resultId" class="result-card">
         <div>
           <h3>{{ result.roundName || '面试轮次' }}</h3>
-          <p>{{ result.department || 'Quanta' }} · {{ result.interviewTime || '待安排' }}</p>
+          <p>{{ deptLabel(result.department) || 'Quanta' }} · {{ result.interviewTime || '待安排' }}</p>
         </div>
         <span>{{ statusText(result.resultStatus) }}</span>
       </article>
@@ -31,7 +31,7 @@
 <script>
 import MobileShell from '@/components/MobileShell.vue'
 import { getMyInterviewApplication, getMyInterviewResults } from '@/api/qt'
-import { statusText } from '@/utils/helpers'
+import { deptLabel, statusText } from '@/utils/helpers'
 
 export default {
   name: 'InterviewResults',
@@ -48,6 +48,7 @@ export default {
   },
   methods: {
     statusText,
+    deptLabel,
     fetchData() {
       this.loading = true
       Promise.all([

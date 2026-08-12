@@ -6,6 +6,7 @@ Vue.use(Router)
 
 const routes = [
   { path: '/login', component: () => import('@/views/Login'), meta: { public: true, title: 'Quanta 登录' } },
+  { path: '/register', component: () => import('@/views/Register'), meta: { public: true, title: '新生注册' } },
   { path: '/', redirect: '/home' },
   { path: '/home', component: () => import('@/views/Home'), meta: { title: 'Quanta' } },
   { path: '/contacts', component: () => import('@/views/Contacts'), meta: { title: '通讯录' } },

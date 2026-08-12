@@ -14,4 +14,9 @@ public interface IQtInterviewService
     QtInterviewProfile selectMyProfile(Long userId);
 
     List<QtInterviewResult> selectMyResultList(Long userId);
+
+    /**
+     * 录入/更新面试轮次结果（联调最小能力）
+     */
+    int saveInterviewResult(QtInterviewResult result);
 }

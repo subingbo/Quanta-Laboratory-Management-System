@@ -92,6 +92,14 @@ public interface ISysUserService
     public boolean checkEmailUnique(SysUser user);
 
     /**
+     * 校验学号是否唯一
+     *
+     * @param studentNo 学号
+     * @return true=唯一可用
+     */
+    public boolean checkStudentNoUnique(String studentNo);
+
+    /**
      * 校验用户是否允许操作
      * 
      * @param user 用户信息

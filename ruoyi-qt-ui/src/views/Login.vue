@@ -48,6 +48,14 @@
         <el-button class="login-button" type="primary" :loading="loading" @click="handleLogin">
           {{ loading ? '登录中...' : '登录' }}
         </el-button>
+        <button
+          v-if="selectedRole === 'freshman'"
+          class="register-link"
+          type="button"
+          @click="$router.push('/register')"
+        >
+          没有账号？新生注册
+        </button>
       </el-form>
     </section>
   </div>
@@ -101,7 +109,10 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (!valid) return
         this.loading = true
-        login(this.loginForm).then(res => {
+        const payload = Object.assign({}, this.loginForm, {
+          loginType: this.selectedRole === 'member' ? '1' : '0'
+        })
+        login(payload).then(res => {
           setToken(res.token)
           return getInfo()
         }).then(res => {
@@ -252,5 +263,15 @@ export default {
   border-radius: 23px;
   font-weight: 900;
   box-shadow: 0 12px 24px rgba(253, 175, 50, 0.28);
+}
+
+.register-link {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  border: none;
+  background: transparent;
+  color: #fdaf32;
+  font-weight: 800;
 }
 </style>

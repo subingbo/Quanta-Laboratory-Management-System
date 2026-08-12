@@ -21,7 +21,7 @@ import com.ruoyi.system.service.ISysUserService;
 
 /**
  * 注册校验方法
- * 
+ *
  * @author ruoyi
  */
 @Component
@@ -37,11 +37,18 @@ public class SysRegisterService
     private RedisCache redisCache;
 
     /**
-     * 注册
+     * 注册（仅允许新生；塔员需后台开通）
      */
     public String register(RegisterBody registerBody)
     {
-        String msg = "", username = registerBody.getUsername(), password = registerBody.getPassword();
+        String msg = "";
+        String username = registerBody.getUsername();
+        String password = registerBody.getPassword();
+        String loginType = registerBody.getLoginType();
+        String studentNo = StringUtils.trim(registerBody.getStudentNo());
+        String className = StringUtils.trim(registerBody.getClassName());
+        String nickName = StringUtils.trim(registerBody.getNickName());
+
         SysUser sysUser = new SysUser();
         sysUser.setUserName(username);
 
@@ -52,13 +59,26 @@ public class SysRegisterService
             validateCaptcha(username, registerBody.getCode(), registerBody.getUuid());
         }
 
-        if (StringUtils.isEmpty(username))
+        if (StringUtils.isNotEmpty(loginType)
+                && ("1".equals(loginType) || "member".equalsIgnoreCase(loginType)))
+        {
+            msg = "塔员账号需由管理员开通，不支持自助注册";
+        }
+        else if (StringUtils.isEmpty(username))
         {
             msg = "用户名不能为空";
         }
         else if (StringUtils.isEmpty(password))
         {
             msg = "用户密码不能为空";
+        }
+        else if (StringUtils.isEmpty(studentNo))
+        {
+            msg = "学号不能为空";
+        }
+        else if (StringUtils.isEmpty(className))
+        {
+            msg = "班级不能为空";
         }
         else if (username.length() < UserConstants.USERNAME_MIN_LENGTH
                 || username.length() > UserConstants.USERNAME_MAX_LENGTH)
@@ -74,11 +94,20 @@ public class SysRegisterService
         {
             msg = "保存用户'" + username + "'失败，注册账号已存在";
         }
+        else if (!userService.checkStudentNoUnique(studentNo))
+        {
+            msg = "学号已存在，请勿重复注册";
+        }
         else
         {
-            sysUser.setNickName(username);
+            sysUser.setNickName(StringUtils.isNotEmpty(nickName) ? nickName : username);
+            sysUser.setStudentNo(studentNo);
+            sysUser.setClassName(className);
+            // 自助注册固定为新生
+            sysUser.setIsQuantaMember("0");
             sysUser.setPwdUpdateDate(DateUtils.getNowDate());
             sysUser.setPassword(SecurityUtils.encryptPassword(password));
+            sysUser.setCreateBy("register");
             boolean regFlag = userService.registerUser(sysUser);
             if (!regFlag)
             {
@@ -94,11 +123,6 @@ public class SysRegisterService
 
     /**
      * 校验验证码
-     * 
-     * @param username 用户名
-     * @param code 验证码
-     * @param uuid 唯一标识
-     * @return 结果
      */
     public void validateCaptcha(String username, String code, String uuid)
     {

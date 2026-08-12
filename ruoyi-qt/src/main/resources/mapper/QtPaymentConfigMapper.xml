@@ -59,7 +59,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         update qt_payment_config
         <trim prefix="SET" suffixOverrides=",">
             <if test="paymentName != null and paymentName != ''">payment_name = #{paymentName},</if>
-            <if test="qrImagePath != null and qrImagePath != ''">qr_image_path = #{qrImagePath},</if>
+            <if test="qrImagePath != null">qr_image_path = #{qrImagePath},</if>
             <if test="enabled != null and enabled != ''">enabled = #{enabled},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
             <if test="createTime != null">create_time = #{createTime},</if>

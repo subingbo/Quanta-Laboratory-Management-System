@@ -32,6 +32,13 @@ public class SysRegisterController extends BaseController
         {
             return error("当前系统没有开启注册功能！");
         }
+        String loginType = user.getLoginType();
+        if ("1".equals(loginType) || "member".equalsIgnoreCase(loginType))
+        {
+            return error("塔员账号需由管理员开通，不支持自助注册");
+        }
+        // 自助注册固定按新生处理
+        user.setLoginType("0");
         String msg = registerService.register(user);
         return StringUtils.isEmpty(msg) ? success() : error(msg);
     }

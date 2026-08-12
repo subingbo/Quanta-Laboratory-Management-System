@@ -103,6 +103,49 @@ public class QtInterviewController extends BaseController
         return success(list);
     }
 
+    /**
+     * 录入/更新一面二面等轮次结果（联调最小写入能力，本轮不做权限）
+     */
+    @PostMapping("/result")
+    public AjaxResult saveResult(@org.springframework.web.bind.annotation.RequestBody QtInterviewResult result)
+    {
+        if (result.getUserId() == null)
+        {
+            return AjaxResult.error("userId不能为空");
+        }
+        if (result.getRoundId() == null)
+        {
+            return AjaxResult.error("roundId不能为空");
+        }
+        if (StringUtils.isEmpty(result.getDepartment()))
+        {
+            return AjaxResult.error("department不能为空");
+        }
+        if (StringUtils.isEmpty(result.getResultStatus()))
+        {
+            return AjaxResult.error("resultStatus不能为空");
+        }
+        if (result.getApplicationId() == null)
+        {
+            QtInterviewApplication application = qtInterviewService.selectMyApplication(result.getUserId());
+            if (application == null)
+            {
+                return AjaxResult.error("该用户尚未投递简历");
+            }
+            result.setApplicationId(application.getApplicationId());
+        }
+        if (result.getPublishedTime() == null)
+        {
+            result.setPublishedTime(new java.util.Date());
+        }
+        result.setUpdateBy(getUsername());
+        if (StringUtils.isEmpty(result.getCreateBy()))
+        {
+            result.setCreateBy(getUsername());
+        }
+        return toAjax(qtInterviewService.saveInterviewResult(result));
+    }
+
     private String uploadPhoto(MultipartFile photoFile) throws Exception
     {
         String uploadPath = RuoYiConfig.getUploadPath() + "/qt/interview-photo";

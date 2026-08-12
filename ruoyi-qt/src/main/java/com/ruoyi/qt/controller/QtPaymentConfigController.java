@@ -2,7 +2,7 @@ package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.access.prepost.PreAuthorize;
+// import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,7 +35,7 @@ import com.ruoyi.framework.config.ServerConfig;
  * @date 2026-04-24
  */
 @RestController
-@RequestMapping("/system/config")
+@RequestMapping("/system/payment-config")
 public class QtPaymentConfigController extends BaseController
 {
     @Autowired
@@ -46,7 +46,7 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 查询固定付款码配置列表
      */
-    @PreAuthorize("@ss.hasPermi('system:config:list')")
+    // @PreAuthorize("@ss.hasPermi('system:payment-config:list')")
     @GetMapping("/list")
     public TableDataInfo list(QtPaymentConfig qtPaymentConfig)
     {
@@ -59,7 +59,7 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 导出固定付款码配置列表
      */
-    @PreAuthorize("@ss.hasPermi('system:config:export')")
+    // @PreAuthorize("@ss.hasPermi('system:payment-config:export')")
     @Log(title = "固定付款码配置", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtPaymentConfig qtPaymentConfig)
@@ -72,7 +72,7 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 获取固定付款码配置详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:config:query')")
+    // @PreAuthorize("@ss.hasPermi('system:payment-config:query')")
     @GetMapping(value = "/{configId}")
     public AjaxResult getInfo(@PathVariable("configId") Long configId)
     {
@@ -84,7 +84,7 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 新增固定付款码配置
      */
-    @PreAuthorize("@ss.hasPermi('system:config:add')")
+    // @PreAuthorize("@ss.hasPermi('system:payment-config:add')")
     @Log(title = "固定付款码配置", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(QtPaymentConfig qtPaymentConfig,
@@ -107,7 +107,7 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 修改固定付款码配置
      */
-    @PreAuthorize("@ss.hasPermi('system:config:edit')")
+    // @PreAuthorize("@ss.hasPermi('system:payment-config:edit')")
     @Log(title = "固定付款码配置", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(QtPaymentConfig qtPaymentConfig,
@@ -132,7 +132,7 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 删除固定付款码配置
      */
-    @PreAuthorize("@ss.hasPermi('system:config:remove')")
+    // @PreAuthorize("@ss.hasPermi('system:payment-config:remove')")
     @Log(title = "固定付款码配置", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{configIds}")
     public AjaxResult remove(@PathVariable Long[] configIds)
@@ -143,15 +143,18 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 清空付款码图片（逻辑删除）
      */
-    @PreAuthorize("@ss.hasPermi('system:config:edit')")
+    // @PreAuthorize("@ss.hasPermi('system:payment-config:edit')")
     @Log(title = "固定付款码配置", businessType = BusinessType.UPDATE)
     @DeleteMapping("/image/{configId}")
     public AjaxResult removeImage(@PathVariable Long configId)
     {
-        QtPaymentConfig config = new QtPaymentConfig();
-        config.setConfigId(configId);
+        QtPaymentConfig config = qtPaymentConfigService.selectQtPaymentConfigByConfigId(configId);
+        if (config == null)
+        {
+            return error("付款码配置不存在");
+        }
+        deleteLocalImageIfExists(config.getQrImagePath(), "");
         config.setQrImagePath("");
-        config.setUpdateBy(getUsername());
         return toAjax(qtPaymentConfigService.updateQtPaymentConfig(config));
     }
 

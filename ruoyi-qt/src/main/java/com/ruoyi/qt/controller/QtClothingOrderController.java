@@ -2,7 +2,7 @@ package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.access.prepost.PreAuthorize;
+// import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,7 +37,7 @@ public class QtClothingOrderController extends BaseController
     /**
      * 查询实验室服装订单列表
      */
-    @PreAuthorize("@ss.hasPermi('system:order:list')")
+    // @PreAuthorize("@ss.hasPermi('system:order:list')")
     @GetMapping("/list")
     public TableDataInfo list(QtClothingOrder qtClothingOrder)
     {
@@ -49,7 +49,7 @@ public class QtClothingOrderController extends BaseController
     /**
      * 查询实验室服装订单详情列表
      */
-    @PreAuthorize("@ss.hasPermi('system:order:list')")
+    // @PreAuthorize("@ss.hasPermi('system:order:list')")
     @GetMapping("/detailList")
     public TableDataInfo detailList(QtClothingOrder qtClothingOrder)
     {
@@ -61,7 +61,7 @@ public class QtClothingOrderController extends BaseController
     /**
      * 导出实验室服装订单列表
      */
-    @PreAuthorize("@ss.hasPermi('system:order:export')")
+    // @PreAuthorize("@ss.hasPermi('system:order:export')")
     @Log(title = "实验室服装订单", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtClothingOrder qtClothingOrder)
@@ -74,7 +74,7 @@ public class QtClothingOrderController extends BaseController
     /**
      * 获取实验室服装订单详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:order:query')")
+    // @PreAuthorize("@ss.hasPermi('system:order:query')")
     @GetMapping(value = "/{orderId}")
     public AjaxResult getInfo(@PathVariable("orderId") Long orderId)
     {
@@ -84,7 +84,7 @@ public class QtClothingOrderController extends BaseController
     /**
      * 新增实验室服装订单
      */
-    @PreAuthorize("@ss.hasPermi('system:order:add')")
+    // @PreAuthorize("@ss.hasPermi('system:order:add')")
     @Log(title = "实验室服装订单", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody QtClothingOrder qtClothingOrder)
@@ -95,7 +95,7 @@ public class QtClothingOrderController extends BaseController
     /**
      * 修改实验室服装订单
      */
-    @PreAuthorize("@ss.hasPermi('system:order:edit')")
+    // @PreAuthorize("@ss.hasPermi('system:order:edit')")
     @Log(title = "实验室服装订单", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtClothingOrder qtClothingOrder)
@@ -106,7 +106,7 @@ public class QtClothingOrderController extends BaseController
     /**
      * 删除实验室服装订单
      */
-    @PreAuthorize("@ss.hasPermi('system:order:remove')")
+    // @PreAuthorize("@ss.hasPermi('system:order:remove')")
     @Log(title = "实验室服装订单", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{orderIds}")
     public AjaxResult remove(@PathVariable Long[] orderIds)

@@ -33,6 +33,16 @@
       <el-select v-model="form.paymentConfigId" placeholder="选择付款配置">
         <el-option v-for="config in paymentConfigs" :key="config.configId" :label="config.paymentName" :value="config.configId" />
       </el-select>
+      <div v-if="selectedPayment && selectedPayment.qrImageUrl" class="qr-box">
+        <img :src="selectedPayment.qrImageUrl" alt="付款码" />
+        <span>请扫码付款后上传截图</span>
+      </div>
+      <label>付款截图</label>
+      <label class="upload-card">
+        <i class="el-icon-camera" />
+        <span>{{ proofFile ? proofFile.name : '上传付款截图' }}</span>
+        <input type="file" accept="image/*" @change="onProofChange" />
+      </label>
       <button class="primary-pill submit-order" type="button" :disabled="!canSubmit || submitting" @click="submitOrder">
         {{ submitting ? '提交中...' : '提交订购' }}
       </button>
@@ -42,7 +52,7 @@
 
 <script>
 import MobileShell from '@/components/MobileShell.vue'
-import { createClothingOrder, listClothingItems, listPaymentConfigs } from '@/api/qt'
+import { createClothingOrder, listClothingItems, listPaymentConfigs, uploadPaymentProof } from '@/api/qt'
 import { getUser } from '@/utils/auth'
 import { parseOptions, rowsOf } from '@/utils/helpers'
 
@@ -56,6 +66,7 @@ export default {
       items: [],
       paymentConfigs: [],
       selected: null,
+      proofFile: null,
       form: {
         selectedColor: '',
         selectedSize: '',
@@ -71,8 +82,11 @@ export default {
     sizes() {
       return parseOptions(this.selected && this.selected.sizeOptionsJson, ['S', 'M', 'L', 'XL'])
     },
+    selectedPayment() {
+      return this.paymentConfigs.find(item => item.configId === this.form.paymentConfigId)
+    },
     canSubmit() {
-      return this.selected && this.form.selectedColor && this.form.selectedSize && this.form.quantity
+      return this.selected && this.form.selectedColor && this.form.selectedSize && this.form.quantity && this.proofFile
     }
   },
   created() {
@@ -88,6 +102,9 @@ export default {
       ]).then(([items, configs]) => {
         this.items = rowsOf(items)
         this.paymentConfigs = rowsOf(configs)
+        if (this.paymentConfigs.length && !this.form.paymentConfigId) {
+          this.form.paymentConfigId = this.paymentConfigs[0].configId
+        }
         if (this.items.length) {
           this.selectItem(this.items[0])
         }
@@ -102,20 +119,33 @@ export default {
       this.form.selectedColor = colors[0] || ''
       this.form.selectedSize = sizes[0] || ''
     },
+    onProofChange(event) {
+      this.proofFile = event.target.files && event.target.files[0]
+    },
     submitOrder() {
+      if (!this.proofFile) {
+        this.$message.warning('请先上传付款截图')
+        return
+      }
       const user = getUser() || {}
-      const payment = this.paymentConfigs.find(item => item.configId === this.form.paymentConfigId)
+      const payment = this.selectedPayment
+      const formData = new FormData()
+      formData.append('file', this.proofFile)
+      formData.append('subDir', 'qt/payment-proof')
       this.submitting = true
-      createClothingOrder({
-        userId: user.userId,
-        itemId: this.selected.itemId,
-        selectedColor: this.form.selectedColor,
-        selectedSize: this.form.selectedSize,
-        quantity: this.form.quantity,
-        paymentConfigId: this.form.paymentConfigId,
-        status: 'SUBMITTED',
-        itemName: this.selected.itemName,
-        paymentName: payment && payment.paymentName
+      uploadPaymentProof(formData).then(uploadRes => {
+        return createClothingOrder({
+          userId: user.userId,
+          itemId: this.selected.itemId,
+          selectedColor: this.form.selectedColor,
+          selectedSize: this.form.selectedSize,
+          quantity: this.form.quantity,
+          paymentConfigId: this.form.paymentConfigId,
+          paymentProofPath: uploadRes.fileName,
+          status: 'SUBMITTED',
+          itemName: this.selected.itemName,
+          paymentName: payment && payment.paymentName
+        })
       }).then(() => {
         this.$message.success('订购已提交')
         this.$router.push('/services/my')
@@ -223,6 +253,48 @@ export default {
 
 .el-select {
   width: 100%;
+}
+
+.qr-box {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: #fafafa;
+  text-align: center;
+}
+
+.qr-box img {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 8px;
+}
+
+.qr-box span {
+  color: #888;
+  font-size: 12px;
+}
+
+.upload-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px dashed #d9d9d9;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+}
+
+.upload-card input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .submit-order {

@@ -218,6 +218,20 @@ public class SysUserServiceImpl implements ISysUserService
     }
 
     /**
+     * 校验学号是否唯一
+     */
+    @Override
+    public boolean checkStudentNoUnique(String studentNo)
+    {
+        if (StringUtils.isEmpty(studentNo))
+        {
+            return UserConstants.UNIQUE;
+        }
+        SysUser info = userMapper.checkStudentNoUnique(studentNo);
+        return StringUtils.isNull(info) ? UserConstants.UNIQUE : UserConstants.NOT_UNIQUE;
+    }
+
+    /**
      * 校验用户是否允许操作
      * 
      * @param user 用户信息

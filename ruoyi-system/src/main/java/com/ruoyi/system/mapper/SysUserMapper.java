@@ -144,4 +144,12 @@ public interface SysUserMapper
      * @return 结果
      */
     public SysUser checkEmailUnique(String email);
+
+    /**
+     * 校验学号是否唯一
+     *
+     * @param studentNo 学号
+     * @return 结果
+     */
+    public SysUser checkStudentNoUnique(String studentNo);
 }

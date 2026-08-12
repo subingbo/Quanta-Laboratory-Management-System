@@ -43,8 +43,7 @@
 <script>
 import MobileShell from '@/components/MobileShell.vue'
 import { listActivities, signupActivity } from '@/api/qt'
-import { getUser } from '@/utils/auth'
-import { rowsOf, today } from '@/utils/helpers'
+import { rowsOf } from '@/utils/helpers'
 
 export default {
   name: 'Home',
@@ -69,12 +68,8 @@ export default {
     },
     handleSignup(activity) {
       if (!activity || !activity.activityId) return
-      const user = getUser() || {}
       signupActivity({
-        activityId: activity.activityId,
-        userId: user.userId,
-        status: 'APPLIED',
-        signupTime: today()
+        activityId: activity.activityId
       }).then(() => {
         this.$message.success('报名成功')
       })

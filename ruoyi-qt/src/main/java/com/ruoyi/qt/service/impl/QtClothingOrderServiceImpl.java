@@ -1,7 +1,11 @@
 package com.ruoyi.qt.service.impl;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.qt.mapper.QtClothingOrderMapper;
@@ -59,8 +63,36 @@ public class QtClothingOrderServiceImpl implements IQtClothingOrderService
     @Override
     public int insertQtClothingOrder(QtClothingOrder qtClothingOrder)
     {
+        if (StringUtils.isEmpty(qtClothingOrder.getOrderNo()))
+        {
+            qtClothingOrder.setOrderNo(generateOrderNo());
+        }
+        // 无付款截图时只能落草稿，有截图才允许直接提交
+        if (StringUtils.isEmpty(qtClothingOrder.getPaymentProofPath()))
+        {
+            qtClothingOrder.setStatus("DRAFT");
+        }
+        else if (StringUtils.isEmpty(qtClothingOrder.getStatus()))
+        {
+            qtClothingOrder.setStatus("SUBMITTED");
+            qtClothingOrder.setPaymentTime(DateUtils.getNowDate());
+        }
+        else if ("SUBMITTED".equals(qtClothingOrder.getStatus()) || "APPROVED".equals(qtClothingOrder.getStatus()))
+        {
+            if (qtClothingOrder.getPaymentTime() == null)
+            {
+                qtClothingOrder.setPaymentTime(DateUtils.getNowDate());
+            }
+        }
         qtClothingOrder.setCreateTime(DateUtils.getNowDate());
         return qtClothingOrderMapper.insertQtClothingOrder(qtClothingOrder);
+    }
+
+    private String generateOrderNo()
+    {
+        String timePart = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        int randomPart = ThreadLocalRandom.current().nextInt(1000, 10000);
+        return "QT" + timePart + randomPart;
     }
 
     /**

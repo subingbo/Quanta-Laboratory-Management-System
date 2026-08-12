@@ -118,4 +118,35 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where r.user_id = #{userId}
         order by rd.round_no asc, r.create_time asc
     </select>
+
+    <select id="selectResultByUserIdAndRoundId" resultMap="QtInterviewResultResult">
+        select r.result_id, r.application_id, r.user_id, r.round_id, rd.round_name, r.department, r.result_status, r.score,
+               r.feedback, r.interview_time, r.published_time, r.create_by, r.create_time, r.update_by, r.update_time
+        from qt_interview_result r
+        left join qt_interview_round rd on r.round_id = rd.round_id
+        where r.user_id = #{userId} and r.round_id = #{roundId}
+        limit 1
+    </select>
+
+    <insert id="insertInterviewResult" parameterType="QtInterviewResult" useGeneratedKeys="true" keyProperty="resultId">
+        insert into qt_interview_result
+        (application_id, user_id, round_id, department, result_status, score, feedback, interview_time, published_time,
+         create_by, create_time, update_by, update_time)
+        values
+        (#{applicationId}, #{userId}, #{roundId}, #{department}, #{resultStatus}, #{score}, #{feedback},
+         #{interviewTime}, #{publishedTime}, #{createBy}, now(), #{updateBy}, now())
+    </insert>
+
+    <update id="updateInterviewResult" parameterType="QtInterviewResult">
+        update qt_interview_result
+        set department = #{department},
+            result_status = #{resultStatus},
+            score = #{score},
+            feedback = #{feedback},
+            interview_time = #{interviewTime},
+            published_time = #{publishedTime},
+            update_by = #{updateBy},
+            update_time = now()
+        where result_id = #{resultId}
+    </update>
 </mapper>

@@ -12,6 +12,18 @@ export function login(data) {
   })
 }
 
+export function register(data) {
+  return request({
+    url: '/register',
+    method: 'post',
+    headers: {
+      isToken: false,
+      repeatSubmit: false
+    },
+    data
+  })
+}
+
 export function logout() {
   return request({
     url: '/logout',

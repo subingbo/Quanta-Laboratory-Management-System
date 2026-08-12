@@ -2,7 +2,7 @@ package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.access.prepost.PreAuthorize;
+// import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,7 +37,7 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 查询工位预约记录列表
      */
-    @PreAuthorize("@ss.hasPermi('system:reservation:list')")
+    // @PreAuthorize("@ss.hasPermi('system:reservation:list')")
     @GetMapping("/list")
     public TableDataInfo list(QtWorkstationReservation qtWorkstationReservation)
     {
@@ -49,7 +49,7 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 查询工位预约记录详情列表
      */
-    @PreAuthorize("@ss.hasPermi('system:reservation:list')")
+    // @PreAuthorize("@ss.hasPermi('system:reservation:list')")
     @GetMapping("/detailList")
     public TableDataInfo detailList(QtWorkstationReservation qtWorkstationReservation)
     {
@@ -61,7 +61,7 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 导出工位预约记录列表
      */
-    @PreAuthorize("@ss.hasPermi('system:reservation:export')")
+    // @PreAuthorize("@ss.hasPermi('system:reservation:export')")
     @Log(title = "工位预约记录", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtWorkstationReservation qtWorkstationReservation)
@@ -74,7 +74,7 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 获取工位预约记录详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:reservation:query')")
+    // @PreAuthorize("@ss.hasPermi('system:reservation:query')")
     @GetMapping(value = "/{reservationId}")
     public AjaxResult getInfo(@PathVariable("reservationId") Long reservationId)
     {
@@ -84,7 +84,7 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 新增工位预约记录
      */
-    @PreAuthorize("@ss.hasPermi('system:reservation:add')")
+    // @PreAuthorize("@ss.hasPermi('system:reservation:add')")
     @Log(title = "工位预约记录", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody QtWorkstationReservation qtWorkstationReservation)
@@ -95,7 +95,7 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 修改工位预约记录
      */
-    @PreAuthorize("@ss.hasPermi('system:reservation:edit')")
+    // @PreAuthorize("@ss.hasPermi('system:reservation:edit')")
     @Log(title = "工位预约记录", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtWorkstationReservation qtWorkstationReservation)
@@ -106,7 +106,7 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 删除工位预约记录
      */
-    @PreAuthorize("@ss.hasPermi('system:reservation:remove')")
+    // @PreAuthorize("@ss.hasPermi('system:reservation:remove')")
     @Log(title = "工位预约记录", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{reservationIds}")
     public AjaxResult remove(@PathVariable Long[] reservationIds)

@@ -36,7 +36,7 @@ public class CommonController
     private ServerConfig serverConfig;
 
     private static final String FILE_DELIMITER = ",";
-    private static final Set<String> ALLOWED_UPLOAD_SUB_DIRS = Set.of("qt/clothing-item", "qt/payment-qr");
+    private static final Set<String> ALLOWED_UPLOAD_SUB_DIRS = Set.of("qt/clothing-item", "qt/payment-qr", "qt/payment-proof");
 
     /**
      * 通用下载请求

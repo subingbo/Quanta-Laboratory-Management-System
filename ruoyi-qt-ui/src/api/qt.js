@@ -15,15 +15,27 @@ export const listReservations = params => request({ url: '/system/reservation/de
 
 export const listClothingItems = params => request({ url: '/system/item/list', method: 'get', params })
 export const getClothingItem = itemId => request({ url: '/system/item/' + itemId, method: 'get' })
-export const listPaymentConfigs = params => request({ url: '/system/config/list', method: 'get', params })
+export const listPaymentConfigs = params => request({ url: '/system/payment-config/list', method: 'get', params })
 export const createClothingOrder = data => request({ url: '/system/order', method: 'post', data })
 export const listClothingOrders = params => request({ url: '/system/order/detailList', method: 'get', params })
+export const uploadPaymentProof = data => request({
+  url: '/common/upload',
+  method: 'post',
+  headers: { 'Content-Type': undefined },
+  data
+})
 
 export const getProfile = () => request({ url: '/system/user/profile', method: 'get' })
 export const updateProfile = data => request({ url: '/system/user/profile', method: 'put', data })
 export const updatePassword = data => request({ url: '/system/user/profile/updatePwd', method: 'put', data })
-export const listUsers = params => request({ url: '/system/user/list', method: 'get', params })
+export const listLabMembers = params => request({ url: '/qt/member/list', method: 'get', params })
 
-export const applyInterview = data => request({ url: '/qt/interview/apply', method: 'post', data })
+export const applyInterview = data => request({
+  url: '/qt/interview/apply',
+  method: 'post',
+  headers: { 'Content-Type': undefined },
+  data
+})
 export const getMyInterviewApplication = () => request({ url: '/qt/interview/my', method: 'get' })
 export const getMyInterviewResults = () => request({ url: '/qt/interview/myResults', method: 'get' })
+export const saveInterviewResult = data => request({ url: '/qt/interview/result', method: 'post', data })

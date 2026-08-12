@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.constant.UserConstants;
+import com.ruoyi.common.core.domain.model.LoginResult;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.redis.RedisCache;
 import com.ruoyi.common.exception.ServiceException;
@@ -60,7 +61,22 @@ public class SysLoginService
      * @param uuid 唯一标识
      * @return 结果
      */
-    public String login(String username, String password, String code, String uuid)
+    public LoginResult login(String username, String password, String code, String uuid)
+    {
+        return login(username, password, code, uuid, null);
+    }
+
+    /**
+     * 登录验证（可指定新生/塔员入口）
+     *
+     * @param username 用户名
+     * @param password 密码
+     * @param code 验证码
+     * @param uuid 唯一标识
+     * @param loginType 登录身份 0新生 / 1塔员，空则不校验
+     * @return 结果
+     */
+    public LoginResult login(String username, String password, String code, String uuid, String loginType)
     {
         // 验证码校验
         validateCaptcha(username, code, uuid);
@@ -92,11 +108,23 @@ public class SysLoginService
         {
             AuthenticationContextHolder.clearContext();
         }
-        AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success")));
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+        String isQuantaMember = loginUser.getUser().getIsQuantaMember();
+        isQuantaMember = StringUtils.isNotEmpty(isQuantaMember) ? isQuantaMember : "0";
+        if (StringUtils.isNotEmpty(loginType))
+        {
+            String expected = ("1".equals(loginType) || "member".equalsIgnoreCase(loginType)) ? "1" : "0";
+            if (!expected.equals(isQuantaMember))
+            {
+                String tip = "1".equals(expected) ? "该账号不是塔员，请使用新生入口登录" : "该账号已是塔员，请使用塔员入口登录";
+                AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, tip));
+                throw new ServiceException(tip);
+            }
+        }
+        AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success")));
         recordLoginInfo(loginUser.getUserId());
-        // 生成token
-        return tokenService.createToken(loginUser);
+        String token = tokenService.createToken(loginUser);
+        return new LoginResult(token, isQuantaMember);
     }
 
     /**

@@ -149,6 +149,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	<select id="checkEmailUnique" parameterType="String" resultMap="SysUserResult">
 		select user_id, email from sys_user where email = #{email} and del_flag = '0' limit 1
 	</select>
+
+	<select id="checkStudentNoUnique" parameterType="String" resultMap="SysUserResult">
+		select user_id, student_no from sys_user where student_no = #{studentNo} and del_flag = '0' limit 1
+	</select>
 	
 	<insert id="insertUser" parameterType="SysUser" useGeneratedKeys="true" keyProperty="userId">
  		insert into sys_user(

@@ -20,4 +20,11 @@ public interface QtInterviewMapper
     int updateInterviewProfile(QtInterviewProfile profile);
 
     List<QtInterviewResult> selectResultsByUserId(Long userId);
+
+    QtInterviewResult selectResultByUserIdAndRoundId(@org.apache.ibatis.annotations.Param("userId") Long userId,
+            @org.apache.ibatis.annotations.Param("roundId") Long roundId);
+
+    int insertInterviewResult(QtInterviewResult result);
+
+    int updateInterviewResult(QtInterviewResult result);
 }
