@@ -61,7 +61,14 @@ public class SysLoginController
         LoginResult result = loginService.login(loginBody.getUsername(), loginBody.getPassword(), loginBody.getCode(),
                 loginBody.getUuid(), loginBody.getLoginType());
         ajax.put(Constants.TOKEN, result.getToken());
+        // 实验室成员扩展字段
         ajax.put("isQuantaMember", result.getIsQuantaMember());
+        ajax.put("memberNo", result.getMemberNo());
+        ajax.put("memberDepartment", result.getMemberDepartment());
+        ajax.put("memberTitle", result.getMemberTitle());
+        ajax.put("memberCohort", result.getMemberCohort());
+        ajax.put("studentNo", result.getStudentNo());
+        ajax.put("className", result.getClassName());
         return ajax;
     }
 

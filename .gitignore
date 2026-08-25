@@ -42,6 +42,9 @@ nbdist/
 *.xml.versionsBackup
 *.swp
 
+# 本地环境配置（含真实密码，不入库）
+application-local.yml
+
 !*/build/*.java
 !*/build/*.html
 !*/build/*.xml

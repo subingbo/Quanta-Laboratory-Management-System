@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.constant.UserConstants;
+import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginResult;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.core.redis.RedisCache;
@@ -109,7 +110,8 @@ public class SysLoginService
             AuthenticationContextHolder.clearContext();
         }
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
-        String isQuantaMember = loginUser.getUser().getIsQuantaMember();
+        SysUser user = loginUser.getUser();
+        String isQuantaMember = user.getIsQuantaMember();
         isQuantaMember = StringUtils.isNotEmpty(isQuantaMember) ? isQuantaMember : "0";
         if (StringUtils.isNotEmpty(loginType))
         {
@@ -124,7 +126,7 @@ public class SysLoginService
         AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success")));
         recordLoginInfo(loginUser.getUserId());
         String token = tokenService.createToken(loginUser);
-        return new LoginResult(token, isQuantaMember);
+        return new LoginResult(token, user);
     }
 
     /**
