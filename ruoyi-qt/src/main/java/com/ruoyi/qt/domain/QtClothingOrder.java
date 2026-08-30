@@ -70,6 +70,20 @@ public class QtClothingOrder extends BaseEntity
     @Excel(name = "状态(DRAFT/SUBMITTED/APPROVED/REJECTED/CANCELED)")
     private String status;
 
+    /** 确认收款人 */
+    private String confirmedBy;
+
+    /** 确认收款时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date confirmedAt;
+
+    /** 下单时间别名 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date orderTime;
+
+    /** 付款截图完整 URL */
+    private String paymentProofUrl;
+
     /** 款式名称 */
     @Excel(name = "款式名称")
     private String itemName;
@@ -235,9 +249,49 @@ public class QtClothingOrder extends BaseEntity
         this.status = status;
     }
 
-    public String getStatus() 
+    public String getStatus()
     {
         return status;
+    }
+
+    public String getConfirmedBy()
+    {
+        return confirmedBy;
+    }
+
+    public void setConfirmedBy(String confirmedBy)
+    {
+        this.confirmedBy = confirmedBy;
+    }
+
+    public Date getConfirmedAt()
+    {
+        return confirmedAt;
+    }
+
+    public void setConfirmedAt(Date confirmedAt)
+    {
+        this.confirmedAt = confirmedAt;
+    }
+
+    public Date getOrderTime()
+    {
+        return orderTime;
+    }
+
+    public void setOrderTime(Date orderTime)
+    {
+        this.orderTime = orderTime;
+    }
+
+    public String getPaymentProofUrl()
+    {
+        return paymentProofUrl;
+    }
+
+    public void setPaymentProofUrl(String paymentProofUrl)
+    {
+        this.paymentProofUrl = paymentProofUrl;
     }
 
     public String getItemName()

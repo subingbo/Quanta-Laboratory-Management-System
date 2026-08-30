@@ -2,6 +2,7 @@ package com.ruoyi.qt.service.impl;
 
 import java.util.List;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.qt.mapper.QtActivityMapper;
@@ -53,6 +54,11 @@ public class QtActivityServiceImpl implements IQtActivityService
     @Override
     public int insertQtActivity(QtActivity qtActivity)
     {
+        if (StringUtils.isEmpty(qtActivity.getActivityType()))
+        {
+            qtActivity.setActivityType("GENERAL");
+        }
+        com.ruoyi.qt.util.QtDictUtils.requireValue(com.ruoyi.qt.util.QtDictUtils.ACTIVITY_TYPE, qtActivity.getActivityType(), "activityType");
         qtActivity.setCreateTime(DateUtils.getNowDate());
         return qtActivityMapper.insertQtActivity(qtActivity);
     }
@@ -66,6 +72,10 @@ public class QtActivityServiceImpl implements IQtActivityService
     @Override
     public int updateQtActivity(QtActivity qtActivity)
     {
+        if (qtActivity.getActivityType() != null)
+        {
+            com.ruoyi.qt.util.QtDictUtils.requireValue(com.ruoyi.qt.util.QtDictUtils.ACTIVITY_TYPE, qtActivity.getActivityType(), "activityType");
+        }
         qtActivity.setUpdateTime(DateUtils.getNowDate());
         return qtActivityMapper.updateQtActivity(qtActivity);
     }

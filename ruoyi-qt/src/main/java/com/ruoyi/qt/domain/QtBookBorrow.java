@@ -83,6 +83,10 @@ public class QtBookBorrow extends BaseEntity
     @Excel(name = "成员届次")
     private String memberCohort;
 
+    /** 图书类型 */
+    @Excel(name = "图书类型")
+    private String bookType;
+
     public void setBorrowId(Long borrowId) 
     {
         this.borrowId = borrowId;
@@ -241,6 +245,16 @@ public class QtBookBorrow extends BaseEntity
     public void setMemberCohort(String memberCohort)
     {
         this.memberCohort = memberCohort;
+    }
+
+    public String getBookType()
+    {
+        return bookType;
+    }
+
+    public void setBookType(String bookType)
+    {
+        this.bookType = bookType;
     }
 
     @Override

@@ -97,25 +97,36 @@ public class SysUser extends BaseEntity
     private Long roleId;
 
     /** 成员编号 */
+    @Excel(name = "成员编号")
     private String memberNo;
 
     /** 成员部门 */
+    @Excel(name = "成员部门")
     private String memberDepartment;
 
     /** 成员职称 */
+    @Excel(name = "成员职称")
     private String memberTitle;
 
     /** 成员届次 */
+    @Excel(name = "成员届次")
     private String memberCohort;
 
     /** 学号 */
+    @Excel(name = "学号")
     private String studentNo;
 
     /** 班级 */
+    @Excel(name = "班级")
     private String className;
 
     /** 是否塔员(0新生 1塔员) */
+    @Excel(name = "是否塔员", readConverterExp = "0=新生,1=塔员")
     private String isQuantaMember;
+
+    /** 专业 */
+    @Excel(name = "专业")
+    private String major;
 
     public SysUser()
     {
@@ -401,6 +412,16 @@ public class SysUser extends BaseEntity
         this.isQuantaMember = isQuantaMember;
     }
 
+    public String getMajor()
+    {
+        return major;
+    }
+
+    public void setMajor(String major)
+    {
+        this.major = major;
+    }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
@@ -430,6 +451,7 @@ public class SysUser extends BaseEntity
             .append("studentNo", getStudentNo())
             .append("className", getClassName())
             .append("isQuantaMember", getIsQuantaMember())
+            .append("major", getMajor())
             .append("dept", getDept())
             .toString();
     }

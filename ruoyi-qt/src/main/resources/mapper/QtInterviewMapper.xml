@@ -14,6 +14,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="secondChoice" column="second_choice"/>
         <result property="photoUrl" column="photo_url"/>
         <result property="applyStatus" column="apply_status"/>
+        <result property="offeredDepartment" column="offered_department"/>
+        <result property="joinStatus" column="join_status"/>
+        <result property="finalStatus" column="final_status"/>
+        <result property="noticeStatus" column="notice_status"/>
+        <result property="studentNo" column="student_no"/>
+        <result property="phonenumber" column="phonenumber"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="firstChoiceStatus" column="first_choice_status"/>
+        <result property="secondChoiceStatus" column="second_choice_status"/>
         <result property="createBy" column="create_by"/>
         <result property="createTime" column="create_time"/>
         <result property="updateBy" column="update_by"/>
@@ -53,11 +62,24 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <select id="selectApplicationByUserId" resultMap="QtInterviewApplicationResult">
-        select application_id, user_id, real_name, gender, class_name, first_choice, second_choice, photo_url, apply_status,
-               create_by, create_time, update_by, update_time
-        from qt_interview_application
-        where user_id = #{userId}
+        select a.application_id, a.user_id, a.real_name, a.gender, a.class_name, a.first_choice, a.second_choice, a.photo_url, a.apply_status,
+               a.offered_department, a.join_status, a.final_status, a.notice_status,
+               a.create_by, a.create_time, a.update_by, a.update_time,
+               u.student_no, u.phonenumber, u.nick_name
+        from qt_interview_application a
+        left join sys_user u on a.user_id = u.user_id
+        where a.user_id = #{userId}
         limit 1
+    </select>
+
+    <select id="selectApplicationById" resultMap="QtInterviewApplicationResult">
+        select a.application_id, a.user_id, a.real_name, a.gender, a.class_name, a.first_choice, a.second_choice, a.photo_url, a.apply_status,
+               a.offered_department, a.join_status, a.final_status, a.notice_status,
+               a.create_by, a.create_time, a.update_by, a.update_time,
+               u.student_no, u.phonenumber, u.nick_name
+        from qt_interview_application a
+        left join sys_user u on a.user_id = u.user_id
+        where a.application_id = #{applicationId}
     </select>
 
     <insert id="insertInterviewApplication" parameterType="QtInterviewApplication" useGeneratedKeys="true" keyProperty="applicationId">
@@ -81,6 +103,28 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             update_time = now()
         where application_id = #{applicationId}
     </update>
+
+    <update id="updateApplicationAdminFields" parameterType="QtInterviewApplication">
+        update qt_interview_application
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="applyStatus != null and applyStatus != ''">apply_status = #{applyStatus},</if>
+            <if test="offeredDepartment != null">offered_department = #{offeredDepartment},</if>
+            <if test="joinStatus != null">join_status = #{joinStatus},</if>
+            <if test="finalStatus != null">final_status = #{finalStatus},</if>
+            <if test="noticeStatus != null">notice_status = #{noticeStatus},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = now(),
+        </trim>
+        where application_id = #{applicationId}
+    </update>
+
+    <select id="selectProfileByApplicationId" resultMap="QtInterviewProfileResult">
+        select profile_id, user_id, application_id, self_intro, coding_experience, coding_experience_desc, quanta_understanding,
+               create_by, create_time, update_by, update_time
+        from qt_interview_profile
+        where application_id = #{applicationId}
+        limit 1
+    </select>
 
     <select id="selectProfileByUserId" resultMap="QtInterviewProfileResult">
         select profile_id, user_id, application_id, self_intro, coding_experience, coding_experience_desc, quanta_understanding,
@@ -149,4 +193,178 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             update_time = now()
         where result_id = #{resultId}
     </update>
+
+    <select id="selectResultsByApplicationId" resultMap="QtInterviewResultResult">
+        select r.result_id, r.application_id, r.user_id, r.round_id, rd.round_name, r.department, r.result_status, r.score,
+               r.feedback, r.interview_time, r.published_time, r.create_by, r.create_time, r.update_by, r.update_time
+        from qt_interview_result r
+        left join qt_interview_round rd on r.round_id = rd.round_id
+        where r.application_id = #{applicationId}
+        order by rd.round_no asc, r.department asc
+    </select>
+
+    <select id="selectResultByAppRoundDept" resultMap="QtInterviewResultResult">
+        select r.result_id, r.application_id, r.user_id, r.round_id, rd.round_name, r.department, r.result_status, r.score,
+               r.feedback, r.interview_time, r.published_time, r.create_by, r.create_time, r.update_by, r.update_time
+        from qt_interview_result r
+        left join qt_interview_round rd on r.round_id = rd.round_id
+        where r.application_id = #{applicationId} and r.round_id = #{roundId} and r.department = #{department}
+        limit 1
+    </select>
+
+    <select id="selectAdminApplicationList" parameterType="QtInterviewApplication" resultMap="QtInterviewApplicationResult">
+        select a.application_id, a.user_id, a.real_name, a.gender, a.class_name, a.first_choice, a.second_choice, a.photo_url, a.apply_status,
+               a.offered_department, a.join_status, a.final_status, a.notice_status,
+               a.create_by, a.create_time, a.update_by, a.update_time,
+               u.student_no, u.phonenumber, u.nick_name
+               <if test="roundId != null">
+               ,
+               (select r.result_status from qt_interview_result r
+                where r.application_id = a.application_id and r.round_id = #{roundId} and r.department = a.first_choice limit 1) as first_choice_status,
+               (select r.result_status from qt_interview_result r
+                where r.application_id = a.application_id and r.round_id = #{roundId} and r.department = a.second_choice limit 1) as second_choice_status
+               </if>
+        from qt_interview_application a
+        left join sys_user u on a.user_id = u.user_id
+        <where>
+            <if test="realName != null and realName != ''">and a.real_name like concat('%', #{realName}, '%')</if>
+            <if test="applyStatus != null and applyStatus != ''">and a.apply_status = #{applyStatus}</if>
+            <if test="department != null and department != ''">
+                and (a.first_choice = #{department} or a.second_choice = #{department})
+            </if>
+            <if test="scopedDepartment != null and scopedDepartment != ''">
+                and (a.first_choice = #{scopedDepartment} or a.second_choice = #{scopedDepartment})
+            </if>
+            <if test="roundId != null and resultStatus != null and resultStatus != ''">
+                and exists (
+                    select 1 from qt_interview_result r
+                    where r.application_id = a.application_id
+                      and r.round_id = #{roundId}
+                      and r.result_status = #{resultStatus}
+                    <if test="scopedDepartment != null and scopedDepartment != ''">and r.department = #{scopedDepartment}</if>
+                    <if test="department != null and department != ''">and r.department = #{department}</if>
+                )
+            </if>
+        </where>
+        order by a.create_time desc
+    </select>
+
+    <select id="selectRoundById" resultType="com.ruoyi.qt.domain.QtInterviewRound">
+        select round_id as roundId, round_no as roundNo, round_name as roundName, enabled
+        from qt_interview_round where round_id = #{roundId}
+    </select>
+
+    <select id="selectRoundByNo" resultType="com.ruoyi.qt.domain.QtInterviewRound">
+        select round_id as roundId, round_no as roundNo, round_name as roundName, enabled
+        from qt_interview_round where round_no = #{roundNo} limit 1
+    </select>
+
+    <resultMap id="QtInterviewEvaluationResult" type="QtInterviewEvaluation">
+        <id property="evaluationId" column="evaluation_id"/>
+        <result property="applicationId" column="application_id"/>
+        <result property="roundId" column="round_id"/>
+        <result property="department" column="department"/>
+        <result property="evaluatorUserId" column="evaluator_user_id"/>
+        <result property="content" column="content"/>
+        <result property="evaluatorName" column="evaluator_name"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="createdTime" column="create_time"/>
+        <result property="updatedTime" column="update_time"/>
+    </resultMap>
+
+    <select id="selectEvaluationList" parameterType="QtInterviewEvaluation" resultMap="QtInterviewEvaluationResult">
+        select e.evaluation_id, e.application_id, e.round_id, e.department, e.evaluator_user_id, e.content,
+               e.create_by, e.create_time, e.update_by, e.update_time,
+               u.nick_name as evaluator_name
+        from qt_interview_evaluation e
+        left join sys_user u on e.evaluator_user_id = u.user_id
+        <where>
+            <if test="applicationId != null">and e.application_id = #{applicationId}</if>
+            <if test="roundId != null">and e.round_id = #{roundId}</if>
+            <if test="department != null and department != ''">and e.department = #{department}</if>
+            <if test="evaluatorUserId != null">and e.evaluator_user_id = #{evaluatorUserId}</if>
+        </where>
+        order by e.create_time desc
+    </select>
+
+    <select id="selectEvaluationById" resultMap="QtInterviewEvaluationResult">
+        select e.evaluation_id, e.application_id, e.round_id, e.department, e.evaluator_user_id, e.content,
+               e.create_by, e.create_time, e.update_by, e.update_time,
+               u.nick_name as evaluator_name
+        from qt_interview_evaluation e
+        left join sys_user u on e.evaluator_user_id = u.user_id
+        where e.evaluation_id = #{evaluationId}
+    </select>
+
+    <select id="selectEvaluationByUnique" resultMap="QtInterviewEvaluationResult">
+        select e.evaluation_id, e.application_id, e.round_id, e.department, e.evaluator_user_id, e.content,
+               e.create_by, e.create_time, e.update_by, e.update_time,
+               u.nick_name as evaluator_name
+        from qt_interview_evaluation e
+        left join sys_user u on e.evaluator_user_id = u.user_id
+        where e.application_id = #{applicationId} and e.round_id = #{roundId}
+          and e.department = #{department} and e.evaluator_user_id = #{evaluatorUserId}
+        limit 1
+    </select>
+
+    <insert id="insertEvaluation" parameterType="QtInterviewEvaluation" useGeneratedKeys="true" keyProperty="evaluationId">
+        insert into qt_interview_evaluation
+        (application_id, round_id, department, evaluator_user_id, content, create_by, create_time, update_by, update_time)
+        values
+        (#{applicationId}, #{roundId}, #{department}, #{evaluatorUserId}, #{content}, #{createBy}, now(), #{updateBy}, now())
+    </insert>
+
+    <update id="updateEvaluation" parameterType="QtInterviewEvaluation">
+        update qt_interview_evaluation
+        set content = #{content},
+            update_by = #{updateBy},
+            update_time = now()
+        where evaluation_id = #{evaluationId}
+    </update>
+
+    <select id="selectApplyStatusCounts" resultType="java.util.HashMap">
+        select apply_status as applyStatus, count(*) as cnt
+        from qt_interview_application
+        <where>
+            <if test="scopedDepartment != null and scopedDepartment != ''">
+                and (first_choice = #{scopedDepartment} or second_choice = #{scopedDepartment})
+            </if>
+        </where>
+        group by apply_status
+    </select>
+
+    <select id="countPendingEval" resultType="int">
+        select count(*) from qt_interview_application a
+        where a.apply_status in ('SUBMITTED', 'PROCESSING')
+        <if test="scopedDepartment != null and scopedDepartment != ''">
+            and (a.first_choice = #{scopedDepartment} or a.second_choice = #{scopedDepartment})
+        </if>
+        and not exists (
+            select 1 from qt_interview_evaluation e
+            where e.application_id = a.application_id
+            <if test="scopedDepartment != null and scopedDepartment != ''">and e.department = #{scopedDepartment}</if>
+        )
+    </select>
+
+    <select id="countPendingOffer" resultType="int">
+        select count(*) from qt_interview_application a
+        where a.apply_status = 'PROCESSING'
+        <if test="scopedDepartment != null and scopedDepartment != ''">
+            and (a.first_choice = #{scopedDepartment} or a.second_choice = #{scopedDepartment})
+        </if>
+        and exists (
+            select 1 from qt_interview_result r
+            join qt_interview_round rd on r.round_id = rd.round_id
+            where r.application_id = a.application_id and rd.round_no = 2 and r.result_status = 'PASS'
+            <if test="scopedDepartment != null and scopedDepartment != ''">and r.department = #{scopedDepartment}</if>
+        )
+    </select>
+
+    <select id="countTodayApplications" resultType="int">
+        select count(*) from qt_interview_application
+        where date(create_time) = curdate()
+    </select>
 </mapper>

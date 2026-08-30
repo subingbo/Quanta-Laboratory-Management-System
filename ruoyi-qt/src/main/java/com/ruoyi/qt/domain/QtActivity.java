@@ -64,6 +64,10 @@ public class QtActivity extends BaseEntity
     @Excel(name = "创建人")
     private Long creatorUserId;
 
+    /** 活动类型(LECTURE/SHARING/GENERAL) */
+    @Excel(name = "活动类型")
+    private String activityType;
+
     public void setActivityId(Long activityId) 
     {
         this.activityId = activityId;
@@ -169,9 +173,19 @@ public class QtActivity extends BaseEntity
         this.creatorUserId = creatorUserId;
     }
 
-    public Long getCreatorUserId() 
+    public Long getCreatorUserId()
     {
         return creatorUserId;
+    }
+
+    public String getActivityType()
+    {
+        return activityType;
+    }
+
+    public void setActivityType(String activityType)
+    {
+        this.activityType = activityType;
     }
 
     @Override
@@ -188,6 +202,7 @@ public class QtActivity extends BaseEntity
             .append("capacity", getCapacity())
             .append("status", getStatus())
             .append("creatorUserId", getCreatorUserId())
+            .append("activityType", getActivityType())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())

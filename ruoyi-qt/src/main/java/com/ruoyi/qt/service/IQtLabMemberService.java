@@ -1,15 +1,19 @@
 package com.ruoyi.qt.service;
 
 import java.util.List;
+import java.util.Map;
 import com.ruoyi.qt.domain.QtLabMember;
+import com.ruoyi.qt.domain.QtMemberRetainBody;
 
-/**
- * Lab member list service.
- */
 public interface IQtLabMemberService
 {
-    /**
-     * Query lab member list.
-     */
     List<QtLabMember> selectLabMemberList(QtLabMember query);
+
+    List<QtLabMember> selectAdminMemberList(QtLabMember query);
+
+    Map<String, Object> selectCohorts();
+
+    Map<String, Object> retain(Long userId, QtMemberRetainBody body, String operator);
+
+    void rollover();
 }

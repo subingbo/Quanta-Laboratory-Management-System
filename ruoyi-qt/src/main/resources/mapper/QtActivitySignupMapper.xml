@@ -25,6 +25,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="memberDepartment"    column="member_department"    />
         <result property="memberTitle"    column="member_title"    />
         <result property="memberCohort"    column="member_cohort"    />
+        <result property="studentNo"    column="student_no"    />
+        <result property="major"    column="major"    />
+        <result property="phonenumber"    column="phonenumber"    />
+        <result property="capacity"    column="capacity"    />
+        <result property="activityType"    column="activity_type"    />
+        <result property="remark"    column="remark"    />
     </resultMap>
 
     <sql id="selectQtActivitySignupVo">
@@ -44,9 +50,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectQtActivitySignupDetailList" parameterType="QtActivitySignup" resultMap="QtActivitySignupResult">
         select s.signup_id, s.activity_id, s.user_id, s.status, s.signup_time, s.cancel_time,
-               s.create_by, s.create_time, s.update_by, s.update_time,
-               a.title as activity_title, a.activity_start, a.activity_end, a.location_desc,
-               u.user_name, u.nick_name, u.member_no, u.member_department, u.member_title, u.member_cohort
+               s.create_by, s.create_time, s.update_by, s.update_time, s.remark,
+               a.title as activity_title, a.activity_start, a.activity_end, a.location_desc, a.capacity, a.activity_type,
+               u.user_name, u.nick_name, u.member_no, u.member_department, u.member_title, u.member_cohort,
+               u.student_no, u.major, u.phonenumber
         from qt_activity_signup s
         left join qt_activity a on s.activity_id = a.activity_id
         left join sys_user u on s.user_id = u.user_id

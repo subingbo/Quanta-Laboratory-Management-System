@@ -131,4 +131,32 @@ public class QtClothingOrderServiceImpl implements IQtClothingOrderService
     {
         return qtClothingOrderMapper.deleteQtClothingOrderByOrderId(orderId);
     }
+
+    @Override
+    public int approveOrder(Long orderId, String operator)
+    {
+        QtClothingOrder order = qtClothingOrderMapper.selectQtClothingOrderByOrderId(orderId);
+        if (order == null)
+        {
+            throw new com.ruoyi.common.exception.ServiceException("订单不存在");
+        }
+        if ("APPROVED".equals(order.getStatus()))
+        {
+            return 1;
+        }
+        if (!"SUBMITTED".equals(order.getStatus()))
+        {
+            throw new com.ruoyi.common.exception.ServiceException("仅已提交订单可确认收款");
+        }
+        if (StringUtils.isEmpty(order.getPaymentProofPath()))
+        {
+            throw new com.ruoyi.common.exception.ServiceException("确认收款前必须已有付款截图");
+        }
+        order.setStatus("APPROVED");
+        order.setConfirmedBy(operator);
+        order.setConfirmedAt(DateUtils.getNowDate());
+        order.setUpdateBy(operator);
+        order.setUpdateTime(DateUtils.getNowDate());
+        return qtClothingOrderMapper.updateQtClothingOrder(order);
+    }
 }

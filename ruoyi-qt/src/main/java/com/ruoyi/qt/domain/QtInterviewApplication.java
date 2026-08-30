@@ -1,5 +1,6 @@
 package com.ruoyi.qt.domain;
 
+import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
@@ -11,14 +12,45 @@ public class QtInterviewApplication extends BaseEntity
 
     private Long applicationId;
     private Long userId;
+    @Excel(name = "姓名")
     private String realName;
+    @Excel(name = "性别", readConverterExp = "0=男,1=女,2=未知")
     private String gender;
+    @Excel(name = "班级")
     private String className;
+    @Excel(name = "第一志愿")
     private String firstChoice;
+    @Excel(name = "第二志愿")
     private String secondChoice;
     private String photoUrl;
+    @Excel(name = "投递状态")
     private String applyStatus;
     private String photoAccessUrl;
+    @Excel(name = "录用部门")
+    private String offeredDepartment;
+    @Excel(name = "入职确认")
+    private String joinStatus;
+    @Excel(name = "最终状态")
+    private String finalStatus;
+    private String noticeStatus;
+    @Excel(name = "学号")
+    private String studentNo;
+    @Excel(name = "电话")
+    private String phonenumber;
+    @Excel(name = "昵称")
+    private String nickName;
+    @Excel(name = "第一志愿轮次结果")
+    private String firstChoiceStatus;
+    @Excel(name = "第二志愿轮次结果")
+    private String secondChoiceStatus;
+    /** 查询用：数据范围部门 */
+    private String scopedDepartment;
+    /** 查询用：轮次 */
+    private Long roundId;
+    /** 查询用：志愿部门筛选 */
+    private String department;
+    /** 查询用：轮次结果状态 */
+    private String resultStatus;
 
     public Long getApplicationId()
     {
@@ -118,5 +150,135 @@ public class QtInterviewApplication extends BaseEntity
     public void setPhotoAccessUrl(String photoAccessUrl)
     {
         this.photoAccessUrl = photoAccessUrl;
+    }
+
+    public String getOfferedDepartment()
+    {
+        return offeredDepartment;
+    }
+
+    public void setOfferedDepartment(String offeredDepartment)
+    {
+        this.offeredDepartment = offeredDepartment;
+    }
+
+    public String getJoinStatus()
+    {
+        return joinStatus;
+    }
+
+    public void setJoinStatus(String joinStatus)
+    {
+        this.joinStatus = joinStatus;
+    }
+
+    public String getFinalStatus()
+    {
+        return finalStatus;
+    }
+
+    public void setFinalStatus(String finalStatus)
+    {
+        this.finalStatus = finalStatus;
+    }
+
+    public String getNoticeStatus()
+    {
+        return noticeStatus;
+    }
+
+    public void setNoticeStatus(String noticeStatus)
+    {
+        this.noticeStatus = noticeStatus;
+    }
+
+    public String getStudentNo()
+    {
+        return studentNo;
+    }
+
+    public void setStudentNo(String studentNo)
+    {
+        this.studentNo = studentNo;
+    }
+
+    public String getPhonenumber()
+    {
+        return phonenumber;
+    }
+
+    public void setPhonenumber(String phonenumber)
+    {
+        this.phonenumber = phonenumber;
+    }
+
+    public String getNickName()
+    {
+        return nickName;
+    }
+
+    public void setNickName(String nickName)
+    {
+        this.nickName = nickName;
+    }
+
+    public String getFirstChoiceStatus()
+    {
+        return firstChoiceStatus;
+    }
+
+    public void setFirstChoiceStatus(String firstChoiceStatus)
+    {
+        this.firstChoiceStatus = firstChoiceStatus;
+    }
+
+    public String getSecondChoiceStatus()
+    {
+        return secondChoiceStatus;
+    }
+
+    public void setSecondChoiceStatus(String secondChoiceStatus)
+    {
+        this.secondChoiceStatus = secondChoiceStatus;
+    }
+
+    public String getScopedDepartment()
+    {
+        return scopedDepartment;
+    }
+
+    public void setScopedDepartment(String scopedDepartment)
+    {
+        this.scopedDepartment = scopedDepartment;
+    }
+
+    public Long getRoundId()
+    {
+        return roundId;
+    }
+
+    public void setRoundId(Long roundId)
+    {
+        this.roundId = roundId;
+    }
+
+    public String getDepartment()
+    {
+        return department;
+    }
+
+    public void setDepartment(String department)
+    {
+        this.department = department;
+    }
+
+    public String getResultStatus()
+    {
+        return resultStatus;
+    }
+
+    public void setResultStatus(String resultStatus)
+    {
+        this.resultStatus = resultStatus;
     }
 }

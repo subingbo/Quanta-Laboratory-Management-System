@@ -57,6 +57,10 @@ public class QtBook extends BaseEntity
     @Excel(name = "状态(0可借 1停借)")
     private String status;
 
+    /** 图书类型 */
+    @Excel(name = "图书类型")
+    private String bookType;
+
     public void setBookId(Long bookId) 
     {
         this.bookId = bookId;
@@ -152,9 +156,19 @@ public class QtBook extends BaseEntity
         this.status = status;
     }
 
-    public String getStatus() 
+    public String getStatus()
     {
         return status;
+    }
+
+    public String getBookType()
+    {
+        return bookType;
+    }
+
+    public void setBookType(String bookType)
+    {
+        this.bookType = bookType;
     }
 
     @Override
@@ -170,6 +184,7 @@ public class QtBook extends BaseEntity
             .append("availableCount", getAvailableCount())
             .append("locationDesc", getLocationDesc())
             .append("status", getStatus())
+            .append("bookType", getBookType())
             .append("createBy", getCreateBy())
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())

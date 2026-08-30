@@ -18,6 +18,13 @@ public class QtLabMember
     private String studentNo;
     private String className;
     private String isQuantaMember;
+    private Long cohortId;
+    private String roleCategory;
+    private String memberStatus;
+    private java.util.Date joinTime;
+    private String canRetain;
+    private String retainFlag;
+    private String major;
 
     public Long getUserId()
     {
@@ -147,5 +154,75 @@ public class QtLabMember
     public void setIsQuantaMember(String isQuantaMember)
     {
         this.isQuantaMember = isQuantaMember;
+    }
+
+    public Long getCohortId()
+    {
+        return cohortId;
+    }
+
+    public void setCohortId(Long cohortId)
+    {
+        this.cohortId = cohortId;
+    }
+
+    public String getRoleCategory()
+    {
+        return roleCategory;
+    }
+
+    public void setRoleCategory(String roleCategory)
+    {
+        this.roleCategory = roleCategory;
+    }
+
+    public String getMemberStatus()
+    {
+        return memberStatus;
+    }
+
+    public void setMemberStatus(String memberStatus)
+    {
+        this.memberStatus = memberStatus;
+    }
+
+    public java.util.Date getJoinTime()
+    {
+        return joinTime;
+    }
+
+    public void setJoinTime(java.util.Date joinTime)
+    {
+        this.joinTime = joinTime;
+    }
+
+    public String getCanRetain()
+    {
+        return canRetain;
+    }
+
+    public void setCanRetain(String canRetain)
+    {
+        this.canRetain = canRetain;
+    }
+
+    public String getRetainFlag()
+    {
+        return retainFlag;
+    }
+
+    public void setRetainFlag(String retainFlag)
+    {
+        this.retainFlag = retainFlag;
+    }
+
+    public String getMajor()
+    {
+        return major;
+    }
+
+    public void setMajor(String major)
+    {
+        this.major = major;
     }
 }

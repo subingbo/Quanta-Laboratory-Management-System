@@ -27,6 +27,7 @@ import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
+import com.ruoyi.qt.util.QtAuthUtils;
 import com.ruoyi.system.service.ISysDeptService;
 import com.ruoyi.system.service.ISysPostService;
 import com.ruoyi.system.service.ISysRoleService;
@@ -80,6 +81,7 @@ public class SysUserController extends BaseController
     @PostMapping("/importData")
     public AjaxResult importData(MultipartFile file, boolean updateSupport) throws Exception
     {
+        QtAuthUtils.requireCeo();
         ExcelUtil<SysUser> util = new ExcelUtil<SysUser>(SysUser.class);
         List<SysUser> userList = util.importExcel(file.getInputStream());
         String operName = getUsername();
@@ -87,6 +89,7 @@ public class SysUserController extends BaseController
         return success(message);
     }
 
+    @PreAuthorize("@ss.hasPermi('system:user:import')")
     @PostMapping("/importTemplate")
     public void importTemplate(HttpServletResponse response)
     {
@@ -183,6 +186,14 @@ public class SysUserController extends BaseController
         {
             return error("当前用户不能删除");
         }
+        for (Long id : userIds)
+        {
+            SysUser target = userService.selectUserById(id);
+            if (target != null)
+            {
+                QtAuthUtils.requireCeoIfQuantaMember(target.getIsQuantaMember());
+            }
+        }
         return toAjax(userService.deleteUserByIds(userIds));
     }
 
@@ -196,6 +207,11 @@ public class SysUserController extends BaseController
     {
         userService.checkUserAllowed(user);
         userService.checkUserDataScope(user.getUserId());
+        SysUser target = userService.selectUserById(user.getUserId());
+        if (target != null)
+        {
+            QtAuthUtils.requireCeoIfQuantaMember(target.getIsQuantaMember());
+        }
         user.setPassword(SecurityUtils.encryptPassword(user.getPassword()));
         user.setUpdateBy(getUsername());
         return toAjax(userService.resetPwd(user));

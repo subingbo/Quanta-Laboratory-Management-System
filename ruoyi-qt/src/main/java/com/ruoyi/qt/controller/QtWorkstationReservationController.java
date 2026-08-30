@@ -2,7 +2,7 @@ package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
-// import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +18,7 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.qt.domain.QtWorkstationReservation;
 import com.ruoyi.qt.service.IQtWorkstationReservationService;
+import com.ruoyi.qt.util.QtAuthUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 
@@ -37,10 +38,10 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 查询工位预约记录列表
      */
-    // @PreAuthorize("@ss.hasPermi('system:reservation:list')")
     @GetMapping("/list")
     public TableDataInfo list(QtWorkstationReservation qtWorkstationReservation)
     {
+        QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_RESERVATION_LIST, qtWorkstationReservation::setUserId);
         startPage();
         List<QtWorkstationReservation> list = qtWorkstationReservationService.selectQtWorkstationReservationList(qtWorkstationReservation);
         return getDataTable(list);
@@ -49,10 +50,10 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 查询工位预约记录详情列表
      */
-    // @PreAuthorize("@ss.hasPermi('system:reservation:list')")
     @GetMapping("/detailList")
     public TableDataInfo detailList(QtWorkstationReservation qtWorkstationReservation)
     {
+        QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_RESERVATION_LIST, qtWorkstationReservation::setUserId);
         startPage();
         List<QtWorkstationReservation> list = qtWorkstationReservationService.selectQtWorkstationReservationDetailList(qtWorkstationReservation);
         return getDataTable(list);
@@ -61,7 +62,7 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 导出工位预约记录列表
      */
-    // @PreAuthorize("@ss.hasPermi('system:reservation:export')")
+    @PreAuthorize("@ss.hasPermi('system:reservation:export')")
     @Log(title = "工位预约记录", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtWorkstationReservation qtWorkstationReservation)
@@ -84,18 +85,21 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 新增工位预约记录
      */
-    // @PreAuthorize("@ss.hasPermi('system:reservation:add')")
     @Log(title = "工位预约记录", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody QtWorkstationReservation qtWorkstationReservation)
     {
+        if (qtWorkstationReservation.getUserId() == null || !QtAuthUtils.hasAdminList(QtAuthUtils.PERM_RESERVATION_LIST))
+        {
+            qtWorkstationReservation.setUserId(getUserId());
+        }
         return toAjax(qtWorkstationReservationService.insertQtWorkstationReservation(qtWorkstationReservation));
     }
 
     /**
      * 修改工位预约记录
      */
-    // @PreAuthorize("@ss.hasPermi('system:reservation:edit')")
+    @PreAuthorize("@ss.hasPermi('system:reservation:edit')")
     @Log(title = "工位预约记录", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtWorkstationReservation qtWorkstationReservation)
@@ -106,7 +110,7 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 删除工位预约记录
      */
-    // @PreAuthorize("@ss.hasPermi('system:reservation:remove')")
+    @PreAuthorize("@ss.hasPermi('system:reservation:remove')")
     @Log(title = "工位预约记录", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{reservationIds}")
     public AjaxResult remove(@PathVariable Long[] reservationIds)

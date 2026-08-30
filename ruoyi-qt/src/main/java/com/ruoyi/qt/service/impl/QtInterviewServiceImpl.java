@@ -68,7 +68,12 @@ public class QtInterviewServiceImpl implements IQtInterviewService
     @Transactional
     public int saveInterviewResult(QtInterviewResult result)
     {
-        QtInterviewResult old = qtInterviewMapper.selectResultByUserIdAndRoundId(result.getUserId(), result.getRoundId());
+        QtInterviewResult old = qtInterviewMapper.selectResultByAppRoundDept(result.getApplicationId(),
+                result.getRoundId(), result.getDepartment());
+        if (old == null && result.getApplicationId() == null)
+        {
+            old = qtInterviewMapper.selectResultByUserIdAndRoundId(result.getUserId(), result.getRoundId());
+        }
         if (old == null)
         {
             return qtInterviewMapper.insertInterviewResult(result);

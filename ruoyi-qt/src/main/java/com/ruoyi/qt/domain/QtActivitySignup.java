@@ -84,6 +84,25 @@ public class QtActivitySignup extends BaseEntity
     @Excel(name = "成员届次")
     private String memberCohort;
 
+    /** 学号 */
+    @Excel(name = "学号")
+    private String studentNo;
+
+    /** 专业 */
+    @Excel(name = "专业")
+    private String major;
+
+    /** 电话 */
+    @Excel(name = "电话")
+    private String phonenumber;
+
+    /** 名额 */
+    @Excel(name = "名额")
+    private Long capacity;
+
+    /** 活动类型 */
+    private String activityType;
+
     public void setSignupId(Long signupId) 
     {
         this.signupId = signupId;
@@ -242,6 +261,56 @@ public class QtActivitySignup extends BaseEntity
     public void setMemberCohort(String memberCohort)
     {
         this.memberCohort = memberCohort;
+    }
+
+    public String getStudentNo()
+    {
+        return studentNo;
+    }
+
+    public void setStudentNo(String studentNo)
+    {
+        this.studentNo = studentNo;
+    }
+
+    public String getMajor()
+    {
+        return major;
+    }
+
+    public void setMajor(String major)
+    {
+        this.major = major;
+    }
+
+    public String getPhonenumber()
+    {
+        return phonenumber;
+    }
+
+    public void setPhonenumber(String phonenumber)
+    {
+        this.phonenumber = phonenumber;
+    }
+
+    public Long getCapacity()
+    {
+        return capacity;
+    }
+
+    public void setCapacity(Long capacity)
+    {
+        this.capacity = capacity;
+    }
+
+    public String getActivityType()
+    {
+        return activityType;
+    }
+
+    public void setActivityType(String activityType)
+    {
+        this.activityType = activityType;
     }
 
     @Override

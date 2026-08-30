@@ -2,7 +2,7 @@ package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
-// import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +18,7 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.qt.domain.QtActivitySignup;
 import com.ruoyi.qt.service.IQtActivitySignupService;
+import com.ruoyi.qt.util.QtAuthUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 
@@ -37,10 +38,10 @@ public class QtActivitySignupController extends BaseController
     /**
      * 查询活动报名列表
      */
-    // @PreAuthorize("@ss.hasPermi('system:signup:list')")
     @GetMapping("/list")
     public TableDataInfo list(QtActivitySignup qtActivitySignup)
     {
+        QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_SIGNUP_LIST, qtActivitySignup::setUserId);
         startPage();
         List<QtActivitySignup> list = qtActivitySignupService.selectQtActivitySignupList(qtActivitySignup);
         return getDataTable(list);
@@ -49,10 +50,10 @@ public class QtActivitySignupController extends BaseController
     /**
      * 查询活动报名详情列表
      */
-    // @PreAuthorize("@ss.hasPermi('system:signup:list')")
     @GetMapping("/detailList")
     public TableDataInfo detailList(QtActivitySignup qtActivitySignup)
     {
+        QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_SIGNUP_LIST, qtActivitySignup::setUserId);
         startPage();
         List<QtActivitySignup> list = qtActivitySignupService.selectQtActivitySignupDetailList(qtActivitySignup);
         return getDataTable(list);
@@ -61,7 +62,7 @@ public class QtActivitySignupController extends BaseController
     /**
      * 导出活动报名列表
      */
-    // @PreAuthorize("@ss.hasPermi('system:signup:export')")
+    @PreAuthorize("@ss.hasPermi('system:signup:export')")
     @Log(title = "活动报名", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtActivitySignup qtActivitySignup)
@@ -84,7 +85,7 @@ public class QtActivitySignupController extends BaseController
     /**
      * 新增活动报名（C端：自动绑定当前登录用户）
      */
-    // @PreAuthorize("@ss.hasPermi('system:signup:add')")
+    // C 端报名保持登录即可
     @Log(title = "活动报名", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody QtActivitySignup qtActivitySignup)
@@ -116,7 +117,7 @@ public class QtActivitySignupController extends BaseController
     /**
      * 修改活动报名
      */
-    // @PreAuthorize("@ss.hasPermi('system:signup:edit')")
+    @PreAuthorize("@ss.hasPermi('system:signup:edit')")
     @Log(title = "活动报名", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtActivitySignup qtActivitySignup)
@@ -127,7 +128,7 @@ public class QtActivitySignupController extends BaseController
     /**
      * 删除活动报名
      */
-    // @PreAuthorize("@ss.hasPermi('system:signup:remove')")
+    @PreAuthorize("@ss.hasPermi('system:signup:remove')")
     @Log(title = "活动报名", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{signupIds}")
     public AjaxResult remove(@PathVariable Long[] signupIds)

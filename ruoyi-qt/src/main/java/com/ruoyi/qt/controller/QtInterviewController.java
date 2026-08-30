@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,6 +45,8 @@ public class QtInterviewController extends BaseController
         {
             return AjaxResult.error("两个志愿不能相同");
         }
+        com.ruoyi.qt.util.QtDictUtils.requireValue(com.ruoyi.qt.util.QtDictUtils.DEPT, application.getFirstChoice(), "firstChoice");
+        com.ruoyi.qt.util.QtDictUtils.requireValue(com.ruoyi.qt.util.QtDictUtils.DEPT, application.getSecondChoice(), "secondChoice");
         application.setUserId(getUserId());
         application.setApplyStatus("SUBMITTED");
         application.setUpdateBy(getUsername());
@@ -104,8 +107,9 @@ public class QtInterviewController extends BaseController
     }
 
     /**
-     * 录入/更新一面二面等轮次结果（联调最小写入能力，本轮不做权限）
+     * 录入/更新一面二面等轮次结果。管理端请优先使用 /qt/interview/admin/*。
      */
+    @PreAuthorize("@ss.hasPermi('qt:interview:admin:evaluate')")
     @PostMapping("/result")
     public AjaxResult saveResult(@org.springframework.web.bind.annotation.RequestBody QtInterviewResult result)
     {

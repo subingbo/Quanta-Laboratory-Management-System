@@ -2,7 +2,7 @@ package com.ruoyi.qt.controller;
 
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
-// import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,7 +49,7 @@ public class QtBookController extends BaseController
     /**
      * 导出实验室图书列表
      */
-    // @PreAuthorize("@ss.hasPermi('system:book:export')")
+    @PreAuthorize("@ss.hasPermi('system:book:export')")
     @Log(title = "实验室图书", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtBook qtBook)
@@ -72,7 +72,7 @@ public class QtBookController extends BaseController
     /**
      * 新增实验室图书
      */
-    // @PreAuthorize("@ss.hasPermi('system:book:add')")
+    @PreAuthorize("@ss.hasPermi('system:book:add')")
     @Log(title = "实验室图书", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody QtBook qtBook)
@@ -83,7 +83,7 @@ public class QtBookController extends BaseController
     /**
      * 修改实验室图书
      */
-    // @PreAuthorize("@ss.hasPermi('system:book:edit')")
+    @PreAuthorize("@ss.hasPermi('system:book:edit')")
     @Log(title = "实验室图书", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtBook qtBook)
@@ -94,7 +94,7 @@ public class QtBookController extends BaseController
     /**
      * 删除实验室图书
      */
-    // @PreAuthorize("@ss.hasPermi('system:book:remove')")
+    @PreAuthorize("@ss.hasPermi('system:book:remove')")
     @Log(title = "实验室图书", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{bookIds}")
     public AjaxResult remove(@PathVariable Long[] bookIds)

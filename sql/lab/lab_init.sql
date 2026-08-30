@@ -50,6 +50,11 @@ SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
     'ALTER TABLE sys_user ADD COLUMN is_quanta_member CHAR(1) NOT NULL DEFAULT ''0'' COMMENT ''是否塔员(0新生 1塔员)''', 'SELECT 1');
 PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
 
+SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sys_user' AND COLUMN_NAME = 'major') = 0,
+    'ALTER TABLE sys_user ADD COLUMN major VARCHAR(64) NULL COMMENT ''专业''', 'SELECT 1');
+PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
+
 SET @sql = IF((SELECT COUNT(*) FROM information_schema.statistics
     WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'sys_user' AND INDEX_NAME = 'uk_sys_user_member_no') = 0,
     'CREATE UNIQUE INDEX uk_sys_user_member_no ON sys_user(member_no)', 'SELECT 1');
@@ -107,6 +112,7 @@ CREATE TABLE IF NOT EXISTS qt_activity (
     activity_end DATETIME NOT NULL COMMENT '活动结束',
     location_desc VARCHAR(128) NULL COMMENT '活动地点',
     capacity INT NULL COMMENT '名额',
+    activity_type VARCHAR(16) NOT NULL DEFAULT 'GENERAL' COMMENT '活动类型(LECTURE/SHARING/GENERAL)',
     status VARCHAR(16) NOT NULL DEFAULT 'DRAFT' COMMENT '状态(DRAFT/PUBLISHED/CANCELED/DELETED)',
     creator_user_id BIGINT NOT NULL COMMENT '创建人',
     create_by VARCHAR(64) NULL,
@@ -178,6 +184,8 @@ CREATE TABLE IF NOT EXISTS qt_clothing_order (
     payment_proof_path VARCHAR(255) NULL COMMENT '付款截图路径',
     payment_time DATETIME NULL COMMENT '付款时间',
     status VARCHAR(16) NOT NULL DEFAULT 'DRAFT' COMMENT '状态(DRAFT/SUBMITTED/APPROVED/REJECTED/CANCELED)',
+    confirmed_by VARCHAR(64) NULL COMMENT '确认收款人',
+    confirmed_at DATETIME NULL COMMENT '确认收款时间',
     create_by VARCHAR(64) NULL,
     create_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
     update_by VARCHAR(64) NULL,
@@ -214,6 +222,7 @@ CREATE TABLE IF NOT EXISTS qt_book (
     total_count INT NOT NULL DEFAULT 1 COMMENT '总库存',
     available_count INT NOT NULL DEFAULT 1 COMMENT '可借数量',
     location_desc VARCHAR(128) NULL COMMENT '存放位置',
+    book_type VARCHAR(32) NULL COMMENT '图书类型',
     status CHAR(1) NOT NULL DEFAULT '0' COMMENT '状态(0可借 1停借)',
     create_by VARCHAR(64) NULL,
     create_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
@@ -255,6 +264,10 @@ CREATE TABLE IF NOT EXISTS qt_interview_application (
     second_choice VARCHAR(16) NOT NULL COMMENT '第二志愿(BACKEND/PRODUCT/DESIGN/FRONTEND/ANDROID)',
     photo_url VARCHAR(255) NOT NULL COMMENT '证件照URL/本地访问路径',
     apply_status VARCHAR(16) NOT NULL DEFAULT 'SUBMITTED' COMMENT '投递状态(SUBMITTED/PROCESSING/OFFERED/REJECTED)',
+    offered_department VARCHAR(16) NULL COMMENT '录用部门',
+    join_status VARCHAR(16) NULL COMMENT '入职确认(PENDING/ACCEPTED/DECLINED)',
+    final_status VARCHAR(16) NULL COMMENT '管理员最终状态',
+    notice_status VARCHAR(16) NULL DEFAULT 'NONE' COMMENT '通知状态(NONE/SENT)',
     create_by VARCHAR(64) NULL,
     create_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
     update_by VARCHAR(64) NULL,
@@ -314,7 +327,7 @@ CREATE TABLE IF NOT EXISTS qt_interview_result (
     update_by VARCHAR(64) NULL,
     update_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (result_id),
-    UNIQUE KEY uk_qir_user_round (user_id, round_id),
+    UNIQUE KEY uk_qir_app_round_dept (application_id, round_id, department),
     KEY idx_qir_app (application_id),
     KEY idx_qir_user_status (user_id, result_status),
     CONSTRAINT fk_qirs_app FOREIGN KEY (application_id) REFERENCES qt_interview_application(application_id),
@@ -328,5 +341,76 @@ VALUES
 (2, '二面', '1', 'admin', NOW()),
 (3, '终面', '1', 'admin', NOW())
 ON DUPLICATE KEY UPDATE round_name = VALUES(round_name), enabled = VALUES(enabled), update_time = NOW();
+
+CREATE TABLE IF NOT EXISTS qt_cohort (
+    cohort_id BIGINT NOT NULL AUTO_INCREMENT COMMENT '届次ID',
+    cohort_name VARCHAR(32) NOT NULL COMMENT '届次名称，如 21st',
+    cohort_year INT NULL COMMENT '年份',
+    is_current CHAR(1) NOT NULL DEFAULT '0' COMMENT '是否当前届(0否 1是)',
+    status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE' COMMENT '状态(ACTIVE/ARCHIVED)',
+    create_by VARCHAR(64) NULL,
+    create_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+    update_by VARCHAR(64) NULL,
+    update_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    remark VARCHAR(500) NULL,
+    PRIMARY KEY (cohort_id),
+    UNIQUE KEY uk_qt_cohort_name (cohort_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='实验室届次';
+
+CREATE TABLE IF NOT EXISTS qt_member_record (
+    record_id BIGINT NOT NULL AUTO_INCREMENT COMMENT '成员届次档案ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    cohort_id BIGINT NOT NULL COMMENT '届次ID',
+    role_category VARCHAR(16) NOT NULL DEFAULT 'MEMBER' COMMENT 'CEO/MGMT/MANAGER/INTERN/MEMBER',
+    member_status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE' COMMENT 'ACTIVE/RESIGNED/RETAINED',
+    join_time DATETIME NULL COMMENT '加入时间',
+    retain_flag CHAR(1) NOT NULL DEFAULT '0' COMMENT '是否已确认留任(0否 1是)',
+    create_by VARCHAR(64) NULL,
+    create_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+    update_by VARCHAR(64) NULL,
+    update_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (record_id),
+    UNIQUE KEY uk_qmr_user_cohort (user_id, cohort_id),
+    KEY idx_qmr_cohort_status (cohort_id, member_status),
+    CONSTRAINT fk_qmr_user FOREIGN KEY (user_id) REFERENCES sys_user(user_id),
+    CONSTRAINT fk_qmr_cohort FOREIGN KEY (cohort_id) REFERENCES qt_cohort(cohort_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='成员届次档案';
+
+CREATE TABLE IF NOT EXISTS qt_interview_evaluation (
+    evaluation_id BIGINT NOT NULL AUTO_INCREMENT COMMENT '面评ID',
+    application_id BIGINT NOT NULL COMMENT '投递ID',
+    round_id BIGINT NOT NULL COMMENT '轮次ID',
+    department VARCHAR(16) NOT NULL COMMENT '面试部门',
+    evaluator_user_id BIGINT NOT NULL COMMENT '评价人',
+    content TEXT NOT NULL COMMENT '面评内容',
+    create_by VARCHAR(64) NULL,
+    create_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+    update_by VARCHAR(64) NULL,
+    update_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (evaluation_id),
+    UNIQUE KEY uk_qie_app_round_dept_eval (application_id, round_id, department, evaluator_user_id),
+    CONSTRAINT fk_qie_app FOREIGN KEY (application_id) REFERENCES qt_interview_application(application_id),
+    CONSTRAINT fk_qie_round FOREIGN KEY (round_id) REFERENCES qt_interview_round(round_id),
+    CONSTRAINT fk_qie_eval FOREIGN KEY (evaluator_user_id) REFERENCES sys_user(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='招新面评';
+
+CREATE TABLE IF NOT EXISTS qt_material (
+    material_id BIGINT NOT NULL AUTO_INCREMENT COMMENT '资料ID',
+    file_name VARCHAR(255) NOT NULL COMMENT '原始文件名',
+    stored_name VARCHAR(255) NOT NULL COMMENT '存储文件名',
+    file_path VARCHAR(500) NOT NULL COMMENT '存储路径',
+    file_size BIGINT NOT NULL DEFAULT 0 COMMENT '字节大小',
+    category VARCHAR(64) NULL COMMENT '分类',
+    visibility VARCHAR(16) NOT NULL DEFAULT 'MEMBER' COMMENT 'ALL/MEMBER/DEPT',
+    uploader_id BIGINT NOT NULL COMMENT '上传者',
+    create_by VARCHAR(64) NULL,
+    create_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+    update_by VARCHAR(64) NULL,
+    update_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    remark VARCHAR(500) NULL,
+    PRIMARY KEY (material_id),
+    KEY idx_qm_category (category),
+    CONSTRAINT fk_qm_uploader FOREIGN KEY (uploader_id) REFERENCES sys_user(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='学习资料';
 
 SET FOREIGN_KEY_CHECKS = 1;

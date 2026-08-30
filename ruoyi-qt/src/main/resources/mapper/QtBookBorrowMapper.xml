@@ -26,6 +26,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="memberDepartment"    column="member_department"    />
         <result property="memberTitle"    column="member_title"    />
         <result property="memberCohort"    column="member_cohort"    />
+        <result property="bookType"    column="book_type"    />
     </resultMap>
 
     <sql id="selectQtBookBorrowVo">
@@ -47,7 +48,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectQtBookBorrowDetailList" parameterType="QtBookBorrow" resultMap="QtBookBorrowResult">
         select b.borrow_id, b.book_id, b.user_id, b.borrow_time, b.due_time, b.return_time, b.status, b.remark,
                b.create_by, b.create_time, b.update_by, b.update_time,
-               bk.book_name, bk.isbn, bk.author,
+               bk.book_name, bk.isbn, bk.author, bk.book_type,
                u.user_name, u.nick_name, u.member_no, u.member_department, u.member_title, u.member_cohort
         from qt_book_borrow b
         left join qt_book bk on b.book_id = bk.book_id

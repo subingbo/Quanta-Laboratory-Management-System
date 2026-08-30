@@ -66,4 +66,9 @@ public interface IQtClothingOrderService
      * @return 结果
      */
     public int deleteQtClothingOrderByOrderId(Long orderId);
+
+    /**
+     * 确认收款
+     */
+    public int approveOrder(Long orderId, String operator);
 }
