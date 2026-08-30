@@ -1,4 +1,4 @@
-# Quanta 实验室管理系统（RuoYi-Vue-Qt）
+# Quanta 实验室管理系统
 
 基于 [RuoYi-Vue](https://gitee.com/y_project/RuoYi-Vue) 3.9.2 二次开发的 **Quanta 实验室** 业务系统：塔员 / 新生双入口、成员名录、活动报名、图书借阅、工位预约、塔服订购、招新面试。
 
@@ -9,7 +9,7 @@
 | C 端 | 实验室移动端（`ruoyi-qt-ui`） |
 | 数据库 | MySQL 8.0，库名默认 `ry-vue` |
 
-本仓库对应 GitHub：`https://github.com/subingbo/RuoYi-Vue-Qt`
+本仓库对应 GitHub：https://github.com/subingbo/Quanta-Laboratory-Management-System
 
 ---
 
