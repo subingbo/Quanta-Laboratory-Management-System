@@ -1,0 +1,52 @@
+import { describe, expect, it } from 'vitest'
+import { isKnownComponent, unknownRouteComponent } from '../component-map'
+import { transformRoute, transformRoutes } from '../route-transformer'
+
+describe('route transformer', () => {
+  it('transforms nested RuoYi route fields', () => {
+    const [route] = transformRoutes([
+      {
+        path: '/parent',
+        name: 'Parent',
+        component: 'Layout',
+        redirect: '/parent/child',
+        alwaysShow: true,
+        meta: { title: '父级' },
+        children: [
+          {
+            path: 'child',
+            name: 'Child',
+            component: 'placeholder/index',
+            hidden: true,
+            meta: { title: '子级' },
+          },
+        ],
+      },
+    ])
+
+    expect(route.name).toBe('Parent')
+    expect(route.redirect).toBe('/parent/child')
+    expect(route.meta.alwaysShow).toBe(true)
+    expect(route.children[0].meta.hidden).toBe(true)
+  })
+
+  it('maps unknown component paths to a safe error page', () => {
+    const route = transformRoute({
+      path: '/unsafe',
+      name: 'Unsafe',
+      component: '../../arbitrary-file',
+    })
+    expect(route.component).toBe(unknownRouteComponent)
+    expect(isKnownComponent('../../arbitrary-file')).toBe(false)
+  })
+
+  it('recognizes the recruitment page component', () => {
+    expect(isKnownComponent('recruitment/index')).toBe(true)
+    expect(isKnownComponent('sharing-signups/index')).toBe(true)
+    expect(isKnownComponent('workstations/index')).toBe(true)
+    expect(isKnownComponent('lecture-signups/index')).toBe(true)
+    expect(isKnownComponent('book-borrows/index')).toBe(true)
+    expect(isKnownComponent('learning-materials/index')).toBe(true)
+    expect(isKnownComponent('clothing-orders/index')).toBe(true)
+  })
+})

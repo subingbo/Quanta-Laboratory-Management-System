@@ -1,0 +1,31 @@
+<script setup>
+import { computed } from 'vue'
+import { departmentLabels } from '@/api/recruitment'
+
+const props = defineProps({
+  modelValue: { type: Boolean, default: false },
+  application: { type: Object, default: null },
+  loading: { type: Boolean, default: false },
+})
+const emit = defineEmits(['update:modelValue'])
+const visible = computed({ get: () => props.modelValue, set: (value) => emit('update:modelValue', value) })
+</script>
+
+<template>
+  <ElDialog v-model="visible" width="640" class="quanta-dialog resume-dialog" destroy-on-close>
+    <template #header><strong>简历阅览 - {{ application?.name || application?.realName }}</strong></template>
+    <div v-loading="loading" class="resume-dialog__body">
+      <div class="resume-dialog__grid">
+        <div><span>姓名 / 学号</span><strong>{{ application?.realName }}（{{ application?.studentNo }}）</strong></div>
+        <div><span>专业 / 班级</span><strong>{{ application?.major }} - {{ application?.className }}</strong></div>
+        <div><span>第一志愿</span><strong>{{ departmentLabels[application?.tracks?.[0]?.department] || '-' }}</strong></div>
+        <div><span>第二志愿</span><strong>{{ departmentLabels[application?.tracks?.[1]?.department] || '-' }}</strong></div>
+        <div><span>邮箱</span><strong>{{ application?.email || '-' }}</strong></div>
+        <div><span>联系方式</span><strong>{{ application?.phone || '-' }}</strong></div>
+      </div>
+      <section><span>个人简介</span><p>{{ application?.selfIntro || '无' }}</p></section>
+      <section><span>编程经历</span><p>{{ application?.codingExperienceDesc || '无' }}</p></section>
+      <section><span>对 Quanta 的认识</span><p>{{ application?.quantaUnderstanding || '无' }}</p></section>
+    </div>
+  </ElDialog>
+</template>

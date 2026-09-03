@@ -1,0 +1,50 @@
+html {
+  background: var(--quanta-page-bg);
+}
+
+body {
+  overflow: hidden;
+}
+
+#nprogress .bar {
+  background: var(--quanta-primary);
+}
+
+.page-card {
+  overflow: hidden;
+  background: var(--quanta-card-bg);
+  border: 1px solid rgba(232, 235, 242, 0.8);
+  border-radius: var(--quanta-radius);
+  box-shadow: var(--quanta-shadow);
+}
+
+.quanta-primary-button.el-button--primary {
+  --el-button-bg-color: var(--quanta-primary);
+  --el-button-border-color: var(--quanta-primary);
+  --el-button-hover-bg-color: #ffb94d;
+  --el-button-hover-border-color: #ffb94d;
+  --el-button-active-bg-color: var(--quanta-primary-dark);
+  --el-button-active-border-color: var(--quanta-primary-dark);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.quanta-dialog .el-dialog__header {
+  padding: 24px 26px 12px;
+  font-size: 18px;
+}
+
+.quanta-dialog .el-dialog__body {
+  padding: 18px 26px 26px;
+  font-size: 13px;
+}
