@@ -142,9 +142,9 @@ onMounted(loadCaptcha)
         </ElForm>
 
         <div v-if="isDev" class="login-card__demo">
-          <span>本地演示账号</span>
-          <code>admin / quanta123</code>
-          <code>viewer / quanta123</code>
+          <span>本地开发账号(密码 admin123)</span>
+          <code>admin(塔员/CEO)</code>
+          <code>qt_member(塔员)</code>
         </div>
       </div>
       <p class="login-page__copyright">© 2026 Quanta · 后台管理系统</p>

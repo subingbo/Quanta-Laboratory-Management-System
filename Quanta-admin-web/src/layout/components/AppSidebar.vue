@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { usePermissionStore } from '@/stores/permission'
+import { usePermission } from '@/composables/usePermission'
 import SidebarMenuItem from './SidebarMenuItem.vue'
 import UserPanel from './UserPanel.vue'
 
@@ -11,11 +12,12 @@ const route = useRoute()
 const appStore = useAppStore()
 const permissionStore = usePermissionStore()
 const { sidebarCollapsed } = storeToRefs(appStore)
+const { hasAny } = usePermission()
 
 const groupedRoutes = computed(() => {
   const groups = []
   permissionStore.routes
-    .filter((item) => !item.meta?.hidden)
+    .filter((item) => !item.meta?.hidden && (!item.meta?.permission || hasAny(item.meta.permission)))
     .forEach((item) => {
       const title = item.meta?.group || '其他'
       let group = groups.find((entry) => entry.title === title)

@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { getRouters } from '@/api/auth'
+import { menus } from '@/router/menus'
 import { transformRoutes } from '@/router/route-transformer'
 
 export const usePermissionStore = defineStore('permission', () => {
@@ -13,16 +13,8 @@ export const usePermissionStore = defineStore('permission', () => {
     if (initialized.value) return routes.value
     if (initializing.value) return initializing.value
 
-    initializing.value = getRouters()
-      .then((response) => {
-        routes.value = transformRoutes(response.data || [])
-        return routes.value
-      })
-      .finally(() => {
-        initializing.value = null
-      })
-
-    return initializing.value
+    routes.value = transformRoutes(menus)
+    return routes.value
   }
 
   function installRoutes(router) {
