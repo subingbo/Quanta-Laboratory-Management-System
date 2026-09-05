@@ -1,11 +1,9 @@
 import { TOKEN_KEY } from './storage'
 import { clearSession } from '../stores/user'
+import { API_BASE_URL } from '../config/runtime'
 
 /** 与后端约定的业务成功码 */
 const SUCCESS_CODE = 200
-
-/** 后端基础地址（本地 mock / 待替换为真实后端地址） */
-const BASE_URL = 'http://127.0.0.1:4523/m1/8176579-7935747-default'
 
 let handlingUnauthorized = false
 
@@ -51,7 +49,7 @@ const request = <T = any>(options: RequestOptions): Promise<T> => {
     }
 
     uni.request({
-      url: `${BASE_URL}${url}`,
+      url: `${API_BASE_URL}${url}`,
       method,
       data,
       header: finalHeader,

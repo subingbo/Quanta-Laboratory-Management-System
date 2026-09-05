@@ -1,10 +1,10 @@
 import { LoginData, LoginResponse } from '../types/auth'
 import request from '../utils/request'
+import { USE_LOGIN_MOCK } from '../config/runtime'
 
 export const loginApi = (data: LoginData): Promise<LoginResponse> => {
-  // 后端接口尚未提供时，仅在 H5/小程序开发服务中启用可替换的演示登录。
-  // 生产构建中 import.meta.env.DEV 为 false，仍调用真实 /login。
-  if (import.meta.env.DEV) {
+  // 仅当 VITE_USE_MOCK=true 时启用演示登录。
+  if (USE_LOGIN_MOCK) {
     return new Promise((resolve) => {
       setTimeout(() => resolve({ code: 200, msg: '演示登录成功', token: `mock-${data.loginType}-${data.username}` }), 260)
     })
