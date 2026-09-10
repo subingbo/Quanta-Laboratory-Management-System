@@ -11,6 +11,12 @@ target/
 ######################################################################
 # IDE
 
+######################################################################
+# Local tool / 大构建产物（不能进库）
+
+.codegraph/
+cloudrun/quanta-system/ruoyi-admin.jar
+
 ### STS ###
 .apt_generated
 .classpath

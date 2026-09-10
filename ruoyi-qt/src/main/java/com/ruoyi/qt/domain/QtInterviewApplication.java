@@ -43,6 +43,10 @@ public class QtInterviewApplication extends BaseEntity
     private String firstChoiceStatus;
     @Excel(name = "第二志愿轮次结果")
     private String secondChoiceStatus;
+    private String firstChoiceFirstRoundStatus;
+    private String firstChoiceSecondRoundStatus;
+    private String secondChoiceFirstRoundStatus;
+    private String secondChoiceSecondRoundStatus;
     /** 查询用：数据范围部门 */
     private String scopedDepartment;
     /** 查询用：轮次 */
@@ -240,6 +244,46 @@ public class QtInterviewApplication extends BaseEntity
     public void setSecondChoiceStatus(String secondChoiceStatus)
     {
         this.secondChoiceStatus = secondChoiceStatus;
+    }
+
+    public String getFirstChoiceFirstRoundStatus()
+    {
+        return firstChoiceFirstRoundStatus;
+    }
+
+    public void setFirstChoiceFirstRoundStatus(String firstChoiceFirstRoundStatus)
+    {
+        this.firstChoiceFirstRoundStatus = firstChoiceFirstRoundStatus;
+    }
+
+    public String getFirstChoiceSecondRoundStatus()
+    {
+        return firstChoiceSecondRoundStatus;
+    }
+
+    public void setFirstChoiceSecondRoundStatus(String firstChoiceSecondRoundStatus)
+    {
+        this.firstChoiceSecondRoundStatus = firstChoiceSecondRoundStatus;
+    }
+
+    public String getSecondChoiceFirstRoundStatus()
+    {
+        return secondChoiceFirstRoundStatus;
+    }
+
+    public void setSecondChoiceFirstRoundStatus(String secondChoiceFirstRoundStatus)
+    {
+        this.secondChoiceFirstRoundStatus = secondChoiceFirstRoundStatus;
+    }
+
+    public String getSecondChoiceSecondRoundStatus()
+    {
+        return secondChoiceSecondRoundStatus;
+    }
+
+    public void setSecondChoiceSecondRoundStatus(String secondChoiceSecondRoundStatus)
+    {
+        this.secondChoiceSecondRoundStatus = secondChoiceSecondRoundStatus;
     }
 
     public String getScopedDepartment()

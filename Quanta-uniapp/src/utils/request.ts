@@ -4,8 +4,8 @@ import { clearSession } from '../stores/user'
 /** 与后端约定的业务成功码 */
 const SUCCESS_CODE = 200
 
-/** 后端基础地址（本地 mock / 待替换为真实后端地址） */
-const BASE_URL = 'http://127.0.0.1:4523/m1/8176579-7935747-default'
+/** 后端基础地址(默认本地后端,可用 VITE_API_BASE_URL 覆盖) */
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 let handlingUnauthorized = false
 

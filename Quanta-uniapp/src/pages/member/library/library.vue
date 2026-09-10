@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { borrowBook, getLibraryBooks, type BorrowBookResult, type LibraryBook } from '../../../utils/libraryMock'
+import { borrowBook, getLibraryBooks, type BorrowBookResult, type LibraryBook } from '../../../api/library'
 import { buildBorrowConfirmationCopy, buildPaginationItems, filterLibraryBooks, paginate } from '../../../utils/libraryRules'
 
 const books = ref<LibraryBook[]>([])

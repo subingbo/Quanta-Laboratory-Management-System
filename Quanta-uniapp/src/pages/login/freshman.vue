@@ -59,7 +59,7 @@
 			</view>
 		</view>
 
-		<text class="initial-password">初始密码 : quanta2026</text>
+		<text class="initial-password">初始密码 : admin123</text>
 	</view>
 </template>
 

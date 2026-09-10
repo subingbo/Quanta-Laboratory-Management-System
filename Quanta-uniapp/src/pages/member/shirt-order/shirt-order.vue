@@ -14,7 +14,7 @@
 		<view class="section"><text class="section-title">塔服尺寸</text>
 			<view class="size-grid"><view v-for="item in sizes" :key="item" class="option" @click="size = item"><view class="radio" :class="{ selected: size === item }" /><text>{{ item }}</text></view></view>
 		</view>
-		<view class="section price-section"><text class="section-title">塔服单价（{{ product.price }}元）</text><text class="payment-note">支付时请备注你的真实姓名，保留付款成功的截图</text><button class="pay-button" @click="startOrder">保存订购信息</button></view>
+		<view class="section price-section"><text class="section-title">塔服单价（以实物为准）</text><text class="payment-note">支付时请备注你的真实姓名，保留付款成功的截图</text><button class="pay-button" @click="startOrder">保存订购信息</button></view>
 
 		<view v-if="confirmVisible" class="modal-mask" @click="confirmVisible = false"><view class="confirm-card" @click.stop>
 			<text class="confirm-text">确认订购“{{ color }}”、“{{ size }}码”的塔服？到货后将会通过大群通知取货。</text>
@@ -25,7 +25,8 @@
 
 <script setup lang="js">
 import { onMounted, ref } from 'vue'
-import { getShirtProduct, saveMockShirtOrder, validateShirtSelection } from '../../../utils/memberMock'
+import { getShirtProduct, saveShirtOrder } from '../../../api/shirt'
+import { validateShirtSelection } from '../../../utils/memberMock'
 
 const product = ref({ images: [], colors: [], sizes: [], price: 45 })
 const colors = ref([])
@@ -46,7 +47,7 @@ const startOrder = () => {
 	confirmVisible.value = true
 }
 const confirmOrder = async () => {
-	await saveMockShirtOrder({ color: color.value, size: size.value })
+	await saveShirtOrder({ color: color.value, size: size.value })
 	confirmVisible.value = false
 	uni.showToast({ title: '订购信息已保存，待后续支付', icon: 'none', duration: 2600 })
 }

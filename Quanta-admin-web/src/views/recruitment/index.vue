@@ -314,8 +314,9 @@ async function exportList() {
   }
 }
 
-watch(activeTab, () => {
-  if (activeTab.value !== 'board') loadList()
+watch(activeTab, (tab) => {
+  if (tab === 'board') loadStatistics()
+  else loadList()
 })
 
 onMounted(refreshAll)

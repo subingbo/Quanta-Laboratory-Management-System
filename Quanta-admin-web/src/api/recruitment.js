@@ -32,13 +32,27 @@ function normalizeTrack(track = {}) {
   }
 }
 
+function hasSplitRoundStatuses(application = {}) {
+  return [
+    'firstChoiceFirstRoundStatus',
+    'firstChoiceSecondRoundStatus',
+    'secondChoiceFirstRoundStatus',
+    'secondChoiceSecondRoundStatus',
+  ].some((key) => application[key] !== undefined && application[key] !== null)
+}
+
 function buildChoice(application, order) {
   const prefix = order === 1 ? 'firstChoice' : 'secondChoice'
   const department = application[prefix]
   if (!department) return null
   const status = application[`${prefix}Status`]
-  const firstRoundStatus = application[`${prefix}FirstRoundStatus`] ?? status
-  const secondRoundStatus = application[`${prefix}SecondRoundStatus`] ?? status
+  const splitStatuses = hasSplitRoundStatuses(application)
+  const firstRoundStatus = splitStatuses
+    ? application[`${prefix}FirstRoundStatus`] || 'PENDING'
+    : application[`${prefix}FirstRoundStatus`] ?? status
+  const secondRoundStatus = splitStatuses
+    ? application[`${prefix}SecondRoundStatus`] || 'PENDING'
+    : application[`${prefix}SecondRoundStatus`] ?? status
   return {
     choiceOrder: order,
     department,

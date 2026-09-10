@@ -57,6 +57,25 @@ describe('recruitment api', () => {
     expect(result.appliedAt).toBe('2026-08-30 10:00:00')
   })
 
+  it('keeps round-1 advancement separate from round-2 list statuses', () => {
+    const result = mapApplication({
+      applicationId: 9,
+      realName: '周杰',
+      firstChoice: 'FRONTEND',
+      secondChoice: 'BACKEND',
+      firstChoiceStatus: 'PASS',
+      secondChoiceStatus: null,
+      firstChoiceFirstRoundStatus: 'PASS',
+      firstChoiceSecondRoundStatus: null,
+      secondChoiceFirstRoundStatus: null,
+      secondChoiceSecondRoundStatus: null,
+    })
+
+    expect(result.choices[0].rounds[1].status).toBe('PASS')
+    expect(result.choices[0].rounds[2].advanced).toBe(true)
+    expect(result.choices[0].rounds[2].status).toBe('PENDING')
+  })
+
   it('merges detail sections and translates the offer contract', () => {
     expect(
       mergeApplicationDetail({
