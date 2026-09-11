@@ -1,0 +1,61 @@
+# ============================================================================
+# Quanta / RuoYi  ——  阿里云 ECS 依赖栈 (MySQL + Redis)
+# 用法：在本目录放置 .env（参考 .env.example），然后：
+#   docker compose up -d
+# MySQL 首次启动会自动执行 initdb/*.sql（顺序见文件名数字前缀），
+# 复用与云托管完全相同的库初始化脚本，保证 schema/种子/验证码开关一致。
+# ============================================================================
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: quanta-mysql
+    restart: unless-stopped
+    # 只绑定回环，别让 3306 暴露公网
+    ports:
+      - "127.0.0.1:3306:3306"
+    environment:
+      TZ: "Asia/Shanghai"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?set in .env}"
+      MYSQL_DATABASE: "ry-vue"
+      MYSQL_USER: "${MYSQL_USERNAME:-quanta}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:?set in .env}"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --log-bin-trust-function-creators=1
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # 复用云托管那套 initdb：数字前缀保证顺序
+      # 01 基础库 02 quartz 03 lab_full(旧) 04 lab_init(补 major 等)
+      # 05 signup_remark 06 member_role 07 关验证码(生产请删除/改回 true)
+      - ../../cloudrun/quanta-mysql/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\""]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    container_name: quanta-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --requirepass
+      - "${REDIS_PASSWORD:?set in .env}"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  mysql_data:
+  redis_data:
