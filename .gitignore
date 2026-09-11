@@ -15,7 +15,9 @@ target/
 # Local tool / 大构建产物（不能进库）
 
 .codegraph/
-cloudrun/quanta-system/ruoyi-admin.jar
+cloudrun/**/*.jar
+node_modules/
+.pnpm-store/
 
 ### STS ###
 .apt_generated
