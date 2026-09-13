@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 const source = readFileSync(new URL('./process.vue', import.meta.url), 'utf8')
 const parentSource = readFileSync(new URL('./join-us.vue', import.meta.url), 'utf8')
 const emptyStateRule = source.match(/\.empty-state\{([^}]*)\}/)?.[1] ?? ''
+const emptyCardRule = source.match(/\.empty-card\{([^}]*)\}/)?.[1] ?? ''
 const processHostRule = parentSource.match(/\.process-component\{([^}]*)\}/)?.[1] ?? ''
 
 describe('Join Us empty state layout', () => {
@@ -18,5 +19,9 @@ describe('Join Us empty state layout', () => {
     expect(processHostRule).toContain('flex:1')
     expect(processHostRule).toContain('min-height:0')
     expect(processHostRule).toContain('display:flex')
+  })
+
+  it('nudges the centered card slightly upward', () => {
+    expect(emptyCardRule).toContain('transform:translateY(-32rpx)')
   })
 })
