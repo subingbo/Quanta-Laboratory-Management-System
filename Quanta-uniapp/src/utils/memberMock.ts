@@ -126,6 +126,8 @@ const readStoredCards = (): MemberBusinessCard[] => {
   try { return typeof raw === 'string' ? JSON.parse(raw) : raw } catch { return [] }
 }
 
+export const hasStoredBusinessCard = (memberId: string) => readStoredCards().some((card) => card.memberId === memberId)
+
 export const getBusinessCard = async (memberId: string): Promise<MemberBusinessCard | null> => {
   const stored = readStoredCards().find((card) => card.memberId === memberId)
   if (stored) return clone(stored)

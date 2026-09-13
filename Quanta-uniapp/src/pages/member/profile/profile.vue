@@ -21,7 +21,7 @@
 import { computed, onMounted } from 'vue'
 import MemberTab from '../../../component/member_Tab.vue'
 import { sessionState, updateProfile } from '../../../stores/user'
-import { getMemberProfile } from '../../../utils/memberMock'
+import { getCurrentProfileApi } from '../../../api/user'
 
 const fallback = { id: 'PM2301', name: '方东升', account: 'PM2301', role: 'tower', department: '产品部', batch: '20th' }
 const profile = computed(() => sessionState.profile || fallback)
@@ -42,7 +42,7 @@ const handleAction = (key) => {
 }
 
 onMounted(async () => {
-	try { updateProfile({ ...profile.value, ...(await getMemberProfile()) }) } catch (error) { uni.showToast({ title: error?.message || '用户信息加载失败', icon: 'none' }) }
+	try { updateProfile(await getCurrentProfileApi('tower')) } catch (error) { uni.showToast({ title: error?.message || '用户信息加载失败', icon: 'none' }) }
 })
 </script>
 

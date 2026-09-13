@@ -65,7 +65,8 @@
 import { computed, onMounted, ref } from 'vue'
 import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
 import MemberTab from '../../../component/member_Tab.vue'
-import { filterContacts, getMemberDirectory } from '../../../utils/memberMock'
+import { filterContacts } from '../../../utils/memberMock'
+import { getMemberDirectory } from '../../../api/member'
 
 const toSvgDataUri = (svg) => `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 
@@ -83,13 +84,13 @@ const nextArrowIconSrc = toSvgDataUri(
 
 const memberBadgeIconSrc = '/static/icon/member/card-badge.svg'
 
-const batchList = ['18th', '19th', '20th', '21st']
-const batchIndex = ref(2)
+const batchList = ref([])
+const batchIndex = ref(0)
 const contactList = ref([])
 const searching = ref(false)
 const keyword = ref('')
 
-const currentBatch = computed(() => batchList[batchIndex.value])
+const currentBatch = computed(() => batchList.value[batchIndex.value] || '')
 
 const filteredContactList = computed(() =>
 	filterContacts(contactList.value, currentBatch.value, keyword.value)
@@ -102,7 +103,7 @@ const handlePrevBatch = () => {
 }
 
 const handleNextBatch = () => {
-	if (batchIndex.value < batchList.length - 1) {
+	if (batchIndex.value < batchList.value.length - 1) {
 		batchIndex.value += 1
 	}
 }
@@ -117,6 +118,8 @@ const handleContactClick = (item) => {
 onMounted(async () => {
 	try {
 		contactList.value = await getMemberDirectory()
+		batchList.value = [...new Set(contactList.value.map((item) => item.batch))].sort((left, right) => right.localeCompare(left, undefined, { numeric: true }))
+		batchIndex.value = 0
 	} catch (error) {
 		uni.showToast({ title: error?.message || '通讯录加载失败', icon: 'none' })
 	}
