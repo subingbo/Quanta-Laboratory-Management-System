@@ -7,6 +7,7 @@ const scrollAreaRule = functionSource.match(/\.scroll-area\s*\{([^}]*)\}/)?.[1] 
 const circleListRule = functionSource.match(/\.circle-list\s*\{([^}]*)\}/)?.[1] ?? ''
 const homeRule = homeSource.match(/\.freshman-home\s*\{([^}]*)\}/)?.[1] ?? ''
 const logoStageRule = homeSource.match(/\.logo-stage\s*\{([^}]*)\}/)?.[1] ?? ''
+const logoHaloRule = homeSource.match(/\.logo-halo\s*\{([^}]*)\}/)?.[1] ?? ''
 const logoCircleRule = homeSource.match(/\.logo-circle\s*\{([^}]*)\}/)?.[1] ?? ''
 
 describe('freshman page bottom spacing', () => {
@@ -38,10 +39,11 @@ describe('freshman home logo flip', () => {
 
   it('keeps the halo fixed while only the circular card rotates', () => {
     expect(homeSource).toContain('class="logo-stage"')
-    expect(logoStageRule).toContain('box-shadow:')
+    expect(homeSource).toContain('class="logo-halo"')
     expect(logoStageRule).toContain('perspective: 1200rpx')
-    expect(logoStageRule).toContain('background: radial-gradient(circle at 38% 30%')
-    expect(logoStageRule).toContain('inset 0 0 72rpx rgba(255, 102, 0, 0.16)')
+    expect(logoStageRule).not.toContain('background:')
+    expect(logoHaloRule).toContain('inset: -92rpx')
+    expect(logoHaloRule).toContain('rgba(255, 102, 0, 0) 74%')
     expect(logoCircleRule).not.toContain('box-shadow:')
     expect(logoCircleRule).toContain('transition: transform 0.65s')
   })
