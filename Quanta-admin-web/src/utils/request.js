@@ -2,6 +2,7 @@ import axios from 'axios'
 import { getToken } from './token'
 import { notifyUnauthorized } from './unauthorized'
 import { mockRequest } from '@/mock'
+import { isFullMockEnabled, shouldUseMock } from '@/config/mock-api'
 
 const service = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '',
@@ -33,16 +34,16 @@ export function normalizeRuoYiResponse(payload) {
   return payload
 }
 
-export function isMockEnabled() {
-  return String(import.meta.env.VITE_USE_MOCK ?? 'true') !== 'false'
-}
+export const isMockEnabled = isFullMockEnabled
 
 export async function request(config) {
+  const useMock = shouldUseMock(config)
   try {
-    const response = isMockEnabled()
-      ? await mockRequest(config)
-      : await service.request(config)
-    const payload = isMockEnabled() ? response : response.data
+    if (useMock && !isMockEnabled() && import.meta.env.DEV) {
+      console.warn(`[Quanta Web] 使用 Mock 接口：${String(config.method || 'get').toUpperCase()} ${config.url}`)
+    }
+    const response = useMock ? await mockRequest(config) : await service.request(config)
+    const payload = useMock ? response : response.data
     return normalizeRuoYiResponse(payload)
   } catch (rawError) {
     const code = Number(
