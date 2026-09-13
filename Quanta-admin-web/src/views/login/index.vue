@@ -6,6 +6,7 @@ import { Lock, User } from '@element-plus/icons-vue'
 import { getCaptcha } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
 import { safeInternalRedirect } from '@/utils/redirect'
+import quantaLogoUrl from '@/assets/quanta-logo.jpg'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,6 +16,7 @@ const loading = ref(false)
 const captchaEnabled = ref(false)
 const captchaImage = ref('')
 const isDev = import.meta.env.DEV
+const isMockMode = String(import.meta.env.VITE_USE_MOCK ?? 'false') === 'true'
 
 const form = reactive({
   username: '',
@@ -80,30 +82,45 @@ onMounted(loadCaptcha)
   <main class="login-page">
     <section class="login-page__brand-panel">
       <div class="login-page__brand">
-        <div class="login-page__logo">Q</div>
+        <div class="login-page__logo">
+          <img :src="quantaLogoUrl" alt="Quanta 社团 Logo" />
+        </div>
         <div>
           <strong>Quanta</strong>
-          <span>在热爱中创造，在协作中成长</span>
+          <span>QUANTA DIGITAL CLUB</span>
         </div>
       </div>
       <div class="login-page__intro">
-        <span>QUANTA ADMIN</span>
-        <h1>让社团管理<br />清晰而高效</h1>
-        <p>成员、招新与日常事务，在一个统一、安全的后台中协同完成。</p>
+        <span class="login-page__eyebrow"><i></i> QUANTA ADMIN CONSOLE</span>
+        <h1>聚合每一份热爱，<br />让协作自然发生。</h1>
+        <p>连接成员、招新与日常事务，让每一次创造都有迹可循。</p>
+        <div class="login-page__capabilities" aria-label="平台能力">
+          <span>成员共建</span>
+          <span>活动协同</span>
+          <span>知识沉淀</span>
+        </div>
       </div>
-      <div class="login-page__decoration">Q</div>
+      <div class="login-page__orbit login-page__orbit--large"></div>
+      <div class="login-page__orbit login-page__orbit--small"></div>
+      <div class="login-page__glow"></div>
     </section>
 
     <section class="login-page__form-panel">
       <div class="login-card">
         <div class="login-card__mobile-brand">
-          <div class="login-page__logo">Q</div>
-          <strong>Quanta</strong>
+          <div class="login-page__logo">
+            <img :src="quantaLogoUrl" alt="Quanta 社团 Logo" />
+          </div>
+          <div><strong>Quanta</strong><span>ADMIN CONSOLE</span></div>
+        </div>
+        <div v-if="isDev" class="login-card__environment" :class="{ 'is-mock': isMockMode }">
+          <i></i>
+          {{ isMockMode ? 'Mock 数据' : '真实后端' }}
         </div>
         <div class="login-card__heading">
-          <span>欢迎回来</span>
+          <span>WELCOME BACK</span>
           <h2>登录后台管理系统</h2>
-          <p>请输入你的账号信息继续访问</p>
+          <p>使用你的 Quanta 账号继续访问</p>
         </div>
 
         <ElForm ref="formRef" :model="form" :rules="rules" size="large" @submit.prevent="submit">
@@ -142,12 +159,14 @@ onMounted(loadCaptcha)
         </ElForm>
 
         <div v-if="isDev" class="login-card__demo">
-          <span>本地演示账号</span>
-          <code>admin / quanta123</code>
-          <code>viewer / quanta123</code>
+          <div>
+            <span>联调测试账号</span>
+            <small>仅开发环境可见</small>
+          </div>
+          <code>admin / admin123</code>
         </div>
       </div>
-      <p class="login-page__copyright">© 2026 Quanta · 后台管理系统</p>
+      <p class="login-page__copyright">© 2026 Quanta Digital Club</p>
     </section>
   </main>
 </template>

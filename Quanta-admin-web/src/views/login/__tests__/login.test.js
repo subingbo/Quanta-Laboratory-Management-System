@@ -25,6 +25,15 @@ async function mountLogin() {
 }
 
 describe('login view', () => {
+  it('shows the Quanta brand and real backend development account', async () => {
+    const { wrapper } = await mountLogin()
+
+    expect(wrapper.get('img[alt="Quanta 社团 Logo"]').attributes('src')).toContain('quanta-logo.jpg')
+    expect(wrapper.text()).toContain('真实后端')
+    expect(wrapper.text()).toContain('admin / admin123')
+    expect(wrapper.text()).not.toContain('viewer / quanta123')
+  })
+
   it('does not submit an empty form', async () => {
     const { wrapper, userStore } = await mountLogin()
     const loginSpy = vi.spyOn(userStore, 'login')
@@ -40,7 +49,7 @@ describe('login view', () => {
     vi.spyOn(userStore, 'login').mockResolvedValue({ code: 200, token: 'test-token' })
 
     await wrapper.find('input[autocomplete="username"]').setValue('admin')
-    await wrapper.find('input[autocomplete="current-password"]').setValue('quanta123')
+    await wrapper.find('input[autocomplete="current-password"]').setValue('admin123')
     await wrapper.find('.login-card__submit').trigger('click')
     await flushPromises()
 
@@ -48,4 +57,3 @@ describe('login view', () => {
     expect(router.currentRoute.value.path).toBe('/dashboard')
   })
 })
-
