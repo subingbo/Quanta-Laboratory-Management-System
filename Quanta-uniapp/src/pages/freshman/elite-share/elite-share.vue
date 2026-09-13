@@ -139,16 +139,20 @@ onMounted(() => {
 	background: #f7f7f7;
 	box-sizing: border-box;
 	overflow: hidden;
+	display: flex;
+	flex-direction: column;
 }
 
 .top-bar {
-	height: 128rpx;
-	padding: 64rpx 32rpx 0;
+	width: 100%;
+	height: 136rpx;
+	padding: 88rpx 32rpx 0;
 	background: #ffffff;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	box-sizing: border-box;
+	flex-shrink: 0;
 }
 
 .back-btn,
@@ -175,13 +179,14 @@ onMounted(() => {
 
 .page-scroll {
 	width: 100%;
-	height: calc(100vh - 128rpx);
+	flex: 1;
+	height: 0;
 }
 
 .content-card {
 	width: calc(100% - 88rpx);
-	margin: 40rpx auto 0;
-	padding: 42rpx 36rpx 180rpx;
+	margin: 40rpx auto calc(180rpx + env(safe-area-inset-bottom));
+	padding: 42rpx 36rpx 80rpx;
 	background: #ffffff;
 	box-sizing: border-box;
 	box-shadow: 0 0 24rpx rgba(0, 0, 0, 0.08);

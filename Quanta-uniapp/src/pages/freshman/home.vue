@@ -62,15 +62,17 @@
 		<!--页面内容-->
 		<view class="content">
 			<view class="logo-wrap">
-				<view class="logo-circle" :class="{ 'logo-circle--flipped': logoFlipped }" @click="toggleLogo">
-					<view class="logo-face logo-face--front">
-						<image class="logo-image" :src="brandMarkSrc" mode="aspectFit"/>
-					</view>
-					<view class="logo-face logo-face--back">
-						<text class="slogan-label">QUANTA LAB</text>
-						<view class="slogan-rule" />
-						<text class="slogan-prefix">nothing but</text>
-						<view class="slogan-word"><text>profes</text><text class="slogan-accent">S</text><text>i</text><text class="slogan-accent">O</text><text>nal</text></view>
+				<view class="logo-stage">
+					<view class="logo-circle" :class="{ 'logo-circle--flipped': logoFlipped }" @click="toggleLogo">
+						<view class="logo-face logo-face--front">
+							<image class="logo-image" :src="brandMarkSrc" mode="aspectFit"/>
+						</view>
+						<view class="logo-face logo-face--back">
+							<text class="slogan-label">QUANTA LAB</text>
+							<view class="slogan-rule" />
+							<text class="slogan-prefix">nothing but</text>
+							<view class="slogan-word"><text>profes</text><text class="slogan-accent">S</text><text>i</text><text class="slogan-accent">O</text><text>nal</text></view>
+						</view>
 					</view>
 				</view>
 			</view>
@@ -285,17 +287,23 @@ const submitLogout = () => {
 	width: 100%;
 	display: flex;
 	justify-content: center;
+	}
+
+.logo-stage {
+	width: 366rpx;
+	height: 366rpx;
+	border-radius: 50%;
 	perspective: 1200rpx;
+	box-shadow: 2px 2px 109.1px -1px #FDAF32, 0px 4px 4px 0px #00000040;
 }
 
 .logo-circle {
-	width: 366rpx;
-	height: 366rpx;
+	width: 100%;
+	height: 100%;
 	border-radius: 220rpx;
 	position: relative;
 	transform-style: preserve-3d;
 	transition: transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
-	box-shadow: 2px 2px 109.1px -1px #FDAF32, 0px 4px 4px 0px #00000040;
 }
 
 .logo-circle--flipped {

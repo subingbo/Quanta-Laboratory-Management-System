@@ -76,14 +76,14 @@ const handleEliteShare = () => {
 	box-sizing: border-box;
 	background: #ffffff;
 	padding-top: 180rpx;
-	padding-bottom: calc(180rpx + env(safe-area-inset-bottom));
+	padding-bottom: 0;
 }
 
 .circle-list {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding: 50rpx 0 calc(320rpx + env(safe-area-inset-bottom));
+	padding: 50rpx 0 calc(250rpx + env(safe-area-inset-bottom));
 	box-sizing: border-box;
 }
 
