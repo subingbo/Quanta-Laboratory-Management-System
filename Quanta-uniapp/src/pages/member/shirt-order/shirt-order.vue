@@ -26,18 +26,21 @@
 <script setup lang="js">
 import { onMounted, ref } from 'vue'
 import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
-import { getShirtProduct, saveMockShirtOrder, validateShirtSelection } from '../../../utils/memberMock'
+import { validateShirtSelection } from '../../../utils/memberMock'
+import { createDraftShirtOrder, getShirtProduct } from '../../../api/clothing'
 
-const product = ref({ images: [], colors: [], sizes: [], price: 45 })
+const product = ref({ itemId: 0, name: '', images: [], colors: [], sizes: [], price: 45 })
 const colors = ref([])
 const sizes = ref([])
 const color = ref('')
 const size = ref('')
 const confirmVisible = ref(false)
 onMounted(async () => {
-	product.value = await getShirtProduct()
-	colors.value = product.value.colors
-	sizes.value = product.value.sizes
+	try {
+		product.value = await getShirtProduct()
+		colors.value = product.value.colors
+		sizes.value = product.value.sizes
+	} catch (error) { uni.showToast({ title: error?.message || '塔服信息加载失败', icon: 'none' }) }
 })
 const goBack = () => uni.navigateBack()
 const showNotice = () => uni.showToast({ title: '请按需选择颜色与尺码', icon: 'none' })
@@ -47,9 +50,11 @@ const startOrder = () => {
 	confirmVisible.value = true
 }
 const confirmOrder = async () => {
-	await saveMockShirtOrder({ color: color.value, size: size.value })
-	confirmVisible.value = false
-	uni.showToast({ title: '订购信息已保存，待后续支付', icon: 'none', duration: 2600 })
+	try {
+		await createDraftShirtOrder(product.value, { color: color.value, size: size.value })
+		confirmVisible.value = false
+		uni.showToast({ title: '订购信息已保存到后端，待后续支付', icon: 'none', duration: 2600 })
+	} catch (error) { uni.showToast({ title: error?.message || '订购信息保存失败', icon: 'none' }) }
 }
 </script>
 
