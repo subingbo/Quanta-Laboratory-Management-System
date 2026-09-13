@@ -2,8 +2,10 @@
 	<view class="member-home">
 		<member-safe-header class="page-header" mode="brand" title="Quanta">
 			<template #actions>
-				<image class="header-icon" :src="searchIconSrc" mode="aspectFit" @click="showUnavailable" />
-				<image class="header-icon header-icon-bell" :src="bellIconSrc" mode="aspectFit" @click="showUnavailable" />
+				<view class="header-actions">
+					<image class="header-icon" :src="searchIconSrc" mode="aspectFit" @click="showUnavailable" />
+					<image class="header-icon header-icon-bell" :src="bellIconSrc" mode="aspectFit" @click="showUnavailable" />
+				</view>
 			</template>
 		</member-safe-header>
 
@@ -110,6 +112,8 @@ onMounted(async () => {
 	height: 38rpx;
 	flex-shrink: 0;
 }
+
+.header-actions { display: flex; align-items: center; gap: 28rpx; }
 
 .header-icon-bell {
 	width: 38rpx;

@@ -23,4 +23,10 @@ describe('member page navigation migration', () => {
     const source = readFileSync(new URL('../freshman/home.vue', import.meta.url), 'utf8')
     expect(source).not.toContain('MemberSafeHeader')
   })
+
+  it('keeps visible spacing between home search and notification icons', () => {
+    const source = readFileSync(new URL('./home/home.vue', import.meta.url), 'utf8')
+    expect(source).toContain('class="header-actions"')
+    expect(source).toContain('gap: 28rpx')
+  })
 })
