@@ -28,13 +28,15 @@
 
 <script setup lang="js">
 import { onMounted, reactive, ref, watch } from 'vue'
-import { APPLICATION_FORM_KEY, departmentOptions, genderOptions, createEmptyApplication, getSubmitted, normalizeDepartmentName, saveApplication, saveDraft } from '../../../utils/mockRecruitment'
+import { departmentOptions, genderOptions, createEmptyApplication } from '../../../utils/mockRecruitment'
+import { getMyApplication, submitApplication } from '../../../api/recruitment'
 
 const deptOptions = departmentOptions
 const form = reactive(createEmptyApplication())
 const isEditing = ref(true)
 const submitted = ref(false)
 const dirty = ref(false)
+const submitting = ref(false)
 let restoring = false
 const requiredFields = { photo: '请上传证件照', realName: '请填写姓名', gender: '请选择性别', className: '请填写班级', firstChoice: '请选择一志愿', secondChoice: '请选择二志愿', selfIntro: '请填写个人介绍', codingExperienceDesc: '请填写编程经历', quantaUnderstanding: '请填写对 Quanta 的了解' }
 
@@ -45,13 +47,13 @@ const onGenderChange = (event) => { form.gender = genderOptions[event.detail.val
 const setChoice = (field, event) => { const value = deptOptions[event.detail.value]; const other = field === 'firstChoice' ? form.secondChoice : form.firstChoice; if (value === other) return uni.showToast({ title: '两个志愿不能相同', icon: 'none' }); form[field] = value }
 const onFirstChoiceChange = (event) => setChoice('firstChoice', event)
 const onSecondChoiceChange = (event) => setChoice('secondChoice', event)
-const handleUploadPhoto = () => { if (!isEditing.value) return; uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'], success: (result) => { form.photo = result.tempFilePaths[0] } }) }
+const handleUploadPhoto = () => { if (!isEditing.value) return; uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'], success: (result) => { form.photo = result.tempFilePaths[0]; form.photoUrl = '' } }) }
 const validateForm = () => { for (const key in requiredFields) { if (!form[key]) { uni.showToast({ title: requiredFields[key], icon: 'none' }); return false } }; if (form.firstChoice === form.secondChoice) { uni.showToast({ title: '两个志愿不能相同', icon: 'none' }); return false }; return true }
-const buildPayload = () => ({ ...form, codingExperience: form.codingExperienceDesc.trim() ? '1' : '0', photoFile: form.photo })
-const doSave = ({ silent = false } = {}) => { if (!isEditing.value) return true; if (!validateForm()) return false; saveDraft(buildPayload()); isEditing.value = false; submitted.value = false; dirty.value = false; if (!silent) uni.showToast({ title: '保存成功', icon: 'success' }); return true }
+const buildPayload = () => ({ ...form, codingExperience: form.codingExperienceDesc.trim() ? '1' : '0' })
+const doSave = ({ silent = false } = {}) => { if (!isEditing.value) return true; if (!validateForm()) return false; isEditing.value = false; dirty.value = false; if (!silent) uni.showToast({ title: '已暂存当前编辑', icon: 'success' }); return true }
 const handleSave = () => { if (isEditing.value) doSave(); else { isEditing.value = true; submitted.value = false; uni.showToast({ title: '已进入编辑状态', icon: 'none' }) } }
-const handleSubmit = () => { if (submitted.value || !validateForm()) return; saveApplication(buildPayload()); submitted.value = true; isEditing.value = false; dirty.value = false; /* TODO: 后端上线后替换为真实投递接口 */ uni.showToast({ title: '投递成功', icon: 'success' }) }
-onMounted(() => { restoring = true; const saved = uni.getStorageSync(APPLICATION_FORM_KEY); if (saved) { const firstChoice = normalizeDepartmentName(saved.firstChoice); const secondChoice = normalizeDepartmentName(saved.secondChoice); Object.assign(form, { ...createEmptyApplication(), ...saved, photo: saved.photo || saved.photoFile || '', firstChoice: departmentOptions.includes(firstChoice) ? firstChoice : '', secondChoice: departmentOptions.includes(secondChoice) ? secondChoice : '' }); isEditing.value = false }; submitted.value = getSubmitted(); restoring = false; dirty.value = false })
+const handleSubmit = async () => { if (submitting.value || !validateForm()) return; submitting.value = true; try { await submitApplication(buildPayload()); const saved = await getMyApplication(); if (saved) Object.assign(form, saved); submitted.value = true; isEditing.value = false; dirty.value = false; uni.showToast({ title: '投递成功', icon: 'success' }) } catch (error) { uni.showToast({ title: error?.message || '投递失败，请稍后重试', icon: 'none' }) } finally { submitting.value = false } }
+onMounted(async () => { restoring = true; try { const saved = await getMyApplication(); if (saved) { Object.assign(form, { ...createEmptyApplication(), ...saved }); submitted.value = true; isEditing.value = false } } catch (error) { uni.showToast({ title: error?.message || '简历加载失败', icon: 'none' }) } finally { restoring = false; dirty.value = false } })
 defineExpose({ hasUnsavedChanges: () => dirty.value, doSave })
 </script>
 

@@ -112,17 +112,10 @@
 <script setup lang="js">
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
-	APPLICATION_FORM_KEY,
 	applyProcessPreset,
-	createDepartment,
-	departmentOptions,
-	getStoredProcess,
-	getSubmitted,
-	normalizeDepartmentName,
-	normalizeDepartmentProcess,
 	processPresetOptions,
-	saveStoredProcess,
 } from '../../../utils/mockRecruitment'
+import { getMyInterviewProcess } from '../../../api/recruitment'
 
 const emit = defineEmits(['go-submit'])
 const isDev = import.meta.env.DEV
@@ -259,7 +252,7 @@ const closeDetail = () => resetDetail()
 const handleMaskClick = () => { if (detail.dismissible) closeDetail() }
 
 const persistDepartments = () => {
-	departments.value = saveStoredProcess(departments.value)
+	departments.value = departments.value.map((department) => ({ ...department }))
 }
 
 const rejectSecondInterview = () => {
@@ -324,23 +317,13 @@ const applyDebugState = () => {
 	uni.showToast({ title: `已切换为${preset.label}`, icon: 'none' })
 }
 
-onMounted(() => {
-	if (!getSubmitted()) return
-	const form = uni.getStorageSync(APPLICATION_FORM_KEY)
-	const choices = [...new Set(
-		[form?.firstChoice, form?.secondChoice]
-			.map(normalizeDepartmentName)
-			.filter((name) => departmentOptions.includes(name)),
-	)]
-	if (!choices.length) return
-
-	const cached = getStoredProcess()
-	departments.value = choices.map((name) => {
-		const cachedDepartment = cached.find((department) => normalizeDepartmentName(department.name) === name)
-		return cachedDepartment ? normalizeDepartmentProcess(cachedDepartment, name) : createDepartment(name)
-	})
-	activeDepartment.value = departments.value[0].name
-	persistDepartments()
+onMounted(async () => {
+	try {
+		departments.value = await getMyInterviewProcess()
+		activeDepartment.value = departments.value[0]?.name || ''
+	} catch (error) {
+		uni.showToast({ title: error?.message || '应聘流程加载失败', icon: 'none' })
+	}
 })
 </script>
 
