@@ -69,7 +69,7 @@
 
 实现阶段建立独立文件：
 
-`docs/quanta-admin-web-mock-api-checklist.md`
+`docs/Quanta管理端Web接口Mock清单.md`
 
 文件名明确包含 `web`，内容至少记录：
 
@@ -115,4 +115,4 @@
 - 常规开发启动默认连接真实后端，真实账号可登录并进入后台。
 - 登录页使用正式 Quanta Logo，视觉上与后台一致且适配移动端。
 - 未完成接口按显式白名单继续使用 Mock，真实错误不会被自动掩盖。
-- `docs/quanta-admin-web-mock-api-checklist.md` 与实际白名单一致，并明确标识为 Web 端。
+- `docs/Quanta管理端Web接口Mock清单.md` 与实际白名单一致，并明确标识为 Web 端。
