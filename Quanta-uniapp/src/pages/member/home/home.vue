@@ -1,12 +1,11 @@
 <template>
 	<view class="member-home">
-		<view class="header">
-			<text class="brand-title">Quanta</text>
-			<view class="header-actions">
+		<member-safe-header class="page-header" mode="brand" title="Quanta">
+			<template #actions>
 				<image class="header-icon" :src="searchIconSrc" mode="aspectFit" @click="showUnavailable" />
 				<image class="header-icon header-icon-bell" :src="bellIconSrc" mode="aspectFit" @click="showUnavailable" />
-			</view>
-		</view>
+			</template>
+		</member-safe-header>
 
 		<swiper
 			class="banner-swiper"
@@ -59,6 +58,7 @@
 
 <script setup lang="js">
 import { onMounted, ref } from 'vue'
+import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
 import MemberTab from '../../../component/member_Tab.vue'
 import { getMemberHome } from '../../../utils/memberMock'
 
@@ -102,31 +102,7 @@ onMounted(async () => {
 	min-height: 100vh;
 	background: #ffffff;
 	box-sizing: border-box;
-	padding: calc(88rpx + env(safe-area-inset-top)) 46rpx calc(220rpx + env(safe-area-inset-bottom));
-}
-
-.header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 40rpx;
-}
-
-.brand-title {
-	font-family: Inter, -apple-system, sans-serif;
-	font-weight: 700;
-	font-size: 48rpx;
-	line-height: 64rpx;
-	letter-spacing: -1.2rpx;
-	color: #333333;
-}
-
-.header-actions {
-	position: relative;
-	display: flex;
-	align-items: center;
-	gap: 28rpx;
-	padding-top: 20rpx;
+	padding: 0 46rpx calc(220rpx + env(safe-area-inset-bottom));
 }
 
 .header-icon {
@@ -271,6 +247,8 @@ onMounted(async () => {
 	line-height: 32rpx;
 	color: #888888;
 }
+
+.page-header { margin-bottom: 40rpx; }
 
 .empty-text {
 	display: block;

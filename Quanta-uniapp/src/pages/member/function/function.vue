@@ -1,11 +1,8 @@
 <template>
 	<view class="function-page">
-		<view class="header">
-			<text class="brand-title">Quanta</text>
-			<view class="notice-wrap" @click="showUnavailable">
-				<image class="notice-icon" src="/static/icon/member/announcement.svg" mode="aspectFit" /><view class="notice-dot" />
-			</view>
-		</view>
+		<member-safe-header mode="brand" title="Quanta">
+			<template #actions><view class="notice-wrap" @click="showUnavailable"><image class="notice-icon" src="/static/icon/member/announcement.svg" mode="aspectFit" /><view class="notice-dot" /></view></template>
+		</member-safe-header>
 		<view class="feature-grid">
 			<view v-for="item in features" :key="item.key" class="feature-card" @click="openFeature(item.key)">
 				<view class="feature-icon-shell" :style="{ background: item.background }">
@@ -19,6 +16,7 @@
 </template>
 
 <script setup lang="js">
+import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
 import MemberTab from '../../../component/member_Tab.vue'
 
 const features = [
@@ -47,9 +45,7 @@ const openFeature = (key) => {
 </script>
 
 <style scoped>
-.function-page { min-height: 100vh; box-sizing: border-box; padding: calc(88rpx + env(safe-area-inset-top)) 46rpx calc(230rpx + env(safe-area-inset-bottom)); background: linear-gradient(135deg, rgba(255,237,212,.32), #fff 35%, #fff 70%, rgba(255,237,212,.28)); }
-.header { display: flex; justify-content: space-between; align-items: center; }
-.brand-title { font-size: 48rpx; line-height: 64rpx; font-weight: 700; letter-spacing: -1.2rpx; color: #333; }
+.function-page { min-height: 100vh; box-sizing: border-box; padding: 0 46rpx calc(230rpx + env(safe-area-inset-bottom)); background: linear-gradient(135deg, rgba(255,237,212,.32), #fff 35%, #fff 70%, rgba(255,237,212,.28)); }
 .notice-wrap { position: relative; width: 56rpx; height: 56rpx; display: flex; align-items: center; justify-content: center; }
 .notice-icon { width: 44rpx; height: 44rpx; }
 .notice-dot { position: absolute; right: 4rpx; top: 2rpx; width: 14rpx; height: 14rpx; border-radius: 50%; background: #fdaf32; }

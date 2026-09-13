@@ -1,11 +1,8 @@
 <template>
 	<view class="member-contact">
-		<view class="header">
-			<text class="brand-title">Quanta</text>
-			<view class="header-actions" @click="toggleSearch">
-				<image class="header-icon" :src="searchIconSrc" mode="aspectFit" />
-			</view>
-		</view>
+		<member-safe-header class="page-header" mode="brand" title="Quanta">
+			<template #actions><view class="header-actions" @click="toggleSearch"><image class="header-icon" :src="searchIconSrc" mode="aspectFit" /></view></template>
+		</member-safe-header>
 		<view v-if="searching" class="search-shell">
 			<input v-model="keyword" class="search-input" confirm-type="search" placeholder="搜索姓名、工号或职位" focus />
 			<text class="search-cancel" @click="closeSearch">取消</text>
@@ -66,6 +63,7 @@
 
 <script setup lang="js">
 import { computed, onMounted, ref } from 'vue'
+import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
 import MemberTab from '../../../component/member_Tab.vue'
 import { filterContacts, getMemberDirectory } from '../../../utils/memberMock'
 
@@ -130,26 +128,9 @@ onMounted(async () => {
 	min-height: 100vh;
 	background: #ffffff;
 	box-sizing: border-box;
-	padding: calc(88rpx + env(safe-area-inset-top)) 46rpx 0;
+	padding: 0 46rpx;
 	display: flex;
 	flex-direction: column;
-}
-
-.header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 36rpx;
-	flex-shrink: 0;
-}
-
-.brand-title {
-	font-family: Inter, -apple-system, sans-serif;
-	font-weight: 700;
-	font-size: 48rpx;
-	line-height: 64rpx;
-	letter-spacing: -1.2rpx;
-	color: #333333;
 }
 
 .header-actions {
@@ -162,6 +143,8 @@ onMounted(async () => {
 	height: 38rpx;
 	flex-shrink: 0;
 }
+
+.page-header { margin-bottom: 36rpx; }
 
 .search-shell {
 	height: 76rpx;

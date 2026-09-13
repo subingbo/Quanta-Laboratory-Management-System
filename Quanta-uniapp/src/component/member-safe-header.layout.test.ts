@@ -22,5 +22,6 @@ describe('MemberSafeHeader layout', () => {
     expect(source).toContain('titleSafeStyle')
     expect(source).toContain("left: `${metrics.capsuleInsetRight}px`")
     expect(source).toContain("right: `${metrics.capsuleInsetRight}px`")
+    expect(source.match(/transform: translateY\(-50%\)/g)).toHaveLength(4)
   })
 })

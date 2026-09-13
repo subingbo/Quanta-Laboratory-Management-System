@@ -1,6 +1,6 @@
 <template>
 	<view class="order-page">
-		<view class="top-bar"><text class="back" @click="goBack">‹</text><text class="page-title">塔服订购</text><view class="spacer" /></view>
+		<member-safe-header title="塔服订购" back @back="goBack" />
 		<image class="announcement" src="/static/icon/member/shirt-announcement.svg" mode="aspectFit" @click="showNotice" />
 		<view class="product-card">
 			<swiper class="product-swiper" :indicator-dots="product.images.length > 1" indicator-color="rgba(255,255,255,.55)" indicator-active-color="#ff9f24" circular>
@@ -25,6 +25,7 @@
 
 <script setup lang="js">
 import { onMounted, ref } from 'vue'
+import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
 import { getShirtProduct, saveMockShirtOrder, validateShirtSelection } from '../../../utils/memberMock'
 
 const product = ref({ images: [], colors: [], sizes: [], price: 45 })
@@ -53,10 +54,7 @@ const confirmOrder = async () => {
 </script>
 
 <style scoped>
-.order-page { min-height: 100vh; box-sizing: border-box; padding: calc(28rpx + env(safe-area-inset-top)) 50rpx 80rpx; background: #fff; color: #111; }
-.top-bar { display: flex; align-items: center; justify-content: space-between; height: 76rpx; }
-.back { width: 60rpx; font-size: 68rpx; line-height: 60rpx; font-weight: 300; }
-.page-title { font-size: 31rpx; font-weight: 500; }.spacer { width: 60rpx; }
+.order-page { min-height: 100vh; box-sizing: border-box; padding: 0 50rpx 80rpx; background: #fff; color: #111; }
 .announcement { display: block; margin-top: 32rpx; width: 48rpx; height: 48rpx; }
 .product-card { margin-top: 22rpx; padding: 20rpx; border-radius: 12rpx; background: #fff; box-shadow: 0 12rpx 42rpx rgba(0,0,0,.14); }
 .product-swiper { width: 100%; height: 690rpx; border-radius: 10rpx; overflow: hidden; }

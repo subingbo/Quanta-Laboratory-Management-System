@@ -1,6 +1,6 @@
 <template>
 	<view class="workstation-page">
-		<view class="top-bar"><text class="back" @click="goBack">‹</text><text class="page-title">工位预约</text><view class="spacer" /></view>
+		<member-safe-header title="工位预约" title-size="large" back @back="goBack" />
 		<view class="required-button" @click="noticeVisible = true"><text class="required-brand">Quanta</text><text>实验室预约必读</text><text class="required-arrow">›</text></view>
 
 		<view class="date-row">
@@ -79,6 +79,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
 import { getWorkstationDay, reserveWorkstation, type Workstation, type WorkstationDay } from '../../../utils/workstationMock'
 import { WORKSTATION_PERIODS, shiftWorkstationDate, toLocalDateKey, type WorkstationPeriodKey, type WorkstationSlotStatus } from '../../../utils/workstationRules'
 
@@ -163,7 +164,7 @@ onShow(async () => {
 </script>
 
 <style scoped>
-.workstation-page { min-height: 100vh; box-sizing: border-box; padding: calc(24rpx + env(safe-area-inset-top)) 42rpx 70rpx; background: #fff; color: #222; }.top-bar { height: 92rpx; display: flex; align-items: center; justify-content: space-between; }.back { width: 60rpx; font-size: 68rpx; line-height: 56rpx; font-weight: 300; }.page-title { font-size: 36rpx; font-weight: 600; }.spacer { width: 60rpx; }
+.workstation-page { min-height: 100vh; box-sizing: border-box; padding: 0 42rpx 70rpx; background: #fff; color: #222; }
 .required-button { position: sticky; top: calc(12rpx + env(safe-area-inset-top)); z-index: 12; height: 104rpx; margin: 26rpx 24rpx 28rpx; padding: 0 34rpx; border: 2rpx solid #ffe1be; border-radius: 34rpx; background: rgba(255,255,255,.96); box-shadow: 0 12rpx 28rpx rgba(0,0,0,.06); display: flex; align-items: center; justify-content: center; gap: 18rpx; font-size: 30rpx; }.required-brand { color: #ff5b00; font-weight: 800; }.required-arrow { position: absolute; right: 28rpx; color: #ff8a3c; font-size: 46rpx; }
 .date-row { display: flex; align-items: center; justify-content: center; gap: 38rpx; }.date-arrow { width: 54rpx; color: #333; font-size: 56rpx; line-height: 62rpx; text-align: center; }.date-arrow.disabled { color: #d7d7d7; }.date-label { min-width: 250rpx; font-size: 30rpx; font-weight: 600; text-align: center; }.legend-row { margin: 18rpx auto 30rpx; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14rpx 28rpx; }.legend-item { display: flex; align-items: center; gap: 10rpx; color: #888; font-size: 22rpx; }.legend-color { width: 28rpx; height: 28rpx; border-radius: 7rpx; box-sizing: border-box; }
 .status-available { background: #eafbf1; border: 2rpx solid #9ff0c0; }.status-booked { background: #ff2937; border: 2rpx solid #e80015; }.status-mine { background: #16864c; border: 2rpx solid #096e39; }.status-unavailable { background: #fff8ed; border: 2rpx solid #f8a526; }

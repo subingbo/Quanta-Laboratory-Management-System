@@ -1,6 +1,6 @@
 <template>
 	<view class="library-page">
-		<view class="top-bar"><text class="back" @click="goBack">‹</text><text class="page-title">图书借阅</text><view class="spacer" /></view>
+		<member-safe-header title="图书借阅" title-size="large" back @back="goBack" />
 		<view class="search-box"><image src="/static/icon/member/library-search.svg" mode="aspectFit" /><input v-model="keyword" placeholder="搜索书号或柜号..." @input="handleSearch" /></view>
 		<view class="legend-row">
 			<view class="legend"><view class="legend-block borrowed" /><text>已借出</text></view>
@@ -37,6 +37,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
 import { borrowBook, getLibraryBooks, type BorrowBookResult, type LibraryBook } from '../../../utils/libraryMock'
 import { buildBorrowConfirmationCopy, buildPaginationItems, filterLibraryBooks, paginate } from '../../../utils/libraryRules'
 
@@ -86,7 +87,7 @@ onMounted(async () => { try { books.value = await getLibraryBooks() } catch (err
 </script>
 
 <style scoped>
-.library-page { min-height: 100vh; box-sizing: border-box; padding: calc(24rpx + env(safe-area-inset-top)) 46rpx 70rpx; background: #fff; color: #222; }.top-bar { height: 92rpx; display: flex; align-items: center; justify-content: space-between; }.back { width: 60rpx; font-size: 68rpx; line-height: 56rpx; font-weight: 300; }.page-title { font-size: 36rpx; font-weight: 600; }.spacer { width: 60rpx; }
+.library-page { min-height: 100vh; box-sizing: border-box; padding: 0 46rpx 70rpx; background: #fff; color: #222; }
 .search-box { height: 84rpx; margin-top: 50rpx; padding: 0 26rpx; border: 2rpx solid #e1e4e8; border-radius: 24rpx; background: #fafbfc; display: flex; align-items: center; }.search-box image { width: 40rpx; height: 40rpx; flex-shrink: 0; }.search-box input { flex: 1; margin-left: 22rpx; color: #333; font-size: 28rpx; }
 .legend-row { margin-top: 38rpx; display: flex; justify-content: flex-end; align-items: center; gap: 44rpx; }.legend { display: flex; align-items: center; gap: 14rpx; color: #666; font-size: 27rpx; font-weight: 600; }.legend-block { width: 36rpx; height: 36rpx; border-radius: 9rpx; box-sizing: border-box; }.legend-block.borrowed { background: #ff2937; border: 2rpx solid #e90014; }.legend-block.available { background: #f0fff6; border: 2rpx solid #a9f2c7; }.required-legend { color: #fd9f24; }.required-legend image { width: 38rpx; height: 38rpx; }
 .tabs { height: 102rpx; display: flex; align-items: center; justify-content: space-around; }.tab { position: relative; width: 190rpx; height: 100%; color: #888; font-size: 31rpx; font-weight: 600; display: flex; align-items: center; justify-content: center; }.tab.active { color: #333; }.tab-line { position: absolute; bottom: 7rpx; width: 64rpx; height: 6rpx; border-radius: 99rpx; background: #ff6600; }

@@ -1,6 +1,6 @@
 <template>
 	<view class="edit-page">
-		<view class="top-bar"><text class="back" @click="goBack">‹</text><text class="title">创建名片</text><view class="spacer" /></view>
+		<member-safe-header title="创建名片" back @back="goBack" />
 		<view class="section-heading"><text>基本信息</text><text class="preview-link" @click="previewVisible = true">预览名片</text></view>
 		<view class="info-card">
 			<view class="info-row"><text>部门</text><text>{{ form.department }}</text></view>
@@ -18,6 +18,7 @@
 import { computed, reactive, ref } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import BusinessCardPreview from '../../../component/BusinessCardPreview.vue'
+import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
 import { sessionState } from '../../../stores/user'
 import { getBusinessCard, saveBusinessCard, type MemberBusinessCard } from '../../../utils/memberMock'
 
@@ -42,5 +43,5 @@ onLoad(async () => {
 </script>
 
 <style scoped>
-.edit-page { min-height:100vh; box-sizing:border-box; padding:calc(24rpx + env(safe-area-inset-top)) 56rpx calc(150rpx + env(safe-area-inset-bottom)); background:linear-gradient(135deg,#fff 65%,rgba(255,237,212,.28)); }.top-bar{height:78rpx;display:flex;align-items:center;justify-content:space-between}.back{width:60rpx;font-size:68rpx;line-height:56rpx}.title{font-size:31rpx}.spacer{width:60rpx}.section-heading{display:flex;justify-content:space-between;margin:55rpx 4rpx 22rpx;font-size:32rpx}.preview-link{color:#fdaf32}.info-card{padding:35rpx 48rpx;border:2rpx solid #eee;border-radius:48rpx;background:#fff;box-shadow:0 15rpx 42rpx rgba(0,0,0,.04)}.info-row{height:62rpx;display:flex;justify-content:space-between;align-items:center;font-size:28rpx;color:#929292}.bio-title{display:block;margin:45rpx 4rpx 22rpx;font-size:32rpx}.bio-card{position:relative;height:370rpx;padding:28rpx 36rpx 60rpx;box-sizing:border-box;border:2rpx solid #eee;border-radius:48rpx;background:#fff;box-shadow:0 15rpx 42rpx rgba(0,0,0,.04)}.bio-input{width:100%;height:100%;font-size:28rpx;line-height:1.6}.counter{position:absolute;right:40rpx;bottom:28rpx;color:#c5c5c5;font-size:24rpx}.footer{position:fixed;left:56rpx;right:56rpx;bottom:calc(50rpx + env(safe-area-inset-bottom));display:flex;gap:14rpx}.edit-btn,.save-btn{height:86rpx;border-radius:20rpx;background:#fdaf32;color:#fff;font-size:28rpx;line-height:86rpx}.edit-btn{width:160rpx}.save-btn{flex:1}.edit-btn::after,.save-btn::after{border:0}
+.edit-page { min-height:100vh; box-sizing:border-box; padding:0 56rpx calc(150rpx + env(safe-area-inset-bottom)); background:linear-gradient(135deg,#fff 65%,rgba(255,237,212,.28)); }.section-heading{display:flex;justify-content:space-between;margin:55rpx 4rpx 22rpx;font-size:32rpx}.preview-link{color:#fdaf32}.info-card{padding:35rpx 48rpx;border:2rpx solid #eee;border-radius:48rpx;background:#fff;box-shadow:0 15rpx 42rpx rgba(0,0,0,.04)}.info-row{height:62rpx;display:flex;justify-content:space-between;align-items:center;font-size:28rpx;color:#929292}.bio-title{display:block;margin:45rpx 4rpx 22rpx;font-size:32rpx}.bio-card{position:relative;height:370rpx;padding:28rpx 36rpx 60rpx;box-sizing:border-box;border:2rpx solid #eee;border-radius:48rpx;background:#fff;box-shadow:0 15rpx 42rpx rgba(0,0,0,.04)}.bio-input{width:100%;height:100%;font-size:28rpx;line-height:1.6}.counter{position:absolute;right:40rpx;bottom:28rpx;color:#c5c5c5;font-size:24rpx}.footer{position:fixed;left:56rpx;right:56rpx;bottom:calc(50rpx + env(safe-area-inset-bottom));display:flex;gap:14rpx}.edit-btn,.save-btn{height:86rpx;border-radius:20rpx;background:#fdaf32;color:#fff;font-size:28rpx;line-height:86rpx}.edit-btn{width:160rpx}.save-btn{flex:1}.edit-btn::after,.save-btn::after{border:0}
 </style>

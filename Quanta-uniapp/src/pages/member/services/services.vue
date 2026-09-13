@@ -1,6 +1,6 @@
 <template>
 	<view class="services-page">
-		<view class="top-bar"><text class="back" @click="goBack">‹</text><text class="page-title">我的服务</text><view class="spacer" /></view>
+		<member-safe-header title="我的服务" back @back="goBack" />
 		<view class="tabs">
 			<view v-for="tab in tabs" :key="tab.key" class="tab" :class="{ active: activeTab === tab.key }" @click="activeTab = tab.key"><text>{{ tab.label }}</text><view class="tab-line" /></view>
 		</view>
@@ -37,6 +37,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
 import ReservationList from '../../../component/member-services/ReservationList.vue'
 import BorrowList from '../../../component/member-services/BorrowList.vue'
 import OrderList from '../../../component/member-services/OrderList.vue'
@@ -84,7 +85,7 @@ onShow(async () => { try { await load() } catch (error: any) { uni.showToast({ t
 </script>
 
 <style scoped>
-.services-page { height: 100vh; box-sizing: border-box; padding-top: calc(24rpx + env(safe-area-inset-top)); background: rgba(255,237,212,.3); color: #111; display: flex; flex-direction: column; }.top-bar { height: 82rpx; padding: 0 50rpx; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }.back { width: 60rpx; font-size: 68rpx; line-height: 56rpx; font-weight: 300; }.page-title { font-size: 32rpx; font-weight: 500; }.spacer { width: 60rpx; }
+.services-page { height: 100vh; box-sizing: border-box; background: rgba(255,237,212,.3); color: #111; display: flex; flex-direction: column; }
 .tabs { height: 124rpx; display: flex; align-items: center; justify-content: space-around; flex-shrink: 0; }.tab { width: 160rpx; height: 100%; position: relative; color: #999; font-size: 31rpx; font-weight: 600; display: flex; align-items: center; justify-content: center; }.tab.active { color: #333; }.tab-line { position: absolute; left: 50%; bottom: 8rpx; width: 64rpx; height: 7rpx; border-radius: 999rpx; background: transparent; transform: translateX(-50%); }.tab.active .tab-line { background: #ff6600; }.content { flex: 1; height: 0; }
 .modal-mask { position: fixed; inset: 0; z-index: 80; padding: 40rpx; box-sizing: border-box; background: rgba(0,0,0,.56); display: flex; align-items: center; justify-content: center; }.modal-card { width: 600rpx; box-sizing: border-box; padding: 48rpx 54rpx; border: 2rpx solid #ddd; border-radius: 34rpx; background: #fff; }.modal-card.compact { padding-bottom: 42rpx; }.modal-title { display: block; text-align: center; font-size: 34rpx; font-weight: 700; }.modal-copy { display: block; margin-top: 34rpx; color: #333; font-size: 28rpx; line-height: 1.65; }.modal-actions { display: flex; gap: 28rpx; margin-top: 40rpx; }.modal-actions button,.single-primary { border-radius: 10rpx; color: #fff; font-size: 28rpx; }.modal-actions button::after,.single-primary::after { border: 0; }.secondary { flex: 1; background: #999; }.primary { flex: 1; background: #ff6600; }
 .return-modal { padding-bottom: 42rpx; }.return-label { display: block; margin-top: 38rpx; font-size: 29rpx; }.date-picker { height: 72rpx; margin-top: 22rpx; padding: 0 24rpx; border: 2rpx solid #eee; border-radius: 12rpx; color: #333; font-size: 27rpx; line-height: 72rpx; }.date-picker.placeholder { color: #aaa; }.single-primary { width: 210rpx; height: 66rpx; margin-top: 34rpx; padding: 0; background: #ff6600; line-height: 66rpx; }.return-tip { margin-top: 34rpx; display: flex; align-items: flex-start; gap: 12rpx; color: #ff6600; font-size: 20rpx; font-weight: 600; line-height: 1.5; }.return-tip image { width: 26rpx; height: 26rpx; margin-top: 2rpx; flex-shrink: 0; }

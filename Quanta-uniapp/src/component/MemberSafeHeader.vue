@@ -61,6 +61,8 @@ const handleBack = () => emit('back')
 .member-safe-header__brand {
 	position: absolute;
 	left: 46rpx;
+	top: 50%;
+	transform: translateY(-50%);
 	font-family: Inter, -apple-system, sans-serif;
 	font-size: 48rpx;
 	line-height: 64rpx;
@@ -71,6 +73,8 @@ const handleBack = () => emit('back')
 
 .member-safe-header__actions {
 	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
 	display: flex;
 	align-items: center;
 	gap: 28rpx;
@@ -79,6 +83,8 @@ const handleBack = () => emit('back')
 .member-safe-header__back {
 	position: absolute;
 	left: 32rpx;
+	top: 50%;
+	transform: translateY(-50%);
 	width: 64rpx;
 	height: 64rpx;
 	display: flex;
@@ -92,6 +98,8 @@ const handleBack = () => emit('back')
 
 .member-safe-header__title {
 	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
 	text-align: center;
 	white-space: nowrap;
 	overflow: hidden;
