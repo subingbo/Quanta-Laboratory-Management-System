@@ -42,7 +42,7 @@ describe('freshman home logo flip', () => {
     expect(homeSource).toContain('class="logo-halo"')
     expect(logoStageRule).toContain('perspective: 1200rpx')
     expect(logoStageRule).not.toContain('background:')
-    expect(logoHaloRule).toContain('inset: -92rpx')
+    expect(logoHaloRule).toContain('inset: -128rpx')
     expect(logoHaloRule).toContain('rgba(255, 102, 0, 0) 74%')
     expect(logoCircleRule).not.toContain('box-shadow:')
     expect(logoCircleRule).toContain('transition: transform 0.65s')

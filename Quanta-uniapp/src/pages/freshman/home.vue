@@ -300,7 +300,7 @@ const submitLogout = () => {
 
 .logo-halo {
 	position: absolute;
-	inset: -92rpx;
+	inset: -128rpx;
 	border-radius: 50%;
 	background: radial-gradient(circle, rgba(253, 175, 50, 0.3) 0%, rgba(255, 132, 44, 0.16) 38%, rgba(255, 102, 0, 0.06) 58%, rgba(255, 102, 0, 0) 74%);
 	pointer-events: none;
