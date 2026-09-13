@@ -15,4 +15,11 @@ export interface LoginResponse {
   code: number
   msg: string
   token: string
+  isQuantaMember?: string
+  memberNo?: string
+  memberDepartment?: string
+  memberTitle?: string
+  memberCohort?: string
+  studentNo?: string
+  className?: string
 }

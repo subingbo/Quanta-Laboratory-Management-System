@@ -25,7 +25,7 @@ type Method = 'GET' | 'POST' | 'PUT' | 'DELETE'
 interface RequestOptions {
   url: string
   method?: Method
-  data?: Record<string, any>
+  data?: any
   header?: Record<string, string>
   timeout?: number
 }

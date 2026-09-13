@@ -1,22 +1,30 @@
 import type { LoginResponse } from '../types/auth'
 import type { UserProfile, UserRole } from '../types/session'
-import { clearSession, setSession } from '../stores/user'
+import { clearSession, setSession, updateProfile } from '../stores/user'
 import { homeForRole } from '../utils/authGuard'
+import { getCurrentProfileApi } from '../api/user'
+import { departmentLabel } from '../api/mappers'
 
 type LoginResponseWithUser = LoginResponse & { user?: Partial<UserProfile> }
 
-export const completeLogin = (response: LoginResponseWithUser, role: UserRole, account: string) => {
+export const completeLogin = async (response: LoginResponseWithUser, role: UserRole, account: string) => {
   const fallbackProfile: UserProfile = {
-    id: account,
+    id: response.memberNo || response.studentNo || account,
     account,
-    name: role === 'tower' ? '方东升' : account,
+    name: account,
     role,
-    department: role === 'tower' ? '产品部' : undefined,
-    batch: role === 'tower' ? '20th' : undefined,
+    department: departmentLabel(response.memberDepartment),
+    batch: response.memberCohort,
   }
   const profile: UserProfile = { ...fallbackProfile, ...(response.user || {}), role }
   setSession(response.token, role, profile)
-  return profile
+  try {
+    const serverProfile = await getCurrentProfileApi(role)
+    updateProfile(serverProfile)
+    return serverProfile
+  } catch {
+    return profile
+  }
 }
 
 export const logout = () => {

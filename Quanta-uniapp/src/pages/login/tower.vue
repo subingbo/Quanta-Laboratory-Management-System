@@ -134,7 +134,7 @@ const handleLogin = async () => {
 			loginType: '1',
 		})
 
-		completeLogin(res, 'tower', tower_id.value)
+		await completeLogin(res, 'tower', tower_id.value)
 		uni.showToast({
 			title: res.msg || '登录成功',
 			icon: 'success',
