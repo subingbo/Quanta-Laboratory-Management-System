@@ -145,8 +145,8 @@ onMounted(() => {
 
 .top-bar {
 	width: 100%;
-	height: 136rpx;
-	padding: 88rpx 32rpx 0;
+	height: 176rpx;
+	padding: 88rpx 32rpx 40rpx;
 	background: #ffffff;
 	display: flex;
 	align-items: center;

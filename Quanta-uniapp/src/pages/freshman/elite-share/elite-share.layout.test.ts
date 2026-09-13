@@ -11,8 +11,8 @@ describe('elite share page frame', () => {
   it('uses the same compact top navigation height as other freshman pages', () => {
     expect(pageRule).toContain('display: flex')
     expect(pageRule).toContain('flex-direction: column')
-    expect(topBarRule).toContain('height: 136rpx')
-    expect(topBarRule).toContain('padding: 88rpx 32rpx 0')
+    expect(topBarRule).toContain('height: 176rpx')
+    expect(topBarRule).toContain('padding: 88rpx 32rpx 40rpx')
   })
 
   it('allows the content card bottom to scroll above the fixed signup bar', () => {
