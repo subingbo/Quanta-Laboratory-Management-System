@@ -83,7 +83,7 @@ const handleEliteShare = () => {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding: 50rpx 0 40rpx;
+	padding: 50rpx 0 calc(320rpx + env(safe-area-inset-bottom));
 	box-sizing: border-box;
 }
 

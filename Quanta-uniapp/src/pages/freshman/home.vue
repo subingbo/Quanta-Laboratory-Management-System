@@ -62,8 +62,16 @@
 		<!--页面内容-->
 		<view class="content">
 			<view class="logo-wrap">
-				<view class="logo-circle">
-					<image class="logo-image" :src="brandMarkSrc" mode="aspectFit"/>
+				<view class="logo-circle" :class="{ 'logo-circle--flipped': logoFlipped }" @click="toggleLogo">
+					<view class="logo-face logo-face--front">
+						<image class="logo-image" :src="brandMarkSrc" mode="aspectFit"/>
+					</view>
+					<view class="logo-face logo-face--back">
+						<text class="slogan-label">QUANTA LAB</text>
+						<view class="slogan-rule" />
+						<text class="slogan-prefix">nothing but</text>
+						<view class="slogan-word"><text>profes</text><text class="slogan-accent">S</text><text>i</text><text class="slogan-accent">O</text><text>nal</text></view>
+					</view>
 				</view>
 			</view>
 
@@ -88,6 +96,10 @@ import { IS_QUANTA_MEMBER_KEY, ROLE_KEY, TOKEN_KEY } from '../../utils/storage'
 
 const menuIconSrc = '/static/picture/menu.png'
 const brandMarkSrc = '/static/picture/quanta.png'
+const logoFlipped = ref(false)
+const toggleLogo = () => {
+	logoFlipped.value = !logoFlipped.value
+}
 
 //打开侧边菜单逻辑
 const menuVisible = ref(false)
@@ -230,7 +242,7 @@ const submitLogout = () => {
 	background: #ffffff;
 	position: relative;
 	overflow: visible;
-	padding-bottom: calc(220rpx + env(safe-area-inset-bottom));
+	padding-bottom: calc(320rpx + env(safe-area-inset-bottom));
 	box-sizing: border-box;
 }
 
@@ -273,23 +285,99 @@ const submitLogout = () => {
 	width: 100%;
 	display: flex;
 	justify-content: center;
+	perspective: 1200rpx;
 }
 
 .logo-circle {
 	width: 366rpx;
 	height: 366rpx;
 	border-radius: 220rpx;
-	overflow: hidden;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	position: relative;
+	transform-style: preserve-3d;
+	transition: transform 0.65s cubic-bezier(0.22, 0.61, 0.36, 1);
 	box-shadow: 2px 2px 109.1px -1px #FDAF32, 0px 4px 4px 0px #00000040;
 }
 
+.logo-circle--flipped {
+	transform: rotateY(180deg);
+}
+
+.logo-face {
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	overflow: hidden;
+	backface-visibility: hidden;
+	-webkit-backface-visibility: hidden;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+}
+
+.logo-face--front {
+	background: #ffffff;
+}
+
+.logo-face--back {
+	transform: rotateY(180deg);
+	padding: 54rpx 34rpx 48rpx;
+	background: radial-gradient(circle at 28% 20%, #343434 0, #1e1e1e 44%, #101010 100%);
+	border: 2rpx solid rgba(255, 102, 0, 0.72);
+	color: #ffffff;
+	box-shadow: inset 0 0 42rpx rgba(255, 102, 0, 0.18);
+}
+
 .logo-image {
-	width: 366rpx;
-	height: 366rpx;
-	border-radius: 220rpx;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+}
+
+.slogan-label {
+	font-family: Inter, -apple-system, sans-serif;
+	font-size: 21rpx;
+	line-height: 28rpx;
+	font-weight: 600;
+	letter-spacing: 6rpx;
+	color: rgba(255, 255, 255, 0.58);
+}
+
+.slogan-rule {
+	width: 72rpx;
+	height: 4rpx;
+	margin-top: 20rpx;
+	border-radius: 99rpx;
+	background: #ff6600;
+	box-shadow: 0 0 18rpx rgba(255, 102, 0, 0.72);
+}
+
+.slogan-prefix {
+	margin-top: 28rpx;
+	font-family: Dubai, Inter, -apple-system, sans-serif;
+	font-size: 38rpx;
+	line-height: 44rpx;
+	font-weight: 400;
+	letter-spacing: 1rpx;
+	color: rgba(255, 255, 255, 0.82);
+}
+
+.slogan-word {
+	display: flex;
+	align-items: baseline;
+	font-family: Dubai, Inter, -apple-system, sans-serif;
+	font-size: 48rpx;
+	line-height: 56rpx;
+	font-weight: 700;
+	letter-spacing: 1rpx;
+	white-space: nowrap;
+	color: #ffffff;
+}
+
+.slogan-accent {
+	color: #ff6600;
+	text-shadow: 0 0 18rpx rgba(255, 102, 0, 0.58);
 }
 
 /*下拉菜单样式*/ 
