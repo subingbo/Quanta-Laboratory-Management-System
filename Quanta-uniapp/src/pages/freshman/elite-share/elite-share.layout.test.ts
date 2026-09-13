@@ -6,6 +6,7 @@ const pageRule = source.match(/\.elite-page\s*\{([^}]*)\}/)?.[1] ?? ''
 const topBarRule = source.match(/\.top-bar\s*\{([^}]*)\}/)?.[1] ?? ''
 const pageScrollRule = source.match(/\.page-scroll\s*\{([^}]*)\}/)?.[1] ?? ''
 const contentCardRule = source.match(/\.content-card\s*\{([^}]*)\}/)?.[1] ?? ''
+const scrollSpacerRule = source.match(/\.scroll-spacer\s*\{([^}]*)\}/)?.[1] ?? ''
 
 describe('elite share page frame', () => {
   it('uses the same compact top navigation height as other freshman pages', () => {
@@ -18,6 +19,8 @@ describe('elite share page frame', () => {
   it('allows the content card bottom to scroll above the fixed signup bar', () => {
     expect(pageScrollRule).toContain('flex: 1')
     expect(pageScrollRule).toContain('height: 0')
-    expect(contentCardRule).toContain('margin: 40rpx auto calc(180rpx + env(safe-area-inset-bottom))')
+    expect(contentCardRule).toContain('margin: 40rpx auto 0')
+    expect(source).toContain('<view class="scroll-spacer" />')
+    expect(scrollSpacerRule).toContain('height: calc(180rpx + env(safe-area-inset-bottom))')
   })
 })

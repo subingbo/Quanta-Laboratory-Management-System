@@ -57,6 +57,7 @@
 				</view>
 				<view v-else class="guest-empty">嘉宾信息将在活动前公布</view>
 			</view>
+			<view class="scroll-spacer" />
 		</scroll-view>
 
 		<view class="footer-bar">
@@ -185,11 +186,15 @@ onMounted(() => {
 
 .content-card {
 	width: calc(100% - 88rpx);
-	margin: 40rpx auto calc(180rpx + env(safe-area-inset-bottom));
+	margin: 40rpx auto 0;
 	padding: 42rpx 36rpx 80rpx;
 	background: #ffffff;
 	box-sizing: border-box;
 	box-shadow: 0 0 24rpx rgba(0, 0, 0, 0.08);
+}
+
+.scroll-spacer {
+	height: calc(180rpx + env(safe-area-inset-bottom));
 }
 
 .section-heading,
