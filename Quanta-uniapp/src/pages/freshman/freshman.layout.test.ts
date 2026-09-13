@@ -40,6 +40,7 @@ describe('freshman home logo flip', () => {
     expect(homeSource).toContain('class="logo-stage"')
     expect(logoStageRule).toContain('box-shadow:')
     expect(logoStageRule).toContain('perspective: 1200rpx')
+    expect(logoStageRule).toContain('background: radial-gradient(circle, #fff4e8 0%, #ffd6ad 48%')
     expect(logoCircleRule).not.toContain('box-shadow:')
     expect(logoCircleRule).toContain('transition: transform 0.65s')
   })
