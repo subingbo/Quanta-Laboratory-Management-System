@@ -363,8 +363,10 @@ background:
 }
 
 .login-button-text {
-	width: 64rpx;
+	width: auto;
+	min-width: 64rpx;
 	height: 48rpx;
+	white-space: nowrap;
 	font-family: Inter, -apple-system, sans-serif;
 	font-size: 32rpx;
 	line-height: 48rpx;

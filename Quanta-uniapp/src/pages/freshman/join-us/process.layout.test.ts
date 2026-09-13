@@ -22,6 +22,11 @@ describe('Join Us empty state layout', () => {
   })
 
   it('nudges the centered card slightly upward', () => {
-    expect(emptyCardRule).toContain('transform:translateY(-32rpx)')
+    expect(emptyCardRule).toContain('transform:translateY(-96rpx)')
+  })
+
+  it('uses descriptive tab labels', () => {
+    expect(parentSource).toContain('>应聘流程</text>')
+    expect(parentSource).toContain('>投递简历</text>')
   })
 })

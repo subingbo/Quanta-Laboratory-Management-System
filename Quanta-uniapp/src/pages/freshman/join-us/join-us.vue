@@ -1,7 +1,7 @@
 <template>
 	<view class="join-us-page">
 		<view class="top-bar"><view class="back-btn" @click="handleBack"><image class="back-icon" :src="backIconSrc" mode="aspectFit" /></view><text class="page-title">Join us</text><view class="top-bar-spacer" /></view>
-		<view class="sub-tab-bar"><view class="sub-tab-item" :class="{ 'sub-tab-item-active': activeTab === 'process' }" @click="switchTab('process')"><text class="sub-tab-text" :class="{ 'sub-tab-text-active': activeTab === 'process' }">流程</text><view v-if="activeTab === 'process'" class="sub-tab-indicator" /></view><view class="sub-tab-item" :class="{ 'sub-tab-item-active': activeTab === 'submit' }" @click="switchTab('submit')"><text class="sub-tab-text" :class="{ 'sub-tab-text-active': activeTab === 'submit' }">投递</text><view v-if="activeTab === 'submit'" class="sub-tab-indicator" /></view></view>
+		<view class="sub-tab-bar"><view class="sub-tab-item" :class="{ 'sub-tab-item-active': activeTab === 'process' }" @click="switchTab('process')"><text class="sub-tab-text" :class="{ 'sub-tab-text-active': activeTab === 'process' }">应聘流程</text><view v-if="activeTab === 'process'" class="sub-tab-indicator" /></view><view class="sub-tab-item" :class="{ 'sub-tab-item-active': activeTab === 'submit' }" @click="switchTab('submit')"><text class="sub-tab-text" :class="{ 'sub-tab-text-active': activeTab === 'submit' }">投递简历</text><view v-if="activeTab === 'submit'" class="sub-tab-indicator" /></view></view>
 		<view class="tab-content" :class="{ 'tab-content--process': activeTab === 'process' }"><Process v-if="activeTab === 'process'" class="process-component" @go-submit="switchTab('submit')" /><Submit v-else ref="submitRef" /></view>
 	</view>
 </template>
