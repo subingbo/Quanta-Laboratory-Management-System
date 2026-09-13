@@ -7,6 +7,7 @@ describe('shared backend mappers', () => {
     expect(resolveApiAssetUrl('/profile/upload/a.png')).toBe(`${API_BASE_URL}/profile/upload/a.png`)
     expect(resolveApiAssetUrl('https://cdn.example.com/a.png')).toBe('https://cdn.example.com/a.png')
     expect(resolveApiAssetUrl('/static/picture/a.png')).toBe('/static/picture/a.png')
+    expect(resolveApiAssetUrl('http://127.0.0.1:8080/profile/profile/upload/a.png')).toBe(`${API_BASE_URL}/profile/upload/a.png`)
   })
 
   it('maps the RuoYi user into the mini-program profile', () => {

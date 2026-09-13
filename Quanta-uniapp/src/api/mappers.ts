@@ -13,8 +13,12 @@ const DEPARTMENT_LABELS: Record<string, string> = {
 export const departmentLabel = (value = '') => DEPARTMENT_LABELS[value] || value
 
 export const resolveApiAssetUrl = (path = '') => {
-  if (!path || /^(https?:|data:|\/static\/)/.test(path)) return path
-  return `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`
+  if (!path || /^(data:|\/static\/)/.test(path)) return path
+  const normalized = path.replace('/profile/profile/', '/profile/')
+  const localAbsolute = normalized.match(/^https?:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?(\/.*)$/)
+  if (localAbsolute) return `${API_BASE_URL}${localAbsolute[1]}`
+  if (/^https?:/.test(normalized)) return normalized
+  return `${API_BASE_URL}${normalized.startsWith('/') ? normalized : `/${normalized}`}`
 }
 
 export const mapSysUserProfile = (user: SysUserDto, role: UserRole): UserProfile => ({

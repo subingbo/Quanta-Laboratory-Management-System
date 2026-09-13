@@ -20,6 +20,7 @@ import { onMounted, ref } from 'vue'
 import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
 import MemberTab from '../../../component/member_Tab.vue'
 import { getTopNotices, openNoticePicker } from '../../../api/notice'
+import { openMaterialPicker } from '../../../api/material'
 
 const features = [
 	{ key: 'workstation', title: '工位预约', icon: '/static/icon/member/workstation.svg', background: '#fff4e8' },
@@ -43,6 +44,10 @@ const openFeature = (key) => {
 	}
 	if (key === 'shirt') {
 		uni.navigateTo({ url: '/pages/member/shirt-order/shirt-order' })
+		return
+	}
+	if (key === 'learning') {
+		openMaterialPicker().catch((error) => uni.showToast({ title: error?.message || '学习资料加载失败', icon: 'none' }))
 		return
 	}
 	showUnavailable()

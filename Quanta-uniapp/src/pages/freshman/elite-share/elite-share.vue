@@ -83,12 +83,14 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
 	formatActivityTimeRange,
+	getActivitySignup,
 	getMockEliteShareGuests,
 	getTalkSignupState,
+	saveActivitySignup,
 	type LocalActivitySignup,
 	type MockActivity
 } from '@/utils/mockActivity'
-import { getActivityByKind, getMyActivitySignup, signupActivity } from '@/api/activity'
+import { getActivityByKind } from '@/api/activity'
 
 const activity = reactive<MockActivity>({ activityId: 0, activityType: 'ELITE_SHARE', title: '', scenePrefix: '', brandName: 'Quanta', sceneSuffix: '精英分享会', description: '', signupStart: '', signupEnd: '', activityStart: '', activityEnd: '', locationDesc: '', capacity: 0, signupCount: 0, status: 'DRAFT' })
 const guests = ref(getMockEliteShareGuests())
@@ -113,7 +115,7 @@ const handleSignup = async () => {
 	if (!currentState.enabled) return
 
 	try {
-		signup.value = await signupActivity(activity.activityId, remark.value.trim())
+		signup.value = saveActivitySignup(activity.activityId, remark.value.trim())
 		showSuccessModal.value = true
 	} catch (error) {
 		console.error('保存精英分享会报名信息失败', error)
@@ -128,7 +130,7 @@ const closeSuccessModal = () => {
 onMounted(async () => {
 	try {
 		Object.assign(activity, await getActivityByKind('SHARING'))
-		signup.value = await getMyActivitySignup(activity.activityId)
+		signup.value = getActivitySignup(activity.activityId)
 		if (typeof signup.value?.remark === 'string') remark.value = signup.value.remark
 	} catch (error) {
 		uni.showToast({ title: error?.message || '精英分享会加载失败', icon: 'none' })

@@ -17,9 +17,7 @@ Connect every Quanta uni-app business flow that already has a backend endpoint t
 ### Activities
 
 - Load published activities from `GET /system/activity/list` and select the relevant `LECTURE` or `SHARING` activity.
-- Load the current user's signups from `GET /system/signup/detailList`.
-- Submit a signup through `POST /system/signup`.
-- Preserve the current signup-state calculation and page appearance using backend data.
+- Keep signup state and submission in the existing mock store because live verification found `/system/signup/detailList` returns `code=500`: its mapper selects a missing `qt_activity_signup.remark` database column.
 - Keep the current mock guest records because no activity guest endpoint exists.
 
 ### Member identity, directory, and home
@@ -38,11 +36,8 @@ Connect every Quanta uni-app business flow that already has a backend endpoint t
 
 ### Workstations
 
-- Load workstations from `GET /system/workstation/list`.
-- Load reservations from `GET /system/reservation/detailList` and map overlaps into the three existing time slots.
-- Create one backend reservation for every selected slot through `POST /system/reservation`.
-- Reload server state after submission so the UI never treats local cache as authoritative.
-- Keep the current mock-backed self-service cancellation behavior because the available generic update endpoint requires management permission. Real reservations are never deleted locally; unsupported cancellation is clearly isolated from server-backed records.
+- Keep the workstation booking page mock-backed. A normal member can only list their own reservations, so the client cannot determine which stations are occupied by others.
+- The reservation contract also serializes `reserveStart` and `reserveEnd` as date-only values, so it cannot represent the page's morning, afternoon, and evening slots safely.
 
 ### Library
 
@@ -71,9 +66,11 @@ Pages retain their current layout. Each asynchronous write uses a submitting gua
 The following keep their existing mock-backed behavior and are deliberately not implemented on the backend in this change:
 
 - Candidate-facing accept or decline of a second-interview invitation.
+- Activity signup state and submission until the missing `qt_activity_signup.remark` column/mapper mismatch is fixed.
 - Activity guest/speaker records for the elite sharing page.
 - Member business-card read and write, biography, active-talent flag, and card-availability flag.
 - Member-home banner/content management.
+- Workstation availability and booking until the member-visible occupancy and time-slot contract is complete.
 - Member self-service workstation reservation cancellation.
 - Member self-service book return confirmation.
 

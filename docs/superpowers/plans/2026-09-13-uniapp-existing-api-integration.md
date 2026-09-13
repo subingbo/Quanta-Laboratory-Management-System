@@ -345,3 +345,9 @@ git commit -m "test: verify uniapp backend integration"
 Run: `git status --short` and `git diff --check HEAD~8..HEAD`.
 
 Expected: only the user's original `manifest.json` and `.local/` remain uncommitted; no whitespace errors.
+
+## Live-contract verification adjustments
+
+- Activity content remains server-backed, but signup state and submission stay mocked because `/system/signup/detailList` currently fails on the missing `qt_activity_signup.remark` column.
+- Workstation booking stays mocked because member-scoped reservation results omit other users' occupancy and reservation timestamps serialize without the time slots required by the UI.
+- Learning materials were additionally connected through `GET /qt/materials` and authenticated material download.

@@ -6,6 +6,7 @@ import {
   normalizeDepartmentProcess,
 } from '../utils/mockRecruitment'
 import type { AjaxResponse } from './contracts'
+import { resolveApiAssetUrl } from './mappers'
 
 export interface RecruitmentForm {
   photo: string
@@ -90,7 +91,7 @@ export const mapApplication = (data: MyApplicationData): RecruitmentForm | null 
   const application = data.application
   const profile = data.profile || {}
   return {
-    photo: application.photoAccessUrl || application.photoUrl || '',
+    photo: resolveApiAssetUrl(application.photoAccessUrl || application.photoUrl || ''),
     photoUrl: application.photoUrl || '',
     realName: application.realName || '',
     gender: fromGenderCode(application.gender),
