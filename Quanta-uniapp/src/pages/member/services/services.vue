@@ -41,9 +41,9 @@ import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
 import ReservationList from '../../../component/member-services/ReservationList.vue'
 import BorrowList from '../../../component/member-services/BorrowList.vue'
 import OrderList from '../../../component/member-services/OrderList.vue'
-import { ORDER_REVIEW_MESSAGE, cancelReservation, confirmBookReturn, getMemberServices, type BorrowRecord, type MemberServicesSnapshot } from '../../../utils/memberServiceMock'
+import { ORDER_REVIEW_MESSAGE, type BorrowRecord, type MemberServicesSnapshot } from '../../../utils/memberServiceMock'
 import type { ReservationRecord } from '../../../utils/memberServiceRules'
-import { releaseWorkstationReservation } from '../../../utils/workstationMock'
+import { getMemberServices } from '../../../api/memberServices'
 
 const tabs = [{ key: 'reservation', label: '预约' }, { key: 'borrow', label: '借阅' }, { key: 'order', label: '订购' }] as const
 const activeTab = ref<(typeof tabs)[number]['key']>('reservation')
@@ -68,7 +68,7 @@ const submitCancel = async () => {
 	if (!cancelTarget.value || submitting.value) return
 	const target = cancelTarget.value
 	submitting.value = true
-	try { await cancelReservation(target.id); await releaseWorkstationReservation(target); cancelTarget.value = null; await load(); uni.showToast({ title: '预约已取消', icon: 'none' }) }
+	try { snapshot.value.reservations = snapshot.value.reservations.filter((record) => record.id !== target.id); cancelTarget.value = null; uni.showToast({ title: '本地模拟取消，尚未同步后端', icon: 'none' }) }
 	catch (error: any) { uni.showToast({ title: error?.message || '操作失败，请稍后重试', icon: 'none' }) }
 	finally { submitting.value = false }
 }
@@ -76,7 +76,7 @@ const submitReturn = async () => {
 	if (!returnTarget.value || submitting.value) return
 	if (!returnDate.value) return uni.showToast({ title: '请选择归还日期', icon: 'none' })
 	submitting.value = true
-	try { await confirmBookReturn(returnTarget.value.id, returnDate.value); closeReturn(); await load(); uni.showToast({ title: '已提交归还确认', icon: 'none' }) }
+	try { const record = snapshot.value.borrows.find((item) => item.id === returnTarget.value?.id); if (record) { record.status = 'return-pending'; record.returnedOn = returnDate.value }; closeReturn(); uni.showToast({ title: '本地模拟归还，尚未同步后端', icon: 'none' }) }
 	catch (error: any) { uni.showToast({ title: error?.message || '操作失败，请稍后重试', icon: 'none' }) }
 	finally { submitting.value = false }
 }
