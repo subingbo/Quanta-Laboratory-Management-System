@@ -294,8 +294,8 @@ const submitLogout = () => {
 	height: 366rpx;
 	border-radius: 50%;
 	perspective: 1200rpx;
-	background: radial-gradient(circle, #fff4e8 0%, #ffd6ad 48%, rgba(253, 175, 50, 0.72) 74%, rgba(255, 102, 0, 0.36) 100%);
-	box-shadow: 2px 2px 109.1px -1px #FDAF32, 0px 4px 4px 0px #00000040;
+	background: radial-gradient(circle at 38% 30%, rgba(255, 255, 255, 0.16) 0%, rgba(255, 145, 72, 0.18) 24%, rgba(48, 34, 26, 0.96) 62%, #171513 100%);
+	box-shadow: 2px 2px 109.1px -1px #FDAF32, 0px 4px 4px 0px #00000040, inset 0 0 72rpx rgba(255, 102, 0, 0.16);
 }
 
 .logo-circle {
