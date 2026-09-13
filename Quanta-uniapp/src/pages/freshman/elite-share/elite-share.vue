@@ -83,15 +83,14 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
 	formatActivityTimeRange,
-	getActivitySignup,
-	getMockEliteShareActivity,
 	getMockEliteShareGuests,
 	getTalkSignupState,
-	saveActivitySignup,
-	type LocalActivitySignup
+	type LocalActivitySignup,
+	type MockActivity
 } from '@/utils/mockActivity'
+import { getActivityByKind, getMyActivitySignup, signupActivity } from '@/api/activity'
 
-const activity = reactive(getMockEliteShareActivity())
+const activity = reactive<MockActivity>({ activityId: 0, activityType: 'ELITE_SHARE', title: '', scenePrefix: '', brandName: 'Quanta', sceneSuffix: '精英分享会', description: '', signupStart: '', signupEnd: '', activityStart: '', activityEnd: '', locationDesc: '', capacity: 0, signupCount: 0, status: 'DRAFT' })
 const guests = ref(getMockEliteShareGuests())
 const signup = ref<LocalActivitySignup | null>(null)
 const remark = ref('')
@@ -109,13 +108,12 @@ const backIconSrc = `data:image/svg+xml;utf8,${encodeURIComponent(
 
 const handleBack = () => uni.navigateBack({ delta: 1 })
 
-const handleSignup = () => {
+const handleSignup = async () => {
 	const currentState = getTalkSignupState(activity, signup.value)
 	if (!currentState.enabled) return
 
 	try {
-		signup.value = saveActivitySignup(activity.activityId, remark.value.trim())
-		activity.signupCount += 1
+		signup.value = await signupActivity(activity.activityId, remark.value.trim())
 		showSuccessModal.value = true
 	} catch (error) {
 		console.error('保存精英分享会报名信息失败', error)
@@ -127,9 +125,14 @@ const closeSuccessModal = () => {
 	showSuccessModal.value = false
 }
 
-onMounted(() => {
-	signup.value = getActivitySignup(activity.activityId)
-	if (typeof signup.value?.remark === 'string') remark.value = signup.value.remark
+onMounted(async () => {
+	try {
+		Object.assign(activity, await getActivityByKind('SHARING'))
+		signup.value = await getMyActivitySignup(activity.activityId)
+		if (typeof signup.value?.remark === 'string') remark.value = signup.value.remark
+	} catch (error) {
+		uni.showToast({ title: error?.message || '精英分享会加载失败', icon: 'none' })
+	}
 })
 </script>
 

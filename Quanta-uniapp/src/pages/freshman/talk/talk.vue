@@ -60,14 +60,13 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
 	formatActivityTimeRange,
-	getMockTalkActivity,
 	getTalkSignupState,
-	migrateLegacyTalkSignup,
-	saveActivitySignup,
-	type LocalActivitySignup
+	type LocalActivitySignup,
+	type MockActivity
 } from '@/utils/mockActivity'
+import { getActivityByKind, getMyActivitySignup, signupActivity } from '@/api/activity'
 
-const talkInfo = reactive(getMockTalkActivity())
+const talkInfo = reactive<MockActivity>({ activityId: 0, activityType: 'TALK', title: '', scenePrefix: '广外', brandName: 'Quanta', sceneSuffix: '专场宣讲会', description: '', signupStart: '', signupEnd: '', activityStart: '', activityEnd: '', locationDesc: '', capacity: 0, signupCount: 0, status: 'DRAFT' })
 const signup = ref<LocalActivitySignup | null>(null)
 const signupState = computed(() => getTalkSignupState(talkInfo, signup.value))
 const displayTime = computed(() =>
@@ -84,13 +83,12 @@ const handleBack = () => {
 
 const showSuccessModal = ref(false)
 
-const handleSignup = () => {
+const handleSignup = async () => {
 	const currentState = getTalkSignupState(talkInfo, signup.value)
 	if (!currentState.enabled) return
 
 	try {
-		signup.value = saveActivitySignup(talkInfo.activityId)
-		talkInfo.signupCount += 1
+		signup.value = await signupActivity(talkInfo.activityId)
 		showSuccessModal.value = true
 	} catch (error) {
 		console.error('保存宣讲会报名信息失败', error)
@@ -102,8 +100,13 @@ const closeSuccessModal = () => {
 	showSuccessModal.value = false
 }
 
-onMounted(() => {
-	signup.value = migrateLegacyTalkSignup(talkInfo.activityId)
+onMounted(async () => {
+	try {
+		Object.assign(talkInfo, await getActivityByKind('LECTURE'))
+		signup.value = await getMyActivitySignup(talkInfo.activityId)
+	} catch (error) {
+		uni.showToast({ title: error?.message || '宣讲会加载失败', icon: 'none' })
+	}
 })
 </script>
 

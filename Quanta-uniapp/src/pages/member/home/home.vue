@@ -4,7 +4,7 @@
 			<template #actions>
 				<view class="header-actions">
 					<image class="header-icon" :src="searchIconSrc" mode="aspectFit" @click="showUnavailable" />
-					<image class="header-icon header-icon-bell" :src="bellIconSrc" mode="aspectFit" @click="showUnavailable" />
+					<image class="header-icon header-icon-bell" :src="bellIconSrc" mode="aspectFit" @click="openNotices" />
 				</view>
 			</template>
 		</member-safe-header>
@@ -62,7 +62,9 @@
 import { onMounted, ref } from 'vue'
 import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
 import MemberTab from '../../../component/member_Tab.vue'
-import { getMemberHome } from '../../../utils/memberMock'
+import { getMemberBanners } from '../../../utils/memberMock'
+import { getPublishedActivities } from '../../../api/activity'
+import { openNoticePicker } from '../../../api/notice'
 
 const toSvgDataUri = (svg) => `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
 
@@ -85,12 +87,12 @@ const loading = ref(true)
 const showUnavailable = () => uni.showToast({ title: '功能即将开放', icon: 'none' })
 const handleBannerClick = showUnavailable
 const handleActivityClick = showUnavailable
+const openNotices = async () => { try { await openNoticePicker() } catch (error) { uni.showToast({ title: error?.message || '通知加载失败', icon: 'none' }) } }
 
 onMounted(async () => {
 	try {
-		const data = await getMemberHome()
-		bannerList.value = data.banners
-		activityList.value = data.activities
+		bannerList.value = await getMemberBanners()
+		activityList.value = (await getPublishedActivities()).map((item) => ({ id: item.activityId, title: item.title, subtitle: item.locationDesc || '活动详情待公布' }))
 	} catch (error) {
 		uni.showToast({ title: error?.message || '首页数据加载失败', icon: 'none' })
 	} finally {

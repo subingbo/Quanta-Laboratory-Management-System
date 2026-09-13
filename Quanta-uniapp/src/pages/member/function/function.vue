@@ -1,7 +1,7 @@
 <template>
 	<view class="function-page">
 		<member-safe-header mode="brand" title="Quanta">
-			<template #actions><view class="notice-wrap" @click="showUnavailable"><image class="notice-icon" src="/static/icon/member/announcement.svg" mode="aspectFit" /><view class="notice-dot" /></view></template>
+			<template #actions><view class="notice-wrap" @click="openNotices"><image class="notice-icon" src="/static/icon/member/announcement.svg" mode="aspectFit" /><view v-if="unreadCount" class="notice-dot" /></view></template>
 		</member-safe-header>
 		<view class="feature-grid">
 			<view v-for="item in features" :key="item.key" class="feature-card" @click="openFeature(item.key)">
@@ -16,8 +16,10 @@
 </template>
 
 <script setup lang="js">
+import { onMounted, ref } from 'vue'
 import MemberSafeHeader from '../../../component/MemberSafeHeader.vue'
 import MemberTab from '../../../component/member_Tab.vue'
+import { getTopNotices, openNoticePicker } from '../../../api/notice'
 
 const features = [
 	{ key: 'workstation', title: '工位预约', icon: '/static/icon/member/workstation.svg', background: '#fff4e8' },
@@ -27,6 +29,9 @@ const features = [
 ]
 
 const showUnavailable = () => uni.showToast({ title: '该功能即将开放', icon: 'none' })
+const unreadCount = ref(0)
+const loadNoticeCount = async () => { try { unreadCount.value = (await getTopNotices()).unreadCount } catch { unreadCount.value = 0 } }
+const openNotices = async () => { try { await openNoticePicker(); await loadNoticeCount() } catch (error) { uni.showToast({ title: error?.message || '通知加载失败', icon: 'none' }) } }
 const openFeature = (key) => {
 	if (key === 'workstation') {
 		uni.navigateTo({ url: '/pages/member/workstation/workstation' })
@@ -42,6 +47,7 @@ const openFeature = (key) => {
 	}
 	showUnavailable()
 }
+onMounted(loadNoticeCount)
 </script>
 
 <style scoped>

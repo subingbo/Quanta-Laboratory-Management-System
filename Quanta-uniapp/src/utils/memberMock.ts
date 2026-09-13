@@ -94,6 +94,7 @@ const memberProfile: UserProfile = {
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value))
 
 export const getMemberHome = async () => clone({ banners, activities })
+export const getMemberBanners = async () => clone(banners)
 export const getMemberDirectory = async () => {
   const savedIds = new Set(readStoredCards().map((card) => card.memberId))
   return clone(contacts.map((contact) => savedIds.has(contact.code) ? { ...contact, hasBusinessCard: true } : contact))
