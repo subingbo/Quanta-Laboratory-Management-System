@@ -27,4 +27,12 @@ describe('production page backend integration', () => {
     expect(read('pages/freshman/talk/talk.vue')).not.toContain('saveActivitySignup')
     expect(read('pages/freshman/elite-share/elite-share.vue')).not.toContain('getActivitySignup')
   })
+
+  it('matches the hardened backend upload and timeout limits', () => {
+    expect(read('utils/request.ts')).toContain('timeout = 10000')
+    expect(read('api/recruitment.ts')).toContain('timeout: 10000')
+    expect(read('api/recruitment.ts')).toContain('handleUnauthorized()')
+    expect(read('pages/freshman/join-us/submit.vue')).toContain('uni.compressImage')
+    expect(read('pages/freshman/join-us/submit.vue')).toContain("submitting ? '投递中'")
+  })
 })

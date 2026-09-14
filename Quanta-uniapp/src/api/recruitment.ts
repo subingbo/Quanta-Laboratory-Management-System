@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '../config/runtime'
 import { TOKEN_KEY } from '../utils/storage'
-import request from '../utils/request'
+import request, { handleUnauthorized } from '../utils/request'
 import {
   createDepartment,
   normalizeDepartmentProcess,
@@ -191,12 +191,17 @@ export const submitApplication = async (form: RecruitmentForm) => {
       url: `${API_BASE_URL}/qt/interview/apply`,
       filePath: form.photo,
       name: 'photoFile',
+      timeout: 10000,
       formData: data,
       header: token ? { Authorization: `Bearer ${token}` } : {},
       success: (response) => {
         let body: AjaxResponse
         try { body = JSON.parse(response.data) } catch { reject(new Error('投递响应格式异常')); return }
-        if (response.statusCode === 401 || body.code === 401) { reject(new Error('登录已失效')); return }
+        if (response.statusCode === 401 || body.code === 401) {
+          handleUnauthorized()
+          reject(new Error('登录已失效'))
+          return
+        }
         if (response.statusCode < 200 || response.statusCode >= 300 || body.code !== 200) {
           reject(new Error(body.msg || '投递失败'))
           return

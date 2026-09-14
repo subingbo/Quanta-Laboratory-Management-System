@@ -7,7 +7,7 @@ const SUCCESS_CODE = 200
 
 let handlingUnauthorized = false
 
-const handleUnauthorized = () => {
+export const handleUnauthorized = () => {
   clearSession()
   if (handlingUnauthorized) return
   handlingUnauthorized = true
@@ -35,7 +35,7 @@ interface RequestOptions {
  * 自动携带 token，统一校验业务 code === 200。
  */
 const request = <T = any>(options: RequestOptions): Promise<T> => {
-  const { url, method = 'GET', data, header, timeout = 5000 } = options
+  const { url, method = 'GET', data, header, timeout = 10000 } = options
 
   return new Promise<T>((resolve, reject) => {
     const token = uni.getStorageSync(TOKEN_KEY)

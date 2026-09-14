@@ -22,7 +22,7 @@
 				<view class="section-block section-block-last"><text class="section-title">对Quanta的了解</text><textarea class="textarea-field textarea-medium" v-model="form.quantaUnderstanding" placeholder="请谈谈你对 Quanta 的了解..." placeholder-class="textarea-placeholder" maxlength="200" :disabled="!isEditing" /></view>
 			</view>
 		</scroll-view>
-		<view class="footer-bar"><view class="footer-actions"><view class="footer-btn btn-save" @click="handleSave"><text class="footer-btn-text">{{ isEditing ? '保存' : '编辑' }}</text></view><view class="footer-btn btn-submit" :class="{ 'btn-submit--disabled': submitted }" @click="handleSubmit"><text class="footer-btn-text">{{ submitted ? '已投递' : '投递' }}</text></view></view></view>
+		<view class="footer-bar"><view class="footer-actions"><view class="footer-btn btn-save" @click="handleSave"><text class="footer-btn-text">{{ isEditing ? '保存' : '编辑' }}</text></view><view class="footer-btn btn-submit" :class="{ 'btn-submit--disabled': submitted || submitting }" @click="handleSubmit"><text class="footer-btn-text">{{ submitting ? '投递中' : submitted ? '已投递' : '投递' }}</text></view></view></view>
 	</view>
 </template>
 
@@ -47,7 +47,8 @@ const onGenderChange = (event) => { form.gender = genderOptions[event.detail.val
 const setChoice = (field, event) => { const value = deptOptions[event.detail.value]; const other = field === 'firstChoice' ? form.secondChoice : form.firstChoice; if (value === other) return uni.showToast({ title: '两个志愿不能相同', icon: 'none' }); form[field] = value }
 const onFirstChoiceChange = (event) => setChoice('firstChoice', event)
 const onSecondChoiceChange = (event) => setChoice('secondChoice', event)
-const handleUploadPhoto = () => { if (!isEditing.value) return; uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'], success: (result) => { form.photo = result.tempFilePaths[0]; form.photoUrl = '' } }) }
+const compressPhoto = (src) => new Promise((resolve) => { uni.compressImage({ src, quality: 80, success: (result) => resolve(result.tempFilePath), fail: () => resolve(src) }) })
+const handleUploadPhoto = () => { if (!isEditing.value) return; uni.chooseImage({ count: 1, sizeType: ['compressed'], sourceType: ['album', 'camera'], success: async (result) => { form.photo = await compressPhoto(result.tempFilePaths[0]); form.photoUrl = '' } }) }
 const validateForm = () => { for (const key in requiredFields) { if (!form[key]) { uni.showToast({ title: requiredFields[key], icon: 'none' }); return false } }; if (form.firstChoice === form.secondChoice) { uni.showToast({ title: '两个志愿不能相同', icon: 'none' }); return false }; return true }
 const buildPayload = () => ({ ...form, codingExperience: form.codingExperienceDesc.trim() ? '1' : '0' })
 const doSave = ({ silent = false } = {}) => { if (!isEditing.value) return true; if (!validateForm()) return false; isEditing.value = false; dirty.value = false; if (!silent) uni.showToast({ title: '已暂存当前编辑', icon: 'success' }); return true }
