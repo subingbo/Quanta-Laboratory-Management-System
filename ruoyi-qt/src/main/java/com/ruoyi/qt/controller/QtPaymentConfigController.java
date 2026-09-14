@@ -21,6 +21,7 @@ import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.file.FileUploadUtils;
 import com.ruoyi.common.utils.file.FileUtils;
+import com.ruoyi.common.utils.file.FileValidator;
 import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.qt.domain.QtPaymentConfig;
 import com.ruoyi.qt.service.IQtPaymentConfigService;
@@ -196,7 +197,7 @@ public class QtPaymentConfigController extends BaseController
     private String uploadImage(MultipartFile qrImageFile) throws Exception
     {
         String uploadPath = RuoYiConfig.getUploadPath() + "/qt/payment-qr";
-        return FileUploadUtils.upload(uploadPath, qrImageFile, MimeTypeUtils.IMAGE_EXTENSION);
+        return FileUploadUtils.upload(uploadPath, qrImageFile, MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE);
     }
 
     private void deleteLocalImageIfExists(String oldImagePath, String newImagePath)

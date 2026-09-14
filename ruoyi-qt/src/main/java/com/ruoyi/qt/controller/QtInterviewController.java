@@ -11,11 +11,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import com.ruoyi.common.annotation.RateLimiter;
+import com.ruoyi.common.annotation.RepeatSubmit;
 import com.ruoyi.common.config.RuoYiConfig;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.enums.LimitType;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.file.FileUploadUtils;
+import com.ruoyi.common.utils.file.FileValidator;
 import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.qt.domain.QtInterviewApplication;
 import com.ruoyi.qt.domain.QtInterviewProfile;
@@ -34,6 +38,8 @@ public class QtInterviewController extends BaseController
     private ServerConfig serverConfig;
 
     @PostMapping("/apply")
+    @RateLimiter(time = 60, count = 10, limitType = LimitType.USER, key = "rate_limit:apply:")
+    @RepeatSubmit(message = "正在提交简历，请勿重复提交")
     public AjaxResult apply(QtInterviewApplication application, QtInterviewProfile profile,
             @RequestParam(value = "photoFile", required = false) MultipartFile photoFile)
     {
@@ -153,7 +159,7 @@ public class QtInterviewController extends BaseController
     private String uploadPhoto(MultipartFile photoFile) throws Exception
     {
         String uploadPath = RuoYiConfig.getUploadPath() + "/qt/interview-photo";
-        return FileUploadUtils.upload(uploadPath, photoFile, MimeTypeUtils.IMAGE_EXTENSION);
+        return FileUploadUtils.upload(uploadPath, photoFile, MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE);
     }
 
     private void fillPhotoAccessUrl(QtInterviewApplication application)

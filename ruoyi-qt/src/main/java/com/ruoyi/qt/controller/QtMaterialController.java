@@ -23,6 +23,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.file.FileUploadUtils;
 import com.ruoyi.common.utils.file.FileUtils;
+import com.ruoyi.common.utils.file.FileValidator;
 import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.qt.domain.QtMaterial;
 import com.ruoyi.qt.service.IQtMaterialService;
@@ -61,7 +62,8 @@ public class QtMaterialController extends BaseController
             return error("??????????????");
         }
         String uploadPath = RuoYiConfig.getUploadPath() + "/qt/materials";
-        String stored = FileUploadUtils.upload(uploadPath, file, MimeTypeUtils.DEFAULT_ALLOWED_EXTENSION);
+        String stored = FileUploadUtils.upload(uploadPath, file, MimeTypeUtils.DEFAULT_ALLOWED_EXTENSION,
+                FileValidator.SIZE_DOCUMENT);
         material.setFileName(file.getOriginalFilename());
         material.setStoredName(FileUtils.getName(stored));
         material.setFilePath(stored);

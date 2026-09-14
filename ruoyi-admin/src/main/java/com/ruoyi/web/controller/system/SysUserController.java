@@ -26,6 +26,8 @@ import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.file.FileValidator;
+import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.qt.util.QtAuthUtils;
 import com.ruoyi.system.service.ISysDeptService;
@@ -82,6 +84,7 @@ public class SysUserController extends BaseController
     public AjaxResult importData(MultipartFile file, boolean updateSupport) throws Exception
     {
         QtAuthUtils.requireCeo();
+        FileValidator.validate(file, MimeTypeUtils.EXCEL_EXTENSION, FileValidator.SIZE_IMPORT);
         ExcelUtil<SysUser> util = new ExcelUtil<SysUser>(SysUser.class);
         List<SysUser> userList = util.importExcel(file.getInputStream());
         String operName = getUsername();
