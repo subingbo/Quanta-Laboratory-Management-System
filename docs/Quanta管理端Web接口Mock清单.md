@@ -1,6 +1,6 @@
 # Quanta 管理端 Web 接口 Mock 清单
 
-更新日期：2026-09-13  
+更新日期：2026-09-14
 适用项目：`Quanta-admin-web`
 
 ## 使用规则
@@ -17,8 +17,8 @@
 
 | 模块 | 方法 | 路径 | 当前问题 | Mock 原因 | 临时行为 | 复测条件 | 状态 | 最近确认 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 动态菜单 | `GET` | `/getRouters` | 返回若依系统菜单，未返回 Quanta Web 页面 | 联调库尚未执行对应菜单初始化 | 认证和权限仍取真实后端，仅在响应中没有任何受支持页面时使用本地 Web 路由目录，并按真实权限过滤 | 后端返回 `dashboard/index` 等 Quanta 页面组件 | Mock | 2026-09-13 |
-| 成员届次 | `GET` | `/qt/member/cohorts` | 业务码 200，但 `currentCohort` 为 `null` 且 `cohorts` 为空 | 联调库缺少届次数据 | 返回与真实成员字段兼容的本地届次，成员列表仍请求真实后端 | 后端返回当前届次和非空届次列表 | Mock | 2026-09-13 |
+| 动态菜单 | `GET` | `/getRouters` | 返回若依系统菜单及 `qt/*` 组件名，未返回当前 Quanta Web 使用的页面组件 | 后端菜单组件名与当前 Web 组件映射不兼容 | 接口仍请求真实后端；仅在响应中没有任何受支持页面时使用本地 Web 路由目录，并按真实权限过滤 | 后端返回当前 Web 可识别的组件名，或前后端统一组件映射 | 本地路由兜底 | 2026-09-14 |
+| 成员届次 | `GET` | `/qt/member/cohorts` | 业务码 200，但 `currentCohort` 为 `null` 且 `cohorts` 为空 | 联调库缺少届次数据 | 返回与真实成员字段兼容的本地届次，成员列表仍请求真实后端 | 后端返回当前届次和非空届次列表 | Mock | 2026-09-14 |
 
 ## 已验证的真实接口
 
@@ -39,6 +39,8 @@
 - `GET /system/reservation/detailList`
 - `GET /system/borrow/detailList`
 - `GET /system/order/detailList`
+
+2026-09-14 根据更新后的后端再次复核：上述读取接口仍可正常返回；`/getRouters` 与 `/qt/member/cohorts` 的数据问题仍存在，因此继续保留上表中的两项局部兜底，其余接口不回退 Mock。代码中的接口 Mock 白名单仅包含 `/qt/member/cohorts`；`/getRouters` 始终调用真实后端。
 
 ## 待复测但暂不使用 Mock
 

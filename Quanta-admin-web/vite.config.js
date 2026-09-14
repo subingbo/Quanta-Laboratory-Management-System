@@ -5,6 +5,8 @@ import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
 export default defineConfig(({ mode }) => ({
+  // 生产环境由 Nginx 挂载在 /admin/，开发环境仍保持根路径，避免影响本地联调。
+  base: mode === 'production' ? '/admin/' : '/',
   plugins: [
     vue(),
     ...(mode === 'test'
