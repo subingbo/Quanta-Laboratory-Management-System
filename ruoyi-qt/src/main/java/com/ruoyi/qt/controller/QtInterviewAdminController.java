@@ -82,7 +82,7 @@ public class QtInterviewAdminController extends BaseController
     }
 
     @PreAuthorize("@ss.hasPermi('qt:interview:admin:evaluate')")
-    @Log(title = "????????", businessType = BusinessType.INSERT)
+    @Log(title = "招新面评", businessType = BusinessType.INSERT)
     @PostMapping("/evaluations")
     public AjaxResult addEvaluation(@RequestBody QtInterviewEvaluation evaluation)
     {
@@ -90,7 +90,7 @@ public class QtInterviewAdminController extends BaseController
     }
 
     @PreAuthorize("@ss.hasPermi('qt:interview:admin:evaluate')")
-    @Log(title = "????????", businessType = BusinessType.UPDATE)
+    @Log(title = "招新面评", businessType = BusinessType.UPDATE)
     @PutMapping("/evaluations/{evaluationId}")
     public AjaxResult editEvaluation(@PathVariable Long evaluationId, @RequestBody QtInterviewEvaluation evaluation)
     {
@@ -99,7 +99,7 @@ public class QtInterviewAdminController extends BaseController
     }
 
     @PreAuthorize("@ss.hasPermi('qt:interview:admin:offer')")
-    @Log(title = "???????", businessType = BusinessType.UPDATE)
+    @Log(title = "招新录用", businessType = BusinessType.UPDATE)
     @PostMapping("/offers")
     public AjaxResult offers(@RequestBody QtInterviewOfferBody body)
     {
@@ -114,7 +114,7 @@ public class QtInterviewAdminController extends BaseController
     }
 
     @PreAuthorize("@ss.hasPermi('qt:interview:admin:export')")
-    @Log(title = "???????", businessType = BusinessType.EXPORT)
+    @Log(title = "招新导出", businessType = BusinessType.EXPORT)
     @GetMapping("/applications/export")
     public void exportGet(HttpServletResponse response, QtInterviewApplication query,
             @RequestParam(value = "round", required = false) Long round,
@@ -125,7 +125,7 @@ public class QtInterviewAdminController extends BaseController
     }
 
     @PreAuthorize("@ss.hasPermi('qt:interview:admin:export')")
-    @Log(title = "???????", businessType = BusinessType.EXPORT)
+    @Log(title = "招新导出", businessType = BusinessType.EXPORT)
     @PostMapping("/applications/export")
     public void exportPost(HttpServletResponse response, QtInterviewApplication query)
     {
@@ -133,7 +133,7 @@ public class QtInterviewAdminController extends BaseController
     }
 
     @PreAuthorize("@ss.hasPermi('qt:interview:admin:offer')")
-    @Log(title = "??????", businessType = BusinessType.UPDATE)
+    @Log(title = "入职状态", businessType = BusinessType.UPDATE)
     @PutMapping("/applications/{id:\\d+}/join-status")
     public AjaxResult joinStatus(@PathVariable("id") Long id, @RequestBody QtStatusBody body)
     {
@@ -141,7 +141,7 @@ public class QtInterviewAdminController extends BaseController
     }
 
     @PreAuthorize("@ss.hasPermi('qt:interview:admin:offer')")
-    @Log(title = "??????", businessType = BusinessType.UPDATE)
+    @Log(title = "最终状态", businessType = BusinessType.UPDATE)
     @PutMapping("/applications/{id:\\d+}/final-status")
     public AjaxResult finalStatus(@PathVariable("id") Long id, @RequestBody QtStatusBody body)
     {
@@ -154,7 +154,7 @@ public class QtInterviewAdminController extends BaseController
         applyListAliases(query, round, departmentId, status);
         List<QtInterviewApplication> list = qtInterviewAdminService.selectAdminList(query);
         ExcelUtil<QtInterviewApplication> util = new ExcelUtil<QtInterviewApplication>(QtInterviewApplication.class);
-        util.exportExcel(response, list, "????????");
+        util.exportExcel(response, list, "招新申请");
     }
 
     private void applyListAliases(QtInterviewApplication query, Long round, String departmentId, String status)

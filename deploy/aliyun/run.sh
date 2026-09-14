@@ -18,6 +18,9 @@ REDIS_PORT="${REDIS_PORT:-6379}"
 REDIS_PASSWORD="${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}"
 APP_HOME="${APP_HOME:-$HERE}"
 UPLOAD_PATH="${UPLOAD_PATH:-$APP_HOME/uploadPath}"
+# JWT 签名密钥。application.yml 写的是 ${TOKEN_SECRET:}，这里导出环境变量即可被读取，
+# 不走 --token.secret= 命令行参数，避免密钥出现在 ps 输出里被同机其他进程看到。
+TOKEN_SECRET="${TOKEN_SECRET:?set TOKEN_SECRET in .env (generate: openssl rand -base64 48)}"
 # 招新小程序若与后端同 db index 会串，保留 db1；如需换再改这里
 SPRING_ARGS="${SPRING_ARGS:---spring.data.redis.database=1}"
 
@@ -26,7 +29,7 @@ mkdir -p "$UPLOAD_PATH" "$APP_HOME/logs"
 # 若你的 MySQL 未启用 TLS，allowPublicKeyRetrieval 必须开
 JDBC_URL="jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/ry-vue?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_general_ci&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8"
 
-export MYSQL_HOST MYSQL_PORT MYSQL_USERNAME MYSQL_PASSWORD REDIS_HOST
+export MYSQL_HOST MYSQL_PORT MYSQL_USERNAME MYSQL_PASSWORD REDIS_HOST TOKEN_SECRET
 
 # 2C2G 小机器内存预算：MySQL(容器,含128M缓冲池) ≈ 400M / Redis ≤128M / JVM 堆 512M+元空间 ≈ 750M
 # 若以后升回 4G，可把 -Xmx 调到 1024m

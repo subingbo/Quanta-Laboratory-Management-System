@@ -1,7 +1,9 @@
 package com.ruoyi.qt.service.impl;
 
 import java.util.List;
+import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.qt.cache.QtQueryCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.qt.mapper.QtClothingItemMapper;
@@ -19,6 +21,9 @@ public class QtClothingItemServiceImpl implements IQtClothingItemService
 {
     @Autowired
     private QtClothingItemMapper qtClothingItemMapper;
+
+    @Autowired
+    private QtQueryCache qtQueryCache;
 
     /**
      * 查询服装配置
@@ -54,7 +59,9 @@ public class QtClothingItemServiceImpl implements IQtClothingItemService
     public int insertQtClothingItem(QtClothingItem qtClothingItem)
     {
         qtClothingItem.setCreateTime(DateUtils.getNowDate());
-        return qtClothingItemMapper.insertQtClothingItem(qtClothingItem);
+        int rows = qtClothingItemMapper.insertQtClothingItem(qtClothingItem);
+        qtQueryCache.evict(CacheConstants.CACHE_QT_ITEM_LIST);
+        return rows;
     }
 
     /**
@@ -67,7 +74,9 @@ public class QtClothingItemServiceImpl implements IQtClothingItemService
     public int updateQtClothingItem(QtClothingItem qtClothingItem)
     {
         qtClothingItem.setUpdateTime(DateUtils.getNowDate());
-        return qtClothingItemMapper.updateQtClothingItem(qtClothingItem);
+        int rows = qtClothingItemMapper.updateQtClothingItem(qtClothingItem);
+        qtQueryCache.evict(CacheConstants.CACHE_QT_ITEM_LIST);
+        return rows;
     }
 
     /**
@@ -79,7 +88,9 @@ public class QtClothingItemServiceImpl implements IQtClothingItemService
     @Override
     public int deleteQtClothingItemByItemIds(Long[] itemIds)
     {
-        return qtClothingItemMapper.deleteQtClothingItemByItemIds(itemIds);
+        int rows = qtClothingItemMapper.deleteQtClothingItemByItemIds(itemIds);
+        qtQueryCache.evict(CacheConstants.CACHE_QT_ITEM_LIST);
+        return rows;
     }
 
     /**
@@ -91,6 +102,8 @@ public class QtClothingItemServiceImpl implements IQtClothingItemService
     @Override
     public int deleteQtClothingItemByItemId(Long itemId)
     {
-        return qtClothingItemMapper.deleteQtClothingItemByItemId(itemId);
+        int rows = qtClothingItemMapper.deleteQtClothingItemByItemId(itemId);
+        qtQueryCache.evict(CacheConstants.CACHE_QT_ITEM_LIST);
+        return rows;
     }
 }

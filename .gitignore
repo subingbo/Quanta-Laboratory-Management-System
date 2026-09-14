@@ -15,6 +15,9 @@ target/
 # Local tool / 大构建产物（不能进库）
 
 .codegraph/
+.mimosa/
+.zcode/
+.claude/settings.local.json
 cloudrun/**/*.jar
 node_modules/
 .pnpm-store/

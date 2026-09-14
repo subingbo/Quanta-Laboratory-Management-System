@@ -30,7 +30,8 @@ public class DictUtils
      */
     public static void setDictCache(String key, List<SysDictData> dictDatas)
     {
-        SpringUtils.getBean(RedisCache.class).setCacheObject(getCacheKey(key), dictDatas);
+        SpringUtils.getBean(RedisCache.class).setCacheObject(getCacheKey(key), dictDatas,
+                CacheConstants.BASE_CACHE_EXPIRATION_HOURS, java.util.concurrent.TimeUnit.HOURS);
     }
 
     /**

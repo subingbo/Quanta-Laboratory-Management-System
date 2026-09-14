@@ -21,6 +21,7 @@ import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.file.FileUploadUtils;
 import com.ruoyi.common.utils.file.FileUtils;
+import com.ruoyi.common.utils.file.FileValidator;
 import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.qt.domain.QtClothingItem;
 import com.ruoyi.qt.service.IQtClothingItemService;
@@ -193,7 +194,7 @@ public class QtClothingItemController extends BaseController
     private String uploadImage(MultipartFile effectImageFile) throws Exception
     {
         String uploadPath = RuoYiConfig.getUploadPath() + "/qt/clothing-item";
-        return FileUploadUtils.upload(uploadPath, effectImageFile, MimeTypeUtils.IMAGE_EXTENSION);
+        return FileUploadUtils.upload(uploadPath, effectImageFile, MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE);
     }
 
     private void deleteLocalImageIfExists(String oldImagePath, String newImagePath)

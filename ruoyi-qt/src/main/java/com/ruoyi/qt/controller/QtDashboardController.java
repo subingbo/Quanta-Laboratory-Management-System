@@ -7,24 +7,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.qt.mapper.QtDashboardMapper;
+import com.ruoyi.qt.service.IQtDashboardService;
 
 @RestController
 @RequestMapping("/dashboard")
 public class QtDashboardController extends BaseController
 {
     @Autowired
-    private QtDashboardMapper qtDashboardMapper;
+    private IQtDashboardService qtDashboardService;
 
     @PreAuthorize("@ss.hasPermi('qt:dashboard:stats')")
     @GetMapping("/stats")
     public AjaxResult stats()
     {
-        java.util.Map<String, Object> data = new java.util.HashMap<String, Object>();
-        data.put("members", qtDashboardMapper.countActiveMembers());
-        data.put("resumesToday", qtDashboardMapper.countTodayResumes());
-        data.put("pendingReservations", qtDashboardMapper.countPendingReservations());
-        data.put("pendingPayments", qtDashboardMapper.countPendingPayments());
-        return success(data);
+        return success(qtDashboardService.selectStats());
     }
 }

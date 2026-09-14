@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.security.SecureRandom;
+import java.util.Base64;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +55,31 @@ public class TokenService
 
     private static final Long MILLIS_MINUTE_TWENTY = 20 * 60 * 1000L;
 
+    /** 若依上游公开在仓库里的默认密钥，禁止在任何环境使用 */
+    private static final String DEFAULT_PUBLISHED_SECRET = "abcdefghijklmnopqrstuvwxyz";
+
     @Autowired
     private RedisCache redisCache;
+
+    /**
+     * 令牌密钥兜底。
+     * <p>
+     * 上游把默认密钥写死在 application.yml 里，而本仓库是公开 fork —— 任何人都能据此伪造管理员 token。
+     * 因此这里不再接受默认值：未配置时随机生成一份（重启即失效，仅够本地开发用），并打醒目告警。
+     * 生产由 deploy/aliyun/run.sh 从 .env 强制注入 TOKEN_SECRET。
+     */
+    @PostConstruct
+    public void initSecret()
+    {
+        if (StringUtils.isEmpty(secret) || DEFAULT_PUBLISHED_SECRET.equals(secret) || secret.length() < 32)
+        {
+            byte[] random = new byte[48];
+            new SecureRandom().nextBytes(random);
+            this.secret = Base64.getEncoder().encodeToString(random);
+            log.warn("未配置有效的 token.secret（TOKEN_SECRET），已启用一次性随机密钥："
+                    + "服务重启后所有已签发令牌立即失效，且多实例之间无法互认。生产环境请在 deploy/aliyun/.env 中配置 TOKEN_SECRET。");
+        }
+    }
 
     /**
      * 获取用户身份信息

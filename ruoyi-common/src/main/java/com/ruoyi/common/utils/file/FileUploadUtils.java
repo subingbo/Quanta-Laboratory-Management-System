@@ -105,6 +105,22 @@ public class FileUploadUtils
     {
         return upload(baseDir, file, allowedExtension, false);
     }
+
+    /**
+     * 按业务档位限制大小上传（推荐用法）
+     *
+     * @param baseDir 相对应用的基目录
+     * @param file 上传的文件
+     * @param allowedExtension 上传文件类型
+     * @param maxSize 该场景允许的最大字节数
+     * @return 返回上传成功的文件名
+     */
+    public static final String upload(String baseDir, MultipartFile file, String[] allowedExtension, long maxSize)
+            throws FileSizeLimitExceededException, IOException, FileNameLengthLimitExceededException,
+            InvalidExtensionException
+    {
+        return upload(baseDir, file, allowedExtension, false, maxSize);
+    }
     
     /**
      * 文件上传
@@ -123,13 +139,31 @@ public class FileUploadUtils
             throws FileSizeLimitExceededException, IOException, FileNameLengthLimitExceededException,
             InvalidExtensionException
     {
+        return upload(baseDir, file, allowedExtension, useCustomNaming, DEFAULT_MAX_SIZE);
+    }
+
+    /**
+     * 文件上传
+     *
+     * @param baseDir 相对应用的基目录
+     * @param file 上传的文件
+     * @param useCustomNaming 系统自定义文件名
+     * @param allowedExtension 上传文件类型
+     * @param maxSize 该场景允许的最大字节数
+     * @return 返回上传成功的文件名
+     */
+    public static final String upload(String baseDir, MultipartFile file, String[] allowedExtension,
+            boolean useCustomNaming, long maxSize)
+            throws FileSizeLimitExceededException, IOException, FileNameLengthLimitExceededException,
+            InvalidExtensionException
+    {
         int fileNameLength = Objects.requireNonNull(file.getOriginalFilename()).length();
         if (fileNameLength > FileUploadUtils.DEFAULT_FILE_NAME_LENGTH)
         {
             throw new FileNameLengthLimitExceededException(FileUploadUtils.DEFAULT_FILE_NAME_LENGTH);
         }
 
-        assertAllowed(file, allowedExtension);
+        assertAllowed(file, allowedExtension, maxSize);
 
         String fileName = useCustomNaming ? uuidFilename(file) : extractFilename(file);
 
@@ -186,10 +220,27 @@ public class FileUploadUtils
     public static final void assertAllowed(MultipartFile file, String[] allowedExtension)
             throws FileSizeLimitExceededException, InvalidExtensionException
     {
+        assertAllowed(file, allowedExtension, DEFAULT_MAX_SIZE);
+    }
+
+    /**
+     * 文件大小 + 后缀白名单 + 真实内容校验
+     *
+     * @param file 上传的文件
+     * @param allowedExtension 允许的扩展名
+     * @param maxSize 该场景允许的最大字节数
+     * @throws FileSizeLimitExceededException 超出大小
+     * @throws InvalidExtensionException 后缀不在白名单
+     */
+    public static final void assertAllowed(MultipartFile file, String[] allowedExtension, long maxSize)
+            throws FileSizeLimitExceededException, InvalidExtensionException
+    {
         long size = file.getSize();
-        if (size > DEFAULT_MAX_SIZE)
+        if (size > maxSize)
         {
-            throw new FileSizeLimitExceededException(DEFAULT_MAX_SIZE / 1024 / 1024);
+            // 不用 FileSizeLimitExceededException：它的 i18n 文案带 <br/>，会原样显示在给用户的提示里
+            throw new com.ruoyi.common.exception.ServiceException(
+                    StringUtils.format("文件大小超出限制，最大允许 {}MB", maxSize / 1024 / 1024));
         }
 
         String fileName = file.getOriginalFilename();
@@ -221,6 +272,9 @@ public class FileUploadUtils
                 throw new InvalidExtensionException(allowedExtension, extension, fileName);
             }
         }
+
+        // 后缀白名单通过后，再核对文件头，防止把脚本/网页改名成 .png 绕过校验
+        FileValidator.validateContent(file, allowedExtension);
     }
 
     /**

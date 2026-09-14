@@ -5,8 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.qt.domain.QtInterviewApplication;
@@ -94,6 +97,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_RECRUIT_STATISTICS, allEntries = true)
     public QtInterviewEvaluation saveEvaluation(QtInterviewEvaluation evaluation, Long operatorUserId, String operator)
     {
         validateEvaluation(evaluation);
@@ -120,23 +124,24 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_RECRUIT_STATISTICS, allEntries = true)
     public QtInterviewEvaluation updateEvaluation(QtInterviewEvaluation evaluation, Long operatorUserId, String operator)
     {
         QtInterviewEvaluation old = qtInterviewMapper.selectEvaluationById(evaluation.getEvaluationId());
         if (old == null)
         {
-            throw new ServiceException("??????????");
+            throw new ServiceException("面评不存在");
         }
         if (!operatorUserId.equals(old.getEvaluatorUserId()) && !QtAuthUtils.isCeo())
         {
-            throw new ServiceException("?????????????");
+            throw new ServiceException("无权修改他人面评");
         }
         selectApplication(old.getApplicationId());
         assertEvalRound(old.getRoundId());
         QtAuthUtils.assertDepartmentScope(old.getDepartment());
         if (StringUtils.isEmpty(evaluation.getContent()))
         {
-            throw new ServiceException("??????????????");
+            throw new ServiceException("面评内容不能为空");
         }
         old.setContent(evaluation.getContent());
         old.setUpdateBy(operator);
@@ -146,16 +151,17 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_RECRUIT_STATISTICS, allEntries = true)
     public Map<String, Object> offer(QtInterviewOfferBody body, String operator)
     {
         if (body == null || body.getApplicationId() == null)
         {
-            throw new ServiceException("applicationId ???????");
+            throw new ServiceException("applicationId 不能为空");
         }
         String decision = body.getDecision() == null ? "" : body.getDecision().toUpperCase();
         if (!"PASS".equals(decision) && !"OUT".equals(decision))
         {
-            throw new ServiceException("decision ????? PASS ?? OUT");
+            throw new ServiceException("decision 只能是 PASS 或 OUT");
         }
         QtInterviewApplication application = selectApplication(body.getApplicationId());
         String department = resolveOfferDepartment(body, application);
@@ -164,7 +170,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
                 : qtInterviewMapper.selectRoundById(body.getRoundId());
         if (round == null)
         {
-            throw new ServiceException("??????β?????");
+            throw new ServiceException("面试轮次不存在");
         }
         String resultStatus = "PASS".equals(decision) ? "PASS" : "OUT";
         QtDictUtils.requireValue(QtDictUtils.RESULT_STATUS, resultStatus, "decision");
@@ -228,12 +234,12 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
         SysNotice notice = new SysNotice();
         boolean pass = "PASS".equals(decision);
-        notice.setNoticeTitle(pass ? "?????????" : "????????");
+        notice.setNoticeTitle(pass ? "录用通知" : "淘汰通知");
         notice.setNoticeType("1");
         notice.setStatus("0");
         String content = StringUtils.isNotEmpty(body.getNotice()) ? body.getNotice()
-                : (pass ? ("?????????? " + application.getOfferedDepartment() + " ????????????????")
-                        : ("??????????? " + department + " ????δ?????"));
+                : (pass ? ("恭喜你通过 " + application.getOfferedDepartment() + " 部门面试，请留意后续安排")
+                        : ("很遗憾，你未通过 " + department + " 部门面试"));
         notice.setNoticeContent(content);
         notice.setCreateBy(operator);
         notice.setRemark("qt_offer:" + application.getUserId());
@@ -250,17 +256,18 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_RECRUIT_STATISTICS, allEntries = true)
     public Map<String, Object> updateJoinStatus(Long applicationId, QtStatusBody body, String operator)
     {
         QtInterviewApplication application = selectApplication(applicationId);
         if (body == null || StringUtils.isEmpty(body.getJoinStatus()))
         {
-            throw new ServiceException("joinStatus ???????");
+            throw new ServiceException("joinStatus 不能为空");
         }
         String status = body.getJoinStatus().toUpperCase();
         if (!"PENDING".equals(status) && !"ACCEPTED".equals(status) && !"DECLINED".equals(status))
         {
-            throw new ServiceException("joinStatus ????? PENDING/ACCEPTED/DECLINED");
+            throw new ServiceException("joinStatus 只能是 PENDING/ACCEPTED/DECLINED");
         }
         application.setJoinStatus(status);
         application.setUpdateBy(operator);
@@ -276,12 +283,13 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_RECRUIT_STATISTICS, allEntries = true)
     public Map<String, Object> updateFinalStatus(Long applicationId, QtStatusBody body, String operator)
     {
         QtInterviewApplication application = selectApplication(applicationId);
         if (body == null || StringUtils.isEmpty(body.getFinalStatus()))
         {
-            throw new ServiceException("finalStatus ???????");
+            throw new ServiceException("finalStatus 不能为空");
         }
         QtDictUtils.requireValue(QtDictUtils.APPLY_STATUS, body.getFinalStatus(), "finalStatus");
         application.setFinalStatus(body.getFinalStatus());
@@ -295,6 +303,8 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
     }
 
     @Override
+    @Cacheable(cacheNames = CacheConstants.CACHE_QT_RECRUIT_STATISTICS,
+            key = "T(com.ruoyi.qt.cache.QtCacheKeys).scopedDept()")
     public Map<String, Object> statistics()
     {
         String scoped = QtAuthUtils.scopedDepartment();
@@ -343,7 +353,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         QtInterviewApplication application = qtInterviewMapper.selectApplicationById(applicationId);
         if (application == null)
         {
-            throw new ServiceException("????????");
+            throw new ServiceException("申请不存在");
         }
         return application;
     }
@@ -352,15 +362,15 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
     {
         if (evaluation.getApplicationId() == null)
         {
-            throw new ServiceException("applicationId ???????");
+            throw new ServiceException("applicationId 不能为空");
         }
         if (evaluation.getRoundId() == null)
         {
-            throw new ServiceException("roundId ???????");
+            throw new ServiceException("roundId 不能为空");
         }
         if (StringUtils.isEmpty(evaluation.getContent()))
         {
-            throw new ServiceException("??????????????");
+            throw new ServiceException("面评内容不能为空");
         }
     }
 
@@ -371,7 +381,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
             QtAuthUtils.assertDepartmentScope(department);
             if (!department.equals(application.getFirstChoice()) && !department.equals(application.getSecondChoice()))
             {
-                throw new ServiceException("?????????ú?????????");
+                throw new ServiceException("该部门不在候选人志愿中");
             }
             return department;
         }
@@ -392,7 +402,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         QtInterviewRound round = qtInterviewMapper.selectRoundById(roundId);
         if (round == null || round.getRoundNo() == null || round.getRoundNo() != 2)
         {
-            throw new ServiceException("??????????????????????????");
+            throw new ServiceException("经理层只能评本部门二面");
         }
     }
 
@@ -418,7 +428,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
             {
                 return application.getSecondChoice();
             }
-            throw new ServiceException("volunteerNo ????? 1 ?? 2");
+            throw new ServiceException("volunteerNo 只能是 1 或 2");
         }
         if (StringUtils.isNotEmpty(body.getDepartment()))
         {

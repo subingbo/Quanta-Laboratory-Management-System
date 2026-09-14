@@ -4,7 +4,7 @@
 -- =============================================================================
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
-SET @pwd = '$2a$10$7JB720yubVSZVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2'; -- admin123
+SET @pwd = '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2'; -- admin123
 
 -- 0) cleanup previous lab_debug rows (keeps lab_seed originals)
 DELETE FROM qt_interview_evaluation WHERE create_by='lab_debug';

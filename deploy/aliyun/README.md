@@ -39,7 +39,7 @@ deploy/aliyun/
 
 ```bash
 cd D:\RuoYi-Vue-Qt\deploy\aliyun
-cp .env.example .env      # 填 MySQL/Redis 口令、ECS_HOST/USER/PASSWORD、APP_HOME
+cp .env.example .env      # 填 MySQL/Redis 口令、ECS_HOST/USER/PASSWORD、APP_HOME、TOKEN_SECRET
 pip install paramiko      # upload.py 依赖
 ```
 > 生产环境强烈建议把 `.env` 里的默认口令 `ChangeMe_*` 全部换掉；SSH 若改用密钥，`.env` 填 `ECS_KEY_FILE`（可留空 `ECS_PASSWORD`）。
@@ -101,11 +101,28 @@ curl -sS https://api.your-domain.com/captchaImage | head
 ## 6. 安全收尾（上线前必做，文档写死）
 
 1. **恢复验证码**：删 `initdb/07_disable_captcha.sql`（或改成 `config_value='true'`）后重建 db / 执行 UPDATE 再 `docker restart quanta-mysql`。
-2. 改 `ruoyi-admin jar` 里 `token.secret`（生产别用仓库明文），或直接在 systemd `Environment=SPRING_APPLICATION_JSON={\"token\":{\"secret\":\"...\"}}` 覆盖。
-3. 关掉生产 Swagger、Druid 监控台加白名单（application.yml `springdoc.swagger-ui.enabled:false`、`druid.statViewServlet.enabled:false`）。
+2. `token.secret` —— **已改为强制外部注入**：`application.yml` 里是 `${TOKEN_SECRET:}`，`run.sh` 用 `${TOKEN_SECRET:?...}` 校验，因此**不设就直接启动失败**（不会再拿仓库里的公开默认值启动）。生成：`openssl rand -base64 48`，写进 `.env`。
+   本地 IDE 直跑不设也行：`TokenService` 检测到缺失/过短会临时随机一把并打 WARN（代价是重启即全员掉线，别用于生产）。改这个值会让所有在线 token 失效。
+3. Druid 监控台 —— **默认已关**：`statViewServlet.enabled: ${DRUID_STAT_ENABLED:false}`、`allow` 限 `127.0.0.1`、口令走环境变量；`SecurityConfig` 也已移除 `/druid/**` 的 permitAll，Nginx 再加一层 404。真要排查时：`.env` 临时设 `DRUID_STAT_ENABLED=true` + SSH 隧道看 `127.0.0.1:8080/druid`。
+   生产 Swagger 仍建议关：`springdoc.swagger-ui.enabled:false`。
 4. `.env` 里 MySQL root/Redis 强口令 + 别把 `.env` 上传/入 git（本目录已 ignore）。
-5. Nginx 上 `add_header X-Content-Type-Options nosniff; add_header X-Frame-Options SAMEORIGIN;` 视情况加。
+5. Nginx 已加 `X-Content-Type-Options nosniff` + `X-Frame-Options SAMEORIGIN`；`/profile/**` 也单独带 nosniff 与 7 天缓存。
 6. 备份：`docker exec quanta-mysql mysqldump -uroot -p"$ROOT_PW" --databases ry-vue --single-transaction --routines --triggers > ry-vue.sql`（cron 每日）。
+7. SSH：安全组里 22 端口目前是 `0.0.0.0/0` + 密码登录（阿里云控制台已标黄）。建议限源 IP 或改密钥（`.env` 支持 `ECS_KEY_FILE`）。
+
+### 6.1 缓存与上传限制（本轮新增的运维开关）
+
+> 设计与验证的完整说明见 `docs/后端缓存与上传校验加固说明.md`（含「分页列表为何不能直接 @Cacheable」的三个硬伤、失效矩阵、实测数据与踩坑记录）。
+
+| 开关 | 位置 | 说明 |
+|---|---|---|
+| `qt.cache.enabled` | `application.yml` | 业务查询缓存总开关，改 `false` 即刻全部直查，不必回滚代码 |
+| Redis | `docker-compose.yml` | `maxmemory 256mb` + `volatile-lru`；业务缓存键全部带 TTL，改完需 `docker compose up -d redis`（会清登录态） |
+| 缓存键 | Redis db1 | 前缀 `cache:`，排查用 `docker exec quanta-redis redis-cli -a "$REDIS_PASSWORD" -n 1 --scan --pattern 'cache:*'` |
+| 图片上传 | `FileValidator.SIZE_IMAGE` = 5MB | 证件照/头像/收款码/效果图/支付凭证 |
+| 文档上传 | `FileValidator.SIZE_DOCUMENT` = 20MB | 学习资料；同步受 `spring.servlet.multipart.max-file-size` 与 Nginx `client_max_body_size 25m` 约束 |
+
+上传现在除后缀白名单外还会校验**文件头魔数**与**图片像素**（单边 ≤4096、总像素 ≤2000 万），改名绕过会被拒。
 
 ---
 

@@ -1,8 +1,11 @@
 package com.ruoyi.qt.service.impl;
 
 import java.util.List;
+import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.qt.cache.QtQueryCache;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import com.ruoyi.qt.mapper.QtBookBorrowMapper;
 import com.ruoyi.qt.domain.QtBookBorrow;
@@ -19,6 +22,17 @@ public class QtBookBorrowServiceImpl implements IQtBookBorrowService
 {
     @Autowired
     private QtBookBorrowMapper qtBookBorrowMapper;
+
+    @Autowired
+    private QtQueryCache qtQueryCache;
+
+    /**
+     * 借还会影响图书可借数量，手动缓存的分页列表要一并失效。
+     */
+    private void evictBookCache()
+    {
+        qtQueryCache.evict(CacheConstants.CACHE_QT_BOOK_LIST);
+    }
 
     /**
      * 查询图书借阅记录
@@ -57,10 +71,14 @@ public class QtBookBorrowServiceImpl implements IQtBookBorrowService
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_BOOK_DETAIL, allEntries = true)
     public int insertQtBookBorrow(QtBookBorrow qtBookBorrow)
     {
         qtBookBorrow.setCreateTime(DateUtils.getNowDate());
-        return qtBookBorrowMapper.insertQtBookBorrow(qtBookBorrow);
+        int rows = qtBookBorrowMapper.insertQtBookBorrow(qtBookBorrow);
+        // 借出会改变 qt_book.available_count，图书列表/详情缓存必须一起清
+        evictBookCache();
+        return rows;
     }
 
     /**
@@ -70,10 +88,13 @@ public class QtBookBorrowServiceImpl implements IQtBookBorrowService
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_BOOK_DETAIL, allEntries = true)
     public int updateQtBookBorrow(QtBookBorrow qtBookBorrow)
     {
         qtBookBorrow.setUpdateTime(DateUtils.getNowDate());
-        return qtBookBorrowMapper.updateQtBookBorrow(qtBookBorrow);
+        int rows = qtBookBorrowMapper.updateQtBookBorrow(qtBookBorrow);
+        evictBookCache();
+        return rows;
     }
 
     /**
