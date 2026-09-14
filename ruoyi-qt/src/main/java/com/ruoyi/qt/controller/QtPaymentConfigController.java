@@ -186,7 +186,11 @@ public class QtPaymentConfigController extends BaseController
         {
             imagePath = "/" + imagePath;
         }
-        config.setQrImageUrl(serverConfig.getUrl() + "/profile" + imagePath);
+        if (!imagePath.startsWith("/profile"))
+        {
+            imagePath = "/profile" + imagePath;
+        }
+        config.setQrImageUrl(serverConfig.getUrl() + imagePath);
     }
 
     private String uploadImage(MultipartFile qrImageFile) throws Exception

@@ -1,0 +1,6 @@
+{
+  "envId": "cloud1-3g3ayhyg41b2fe30",
+  "cloudrun": {
+    "name": "quanta-redis"
+  }
+}

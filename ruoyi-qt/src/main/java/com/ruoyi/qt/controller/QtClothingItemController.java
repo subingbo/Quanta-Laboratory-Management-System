@@ -183,7 +183,11 @@ public class QtClothingItemController extends BaseController
         {
             imagePath = "/" + imagePath;
         }
-        item.setEffectImageUrl(serverConfig.getUrl() + "/profile" + imagePath);
+        if (!imagePath.startsWith("/profile"))
+        {
+            imagePath = "/profile" + imagePath;
+        }
+        item.setEffectImageUrl(serverConfig.getUrl() + imagePath);
     }
 
     private String uploadImage(MultipartFile effectImageFile) throws Exception

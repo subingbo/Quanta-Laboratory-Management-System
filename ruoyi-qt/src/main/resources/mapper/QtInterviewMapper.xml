@@ -23,6 +23,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="nickName" column="nick_name"/>
         <result property="firstChoiceStatus" column="first_choice_status"/>
         <result property="secondChoiceStatus" column="second_choice_status"/>
+        <result property="firstChoiceFirstRoundStatus" column="first_choice_first_round_status"/>
+        <result property="firstChoiceSecondRoundStatus" column="first_choice_second_round_status"/>
+        <result property="secondChoiceFirstRoundStatus" column="second_choice_first_round_status"/>
+        <result property="secondChoiceSecondRoundStatus" column="second_choice_second_round_status"/>
         <result property="createBy" column="create_by"/>
         <result property="createTime" column="create_time"/>
         <result property="updateBy" column="update_by"/>
@@ -217,6 +221,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                a.offered_department, a.join_status, a.final_status, a.notice_status,
                a.create_by, a.create_time, a.update_by, a.update_time,
                u.student_no, u.phonenumber, u.nick_name
+               ,
+               (select r.result_status from qt_interview_result r
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = 1 and r.department = a.first_choice limit 1) as first_choice_first_round_status,
+               (select r.result_status from qt_interview_result r
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = 2 and r.department = a.first_choice limit 1) as first_choice_second_round_status,
+               (select r.result_status from qt_interview_result r
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = 1 and r.department = a.second_choice limit 1) as second_choice_first_round_status,
+               (select r.result_status from qt_interview_result r
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = 2 and r.department = a.second_choice limit 1) as second_choice_second_round_status
                <if test="roundId != null">
                ,
                (select r.result_status from qt_interview_result r
@@ -366,5 +383,33 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="countTodayApplications" resultType="int">
         select count(*) from qt_interview_application
         where date(create_time) = curdate()
+    </select>
+
+    <select id="countTotalApplications" resultType="int">
+        select count(*) from qt_interview_application a
+        <where>
+            <if test="scopedDepartment != null and scopedDepartment != ''">
+                and (a.first_choice = #{scopedDepartment} or a.second_choice = #{scopedDepartment})
+            </if>
+        </where>
+    </select>
+
+    <select id="countRoundPassed" resultType="int">
+        select count(distinct a.application_id)
+        from qt_interview_application a
+        join qt_interview_result r on r.application_id = a.application_id
+        join qt_interview_round rd on r.round_id = rd.round_id
+        where rd.round_no = #{roundNo} and r.result_status = 'PASS'
+        <if test="scopedDepartment != null and scopedDepartment != ''">
+            and (a.first_choice = #{scopedDepartment} or a.second_choice = #{scopedDepartment})
+        </if>
+    </select>
+
+    <select id="countJoined" resultType="int">
+        select count(*) from qt_interview_application a
+        where a.join_status = 'ACCEPTED'
+        <if test="scopedDepartment != null and scopedDepartment != ''">
+            and (a.first_choice = #{scopedDepartment} or a.second_choice = #{scopedDepartment})
+        </if>
     </select>
 </mapper>

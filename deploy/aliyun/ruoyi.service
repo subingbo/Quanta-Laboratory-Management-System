@@ -1,0 +1,22 @@
+[Unit]
+Description=Quanta (RuoYi) Backend
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ruoyi
+Group=ruoyi
+WorkingDirectory=/opt/ruoyi
+EnvironmentFile=-/opt/ruoyi/.env
+ExecStart=/usr/bin/bash /opt/ruoyi/run.sh
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=10
+
+# 日志：由 logback 写文件；systemd 兜底一份
+StandardOutput=append:/opt/ruoyi/logs/stdout.log
+StandardError=append:/opt/ruoyi/logs/stderr.log
+
+[Install]
+WantedBy=multi-user.target

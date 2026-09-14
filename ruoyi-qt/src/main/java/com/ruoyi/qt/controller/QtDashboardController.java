@@ -21,10 +21,10 @@ public class QtDashboardController extends BaseController
     public AjaxResult stats()
     {
         java.util.Map<String, Object> data = new java.util.HashMap<String, Object>();
-        data.put("memberCount", qtDashboardMapper.countActiveMembers());
-        data.put("todayResumeCount", qtDashboardMapper.countTodayResumes());
-        data.put("pendingReservationCount", qtDashboardMapper.countPendingReservations());
-        data.put("pendingPaymentCount", qtDashboardMapper.countPendingPayments());
+        data.put("members", qtDashboardMapper.countActiveMembers());
+        data.put("resumesToday", qtDashboardMapper.countTodayResumes());
+        data.put("pendingReservations", qtDashboardMapper.countPendingReservations());
+        data.put("pendingPayments", qtDashboardMapper.countPendingPayments());
         return success(data);
     }
 }

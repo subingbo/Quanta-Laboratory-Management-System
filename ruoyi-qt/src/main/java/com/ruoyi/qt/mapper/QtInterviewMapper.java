@@ -67,4 +67,10 @@ public interface QtInterviewMapper
     int countPendingOffer(@Param("scopedDepartment") String scopedDepartment);
 
     int countTodayApplications();
+
+    int countTotalApplications(@Param("scopedDepartment") String scopedDepartment);
+
+    int countRoundPassed(@Param("scopedDepartment") String scopedDepartment, @Param("roundNo") Integer roundNo);
+
+    int countJoined(@Param("scopedDepartment") String scopedDepartment);
 }
