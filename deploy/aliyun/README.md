@@ -16,7 +16,9 @@ deploy/aliyun/
 ├── provision.sh          # ECS 一键装 Docker + JDK17 + 起依赖栈（幂等）
 ├── run.sh                # 后端启动（注入 DB/Redis/上传路径/SPRING_ARGS）
 ├── ruoyi.service         # systemd 单元
-├── nginx/quanta.conf     # HTTPS 反代：uniapp 无前缀 / WebSocket / 20m 上传
+├── nginx/                # 拆分式配置：common(upstream/map) + http + https + redirect + ip(8081兜底)
+├── apply-nginx.sh        # 落 nginx 配置；证书已签发则自动切 HTTPS
+├── ensure-cert.sh        # 备案生效后自动签 Let's Encrypt 证书（cron 每 30 分钟）
 ├── upload.py             # paramiko 助手：sync / start / verify
 └── .gitignore            # .env 和 *.jar 不入库
 ```
@@ -88,7 +90,7 @@ curl -sS https://api.your-domain.com/captchaImage | head
 
 - **5.1 想直接跑不用 systemd**：`cd /opt/ruoyi/ && set -a && . ./.env && set +a && bash run.sh`
 - **5.2 systemd**：`upload.py start` 里已把 `deploy/ruoyi.service` 拷去 `/etc/systemd/system/ruoyi.service` 并 `enable --now`；改配置后 `systemctl daemon-reload && restart ruoyi`。
-- **5.3 Nginx**：`cp deploy/aliyun/nginx/quanta.conf /etc/nginx/sites-available/quanta.conf`，改 `server_name`，软链到 `sites-enabled/`，`nginx -t && systemctl reload nginx`。`quanta.conf` 里 `server_name`、证书路径要改。
+- **5.3 Nginx**：改好 `nginx/quanta-*.conf` 里的域名后 `python upload.py sync && python upload.py nginx`（内部执行 `apply-nginx.sh`：拷配置、按证书存在与否启用 HTTP 或 HTTPS 形态、`nginx -t` 后 reload）。备案「新增接入」生效后 `python upload.py cert` 或等 cron 自动签证书并切 HTTPS。
 - **5.4 前端构建/部署**：
   - 管理后台 `Quanta-admin-web`：**注意 uniapp/admin-web 的接口约定不同**。
     - `Quanta-uniapp/src/utils/request.ts` 用 `${baseUrl}${url}`（url 不带 `/prod-api` 前缀）→ context-path `/`，Nginx 直接反代根即可。

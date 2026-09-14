@@ -83,8 +83,12 @@ class ECS:
             HERE / "run.sh":               posixpath.join(app_home,        "run.sh"),
             HERE / "provision.sh":         posixpath.join(self.deploy_dir, "provision.sh"),
             HERE / "ruoyi.service":        posixpath.join(self.deploy_dir, "ruoyi.service"),
-            HERE / "nginx/quanta.conf":    posixpath.join(self.deploy_dir, "nginx/quanta.conf"),
         }
+        # nginx 配置已拆成多份（common/http/https/redirect/ip），全部同步
+        for conf in sorted((HERE / "nginx").glob("*.conf")):
+            self.files[conf] = posixpath.join(self.deploy_dir, "nginx", conf.name)
+        for sh in ("apply-nginx.sh", "ensure-cert.sh"):
+            self.files[HERE / sh] = posixpath.join(self.deploy_dir, sh)
         # 大 jar（若不存在会报错）
         jar = REPO / "ruoyi-admin/target/ruoyi-admin.jar"
         if not jar.exists():
@@ -138,10 +142,39 @@ def cmd_sync(args):
     for sql in sorted(e.initdb_local.glob("*.sql")):
         e.upload(sql, f"{e.deploy_dir}/initdb/{sql.name}")
     print("[3/3] 修权")
+    # run.sh 与 ruoyi.service 读的是 $APP_HOME/.env（compose 读 deploy/.env），两处都要有
+    e.run(f"cp -f {shlex.quote(e.deploy_dir + '/.env')} {shlex.quote(e.app_home + '/.env')}")
+    e.run(f"chmod 600 {shlex.quote(e.app_home + '/.env')} {shlex.quote(e.deploy_dir + '/.env')}")
     e.run(f"if id ruoyi >/dev/null 2>&1; then chown -R ruoyi:ruoyi {shlex.quote(e.app_home)}; fi")
-    e.run(f"chmod +x {shlex.quote(e.app_home)}/run.sh {shlex.quote(e.deploy_dir)}/provision.sh")
+    e.run(f"chmod +x {shlex.quote(e.app_home)}/run.sh {shlex.quote(e.deploy_dir)}/provision.sh "
+          f"{shlex.quote(e.deploy_dir)}/apply-nginx.sh {shlex.quote(e.deploy_dir)}/ensure-cert.sh")
     e.close()
     print("✅ sync 完成")
+
+
+def cmd_web(args):
+    """上传 admin-web 构建产物 dist/ → $APP_HOME/admin/"""
+    env = load_env(HERE / ".env")
+    dist = Path(args.dist) if args.dist else REPO / "Quanta-admin-web/dist"
+    must(dist.exists(), f"找不到构建产物 {dist}（先在 Quanta-admin-web 执行 npm run build）")
+    remote = posixpath.join(env.get("APP_HOME", "/opt/ruoyi"), "admin")
+    e = ECS(env)
+    e.run(f"mkdir -p {shlex.quote(remote)}")
+    sftp = e.cli.open_sftp()
+    n = 0
+    for lp in sorted(dist.rglob("*")):
+        if lp.is_dir():
+            continue
+        rp = posixpath.join(remote, lp.relative_to(dist).as_posix())
+        d = posixpath.dirname(rp)
+        try: sftp.stat(d)
+        except IOError:
+            e.run(f"mkdir -p {shlex.quote(d)}")
+        sftp.put(str(lp), rp)
+        n += 1
+    sftp.close()
+    e.close()
+    print(f"✅ 已上传 {n} 个前端文件 → {remote}")
 
 def cmd_provision(args):
     env = load_env(HERE / ".env")
@@ -152,6 +185,10 @@ def cmd_provision(args):
 def cmd_start(args):
     env = load_env(HERE / ".env")
     e = ECS(env)
+    # 顺序无关的兜底：provision 之后 ruoyi 用户才存在，这里再修一次属主/权限
+    e.run("id ruoyi >/dev/null 2>&1 && mkdir -p /home/ruoyi/logs && chown -R ruoyi:ruoyi /home/ruoyi || true")
+    e.run(f"id ruoyi >/dev/null 2>&1 && chown -R ruoyi:ruoyi {shlex.quote(e.app_home)} "
+          f"&& chmod 600 {shlex.quote(e.app_home + '/.env')} {shlex.quote(e.deploy_dir + '/.env')} || true")
     e.run("systemctl daemon-reload || true")
     e.run(f"test -f /etc/systemd/system/ruoyi.service && echo service_ok "
           f"|| cp {e.deploy_dir}/ruoyi.service /etc/systemd/system/ruoyi.service")
@@ -172,13 +209,34 @@ def cmd_verify(args):
               check=False)
     e.close()
 
+def cmd_nginx(args):
+    """把 deploy/nginx/*.conf 落到 nginx；有证书则自动切 HTTPS"""
+    env = load_env(HERE / ".env")
+    e = ECS(env)
+    e.run(f"bash {e.deploy_dir}/apply-nginx.sh")
+    e.close()
+
+def cmd_cert(args):
+    """跑一次 ensure-cert.sh（LE 能验证即说明备案拦截已解除，随后自动切 HTTPS）"""
+    env = load_env(HERE / ".env")
+    e = ECS(env)
+    e.run(f"bash {e.deploy_dir}/ensure-cert.sh" + (" --force" if args.force else ""), check=False)
+    e.close()
+
 def main():
     p = argparse.ArgumentParser()
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("sync").set_defaults(func=cmd_sync)
+    wp = sub.add_parser("web", help="上传 admin-web 的 dist 构建产物")
+    wp.add_argument("--dist", default=None, help="默认 ../Quanta-admin-web/dist")
+    wp.set_defaults(func=cmd_web)
     sub.add_parser("provision").set_defaults(func=cmd_provision)
     sub.add_parser("start").set_defaults(func=cmd_start)
     sub.add_parser("verify").set_defaults(func=cmd_verify)
+    sub.add_parser("nginx", help="应用 Nginx 配置（证书就绪时自动切 HTTPS）").set_defaults(func=cmd_nginx)
+    cp = sub.add_parser("cert", help="尝试签发证书：LE 验证得通就说明备案生效，随即自动切 HTTPS")
+    cp.add_argument("--force", action="store_true", help="忽略 6 小时失败冷却，立即重试")
+    cp.set_defaults(func=cmd_cert)
     args = p.parse_args()
     args.func(args)
 
