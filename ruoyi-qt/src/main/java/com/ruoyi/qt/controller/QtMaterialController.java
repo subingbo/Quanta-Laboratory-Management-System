@@ -21,6 +21,7 @@ import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.file.FileUploadUtils;
 import com.ruoyi.common.utils.file.FileUtils;
 import com.ruoyi.common.utils.file.FileValidator;
@@ -48,18 +49,22 @@ public class QtMaterialController extends BaseController
     public AjaxResult getInfo(@PathVariable Long materialId)
     {
         QtMaterial material = qtMaterialService.selectMaterialById(materialId);
+        if (material == null)
+        {
+            return error("资料不存在或已删除");
+        }
         fillDownloadUrl(java.util.Collections.singletonList(material));
         return success(material);
     }
 
     @PreAuthorize("@ss.hasPermi('qt:material:add')")
-    @Log(title = "??????", businessType = BusinessType.INSERT)
+    @Log(title = "学习资料", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(QtMaterial material, @RequestParam("file") MultipartFile file) throws Exception
     {
         if (file == null || file.isEmpty())
         {
-            return error("??????????????");
+            return error("请选择要上传的文件");
         }
         String uploadPath = RuoYiConfig.getUploadPath() + "/qt/materials";
         String stored = FileUploadUtils.upload(uploadPath, file, MimeTypeUtils.DEFAULT_ALLOWED_EXTENSION,
@@ -76,7 +81,7 @@ public class QtMaterialController extends BaseController
     }
 
     @PreAuthorize("@ss.hasPermi('qt:material:edit')")
-    @Log(title = "??????", businessType = BusinessType.UPDATE)
+    @Log(title = "学习资料", businessType = BusinessType.UPDATE)
     @PutMapping("/{materialId}")
     public AjaxResult edit(@PathVariable Long materialId, @RequestBody QtMaterial material)
     {
@@ -86,11 +91,15 @@ public class QtMaterialController extends BaseController
     }
 
     @PreAuthorize("@ss.hasPermi('qt:material:remove')")
-    @Log(title = "??????", businessType = BusinessType.DELETE)
+    @Log(title = "学习资料", businessType = BusinessType.DELETE)
     @DeleteMapping("/{materialId}")
     public AjaxResult remove(@PathVariable Long materialId)
     {
         QtMaterial material = qtMaterialService.selectMaterialById(materialId);
+        if (material == null)
+        {
+            return error("资料不存在或已删除");
+        }
         int rows = qtMaterialService.deleteMaterialById(materialId);
         try
         {
@@ -107,6 +116,10 @@ public class QtMaterialController extends BaseController
     public void download(@PathVariable Long materialId, HttpServletResponse response) throws Exception
     {
         QtMaterial material = qtMaterialService.selectMaterialById(materialId);
+        if (material == null)
+        {
+            throw new ServiceException("资料不存在或已删除");
+        }
         String local = RuoYiConfig.getProfile() + FileUtils.stripPrefix(material.getFilePath());
         response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
         FileUtils.setAttachmentResponseHeader(response, material.getFileName());

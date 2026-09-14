@@ -31,6 +31,9 @@ server:
   servlet:
     # 应用的访问路径
     context-path: /
+  # 解析反代注入的 X-Forwarded-Proto/Host：不开时 ServerConfig.getUrl() 会把图片 URL
+  # 拼成 http:// 前缀，小程序正式版拒绝加载、https 页面混合内容。本地直连无这些头，行为不变
+  forward-headers-strategy: framework
   tomcat:
     # tomcat的URI编码
     uri-encoding: UTF-8

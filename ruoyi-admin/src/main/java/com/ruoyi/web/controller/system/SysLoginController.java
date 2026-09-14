@@ -57,7 +57,9 @@ public class SysLoginController
      * @return 结果
      */
     @PostMapping("/login")
-    @RateLimiter(time = 60, count = 20, limitType = LimitType.USER, key = "rate_limit:login:")
+    // 未登录回退按 IP 分桶：校园网共享出口，60s/20 次在招新整点会把整楼限死；
+    // 暴力破解由「密码错 5 次锁 10 分钟」兜底
+    @RateLimiter(time = 60, count = 60, limitType = LimitType.USER, key = "rate_limit:login:")
     public AjaxResult login(@RequestBody LoginBody loginBody)
     {
         AjaxResult ajax = AjaxResult.success();
