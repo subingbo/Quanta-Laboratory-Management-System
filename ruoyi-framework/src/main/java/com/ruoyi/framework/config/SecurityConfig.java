@@ -101,9 +101,10 @@ public class SecurityConfig
                 permitAllUrl.getUrls().forEach(url -> requests.requestMatchers(url).permitAll());
                 // 对于登录login 注册register 验证码captchaImage 允许匿名访问
                 requests.requestMatchers("/login", "/register", "/captchaImage").permitAll()
-                    // 静态资源，可匿名访问
-                    .requestMatchers(HttpMethod.GET, "/", "/*.html", "/**.html", "/**.css", "/**.js", "/profile/**").permitAll()
-                    .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**", "/druid/**").permitAll()
+                    // 静态资源，可匿名访问。上游的 "/**.html" 是递归通配（/any/path/evil.html 也放行），
+                    // 本站前端由 Nginx 直出，后端只需根路径与上传件访问，故收窄为精确匹配
+                    .requestMatchers(HttpMethod.GET, "/", "/index.html", "/favicon.ico", "/*.css", "/*.js", "/profile/**").permitAll()
+                    .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                     // 除上面外的所有请求全部需要鉴权认证
                     .anyRequest().authenticated();
             })

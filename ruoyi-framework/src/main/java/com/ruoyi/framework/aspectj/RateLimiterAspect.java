@@ -14,8 +14,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 import com.ruoyi.common.annotation.RateLimiter;
+import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.enums.LimitType;
 import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.ip.IpUtils;
 
@@ -80,10 +82,34 @@ public class RateLimiterAspect
         {
             stringBuffer.append(IpUtils.getIpAddr()).append("-");
         }
+        else if (rateLimiter.limitType() == LimitType.USER)
+        {
+            stringBuffer.append(currentUserSegment()).append("-");
+        }
         MethodSignature signature = (MethodSignature) point.getSignature();
         Method method = signature.getMethod();
         Class<?> targetClass = method.getDeclaringClass();
         stringBuffer.append(targetClass.getName()).append("-").append(method.getName());
         return stringBuffer.toString();
+    }
+
+    /**
+     * 已登录按用户 ID 分桶；匿名接口（如登录本身）退回按 IP，避免取不到登录态直接抛错。
+     */
+    private String currentUserSegment()
+    {
+        try
+        {
+            LoginUser loginUser = SecurityUtils.getLoginUser();
+            if (loginUser != null && loginUser.getUserId() != null)
+            {
+                return "u" + loginUser.getUserId();
+            }
+        }
+        catch (Exception e)
+        {
+            // 未登录或上下文缺失，退回 IP 维度
+        }
+        return "ip" + IpUtils.getIpAddr();
     }
 }

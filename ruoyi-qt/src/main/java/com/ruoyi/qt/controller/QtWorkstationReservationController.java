@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.ruoyi.common.annotation.Log;
+import com.ruoyi.common.annotation.RepeatSubmit;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
@@ -86,6 +87,7 @@ public class QtWorkstationReservationController extends BaseController
      * 新增工位预约记录
      */
     @Log(title = "工位预约记录", businessType = BusinessType.INSERT)
+    @RepeatSubmit
     @PostMapping
     public AjaxResult add(@RequestBody QtWorkstationReservation qtWorkstationReservation)
     {
