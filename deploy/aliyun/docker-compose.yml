@@ -24,12 +24,17 @@ services:
       - --collation-server=utf8mb4_general_ci
       - --default-authentication-plugin=mysql_native_password
       - --log-bin-trust-function-creators=1
+      # 小内存机器(2C2G)专用：缓冲池 128M + 关掉 performance_schema(可省 200~400M)
+      - --innodb-buffer-pool-size=128M
+      - --performance-schema=OFF
+      - --max-connections=100
+      - --skip-name-resolve
     volumes:
       - mysql_data:/var/lib/mysql
-      # 复用云托管那套 initdb：数字前缀保证顺序
+      # upload.py sync 会把 initdb/*.sql 传到本目录的 initdb/ 子目录（服务器端路径）
       # 01 基础库 02 quartz 03 lab_full(旧) 04 lab_init(补 major 等)
       # 05 signup_remark 06 member_role 07 关验证码(生产请删除/改回 true)
-      - ../../cloudrun/quanta-mysql/initdb:/docker-entrypoint-initdb.d:ro
+      - ./initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\""]
       interval: 10s
@@ -42,12 +47,20 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:6379:6379"
+    environment:
+      # healthcheck 里的 redis-cli -a 需要容器内能读到这个变量，否则永远 NOAUTH → unhealthy
+      REDIS_PASSWORD: "${REDIS_PASSWORD:?set in .env}"
     command:
       - redis-server
       - --appendonly
       - "yes"
       - --requirepass
       - "${REDIS_PASSWORD:?set in .env}"
+      # 小内存机器：最多用 128M，只淘汰带 TTL 的键（若依缓存/令牌都有过期时间）
+      - --maxmemory
+      - "128mb"
+      - --maxmemory-policy
+      - volatile-lru
     volumes:
       - redis_data:/data
     healthcheck:

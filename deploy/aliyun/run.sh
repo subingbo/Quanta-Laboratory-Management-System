@@ -28,8 +28,10 @@ JDBC_URL="jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/ry-vue?useUnicode=true&charac
 
 export MYSQL_HOST MYSQL_PORT MYSQL_USERNAME MYSQL_PASSWORD REDIS_HOST
 
+# 2C2G 小机器内存预算：MySQL(容器,含128M缓冲池) ≈ 400M / Redis ≤128M / JVM 堆 512M+元空间 ≈ 750M
+# 若以后升回 4G，可把 -Xmx 调到 1024m
 exec java \
-  -Xms512m -Xmx1024m \
+  -Xms256m -Xmx512m -XX:MaxMetaspaceSize=256m \
   -jar "$JAR" \
   --ruoyi.profile="$UPLOAD_PATH" \
   --spring.data.redis.host="$REDIS_HOST" \
