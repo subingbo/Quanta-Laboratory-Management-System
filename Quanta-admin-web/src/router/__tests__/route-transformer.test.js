@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { isKnownComponent, unknownRouteComponent } from '../component-map'
 import { transformRoute, transformRoutes } from '../route-transformer'
+import { selectWebRoutes } from '../route-source'
 
 describe('route transformer', () => {
   it('transforms nested RuoYi route fields', () => {
@@ -48,5 +49,28 @@ describe('route transformer', () => {
     expect(isKnownComponent('book-borrows/index')).toBe(true)
     expect(isKnownComponent('learning-materials/index')).toBe(true)
     expect(isKnownComponent('clothing-orders/index')).toBe(true)
+  })
+
+  it('uses the local Web route catalog when backend menus contain no supported page', () => {
+    const backendRoutes = [
+      {
+        path: '/system',
+        name: 'System',
+        component: 'Layout',
+        children: [{ path: 'user', name: 'User', component: 'system/user/index' }],
+      },
+    ]
+
+    const routes = selectWebRoutes(backendRoutes, ['*:*:*'])
+
+    expect(routes.map((route) => route.name)).toContain('Dashboard')
+    expect(routes.map((route) => route.name)).toContain('Members')
+    expect(routes.map((route) => route.name)).not.toContain('System')
+  })
+
+  it('filters the local Web route catalog with real backend permissions', () => {
+    const routes = selectWebRoutes([], ['qt:dashboard:stats', 'system:borrow:list'])
+
+    expect(routes.map((route) => route.name)).toEqual(['Dashboard', 'BookBorrows'])
   })
 })

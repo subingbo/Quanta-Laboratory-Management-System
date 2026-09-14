@@ -49,7 +49,7 @@ export function setupRouterGuard(router) {
       if (!userStore.user) await userStore.fetchUserInfo()
 
       if (!permissionStore.initialized) {
-        await permissionStore.generateRoutes()
+        await permissionStore.generateRoutes(userStore.permissions)
         permissionStore.installRoutes(router)
         return { path: to.fullPath, replace: true }
       }

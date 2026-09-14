@@ -7,9 +7,13 @@ import { staticRoutes } from '../routes'
 import { setupRouterGuard } from '../guard'
 
 function createTestRouter() {
+  const routes = staticRoutes.map((route) => ({
+    ...route,
+    component: { template: '<div />' },
+  }))
   const router = createRouter({
     history: createMemoryHistory(),
-    routes: staticRoutes,
+    routes,
   })
   setupRouterGuard(router)
   return router
@@ -59,4 +63,3 @@ describe('global route guard', () => {
     expect(router.currentRoute.value.path).toBe('/403')
   })
 })
-

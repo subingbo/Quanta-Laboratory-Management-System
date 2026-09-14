@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { getRouters } from '@/api/auth'
 import { transformRoutes } from '@/router/route-transformer'
+import { selectWebRoutes } from '@/router/route-source'
 
 export const usePermissionStore = defineStore('permission', () => {
   const routes = ref([])
@@ -9,13 +10,13 @@ export const usePermissionStore = defineStore('permission', () => {
   const initializing = ref(null)
   const routeRemovers = []
 
-  async function generateRoutes() {
+  async function generateRoutes(permissions = []) {
     if (initialized.value) return routes.value
     if (initializing.value) return initializing.value
 
     initializing.value = getRouters()
       .then((response) => {
-        routes.value = transformRoutes(response.data || [])
+        routes.value = transformRoutes(selectWebRoutes(response.data || [], permissions))
         return routes.value
       })
       .finally(() => {
@@ -52,4 +53,3 @@ export const usePermissionStore = defineStore('permission', () => {
     resetRoutes,
   }
 })
-

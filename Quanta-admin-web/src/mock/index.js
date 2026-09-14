@@ -42,7 +42,7 @@ export async function mockRequest(config) {
     return { code: 404, msg: `Mock 接口不存在：${method.toUpperCase()} ${path}` }
   }
 
-  const token = getToken()
+  const token = config.__partialMock ? 'mock-token-admin' : getToken()
   const headers = {
     ...(config.headers || {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),

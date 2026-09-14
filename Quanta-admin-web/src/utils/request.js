@@ -37,12 +37,15 @@ export function normalizeRuoYiResponse(payload) {
 export const isMockEnabled = isFullMockEnabled
 
 export async function request(config) {
-  const useMock = shouldUseMock(config)
+  const fullMockEnabled = isMockEnabled()
+  const useMock = shouldUseMock(config, fullMockEnabled)
   try {
-    if (useMock && !isMockEnabled() && import.meta.env.DEV) {
+    if (useMock && !fullMockEnabled && import.meta.env.DEV) {
       console.warn(`[Quanta Web] 使用 Mock 接口：${String(config.method || 'get').toUpperCase()} ${config.url}`)
     }
-    const response = useMock ? await mockRequest(config) : await service.request(config)
+    const response = useMock
+      ? await mockRequest({ ...config, __partialMock: !fullMockEnabled })
+      : await service.request(config)
     const payload = useMock ? response : response.data
     return normalizeRuoYiResponse(payload)
   } catch (rawError) {

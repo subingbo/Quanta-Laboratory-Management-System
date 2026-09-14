@@ -155,15 +155,16 @@ export const memberHandlers = [
     handle(config) {
       if (!requireAccount(config)) return unauthorized()
       const current = mockCohorts.find((item) => item.isCurrent)
+      const cohortValue = (value) => (config.__partialMock ? `${value}st` : value)
       return {
         code: 200,
         msg: '操作成功',
         data: {
           currentCohort: current
-            ? { cohortId: current.value, cohortName: current.label, isCurrent: true }
+            ? { cohortId: cohortValue(current.value), cohortName: current.label, isCurrent: true }
             : null,
           cohorts: mockCohorts.map((item) => ({
-            id: item.value,
+            id: cohortValue(item.value),
             name: item.label,
             isCurrent: item.isCurrent,
           })),

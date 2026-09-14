@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { authHandlers } from '../auth'
+import { mockRequest } from '@/mock'
 
 function handler(method, path) {
   return authHandlers.find((item) => item.method === method && item.path === path)
@@ -23,5 +24,19 @@ describe('auth mock handlers', () => {
       'LearningMaterials',
       'BookBorrows',
     ])
+  })
+})
+
+describe('partial Web mock', () => {
+  it('accepts a real session and returns backend-compatible cohort values', async () => {
+    const response = await mockRequest({
+      url: '/qt/member/cohorts',
+      method: 'get',
+      __partialMock: true,
+      headers: { Authorization: 'Bearer real-backend-token' },
+    })
+
+    expect(response.code).toBe(200)
+    expect(response.data.cohorts.map((item) => item.id)).toContain('21st')
   })
 })
