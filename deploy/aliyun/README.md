@@ -112,6 +112,8 @@ curl -sS https://api.your-domain.com/captchaImage | head
 
 ### 6.1 缓存与上传限制（本轮新增的运维开关）
 
+> 设计与验证的完整说明见 `docs/后端缓存与上传校验加固说明.md`（含「分页列表为何不能直接 @Cacheable」的三个硬伤、失效矩阵、实测数据与踩坑记录）。
+
 | 开关 | 位置 | 说明 |
 |---|---|---|
 | `qt.cache.enabled` | `application.yml` | 业务查询缓存总开关，改 `false` 即刻全部直查，不必回滚代码 |
