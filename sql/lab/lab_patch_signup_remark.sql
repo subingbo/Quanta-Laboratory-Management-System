@@ -1,20 +1,20 @@
 -- =============================================================================
--- ²¹¶¡:Îª qt_activity_signup Ôö¼Ó remark ÁĞ
--- ±³¾°: QtActivitySignup ¼Ì³Ğ BaseEntity(º¬ remark),mapper µÄ detail ²éÑ¯Óë
---   resultMap ¾ùÓ³Éä s.remark£¬µ«½¨±íÊ±Â©ÁË¸ÃÁĞ£¬µ¼ÖÂĞû½²»á±¨ÃûÁĞ±í±¨
---   Unknown column 's.remark'¡£ÆäÓàÒıÓÃ remark µÄ±í(qt_cohort/qt_material/
---   qt_workstation/qt_book_borrow)¾ùÒÑº¬¸ÃÁĞ£¬½ö±¾±íÒÅÂ©¡£
--- ÒÀÀµ: lab_init.sql(ÒÑ½¨±í)¡£¿ÉÖØ¸´Ö´ĞĞ¡£
+-- è¡¥ä¸:ä¸º qt_activity_signup å¢åŠ  remark åˆ—
+-- èƒŒæ™¯: QtActivitySignup ç»§æ‰¿ BaseEntity(å« remark),mapper çš„ detail æŸ¥è¯¢ä¸
+--   resultMap å‡æ˜ å°„ s.remarkï¼Œä½†å»ºè¡¨æ—¶æ¼äº†è¯¥åˆ—ï¼Œå¯¼è‡´å®£è®²ä¼šæŠ¥ååˆ—è¡¨æŠ¥
+--   Unknown column 's.remark'ã€‚å…¶ä½™å¼•ç”¨ remark çš„è¡¨(qt_cohort/qt_material/
+--   qt_workstation/qt_book_borrow)å‡å·²å«è¯¥åˆ—ï¼Œä»…æœ¬è¡¨é—æ¼ã€‚
+-- ä¾èµ–: lab_init.sql(å·²å»ºè¡¨)ã€‚å¯é‡å¤æ‰§è¡Œã€‚
 -- =============================================================================
 SET NAMES utf8mb4;
 SET @db = DATABASE();
 SET @sql = IF((SELECT COUNT(*) FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA=@db AND TABLE_NAME='qt_activity_signup' AND COLUMN_NAME='remark') = 0,
-    'ALTER TABLE qt_activity_signup ADD COLUMN remark VARCHAR(500) NULL COMMENT ''±¸×¢'' AFTER cancel_time',
+    'ALTER TABLE qt_activity_signup ADD COLUMN remark VARCHAR(500) NULL COMMENT ''å¤‡æ³¨'' AFTER cancel_time',
     'SELECT 1');
 PREPARE s FROM @sql; EXECUTE s; DEALLOCATE PREPARE s;
 
--- Ğ£Ñé
+-- æ ¡éªŒ
 SELECT 'signup_remark_column' AS chk, COLUMN_NAME, DATA_TYPE, COLUMN_COMMENT
 FROM information_schema.COLUMNS
 WHERE TABLE_SCHEMA=@db AND TABLE_NAME='qt_activity_signup' AND COLUMN_NAME='remark';

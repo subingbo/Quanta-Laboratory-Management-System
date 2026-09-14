@@ -1,43 +1,43 @@
 -- =============================================================================
--- Quanta ËşÔ±½ÇÉ«²¹¶¡£¨¿ÉÖØ¸´Ö´ĞĞ£©
--- ÒÀÀµ: sql/ry_20260417.sql + sql/lab/lab_init.sql + sql/lab/lab_patch_admin.sql + sql/lab/lab_seed.sql
--- ÓÃ·¨: mysql -uroot -p --default-character-set=utf8mb4 ry-vue < sql/lab/lab_patch_qt_member_role.sql
+-- Quanta å¡”å‘˜è§’è‰²è¡¥ä¸ï¼ˆå¯é‡å¤æ‰§è¡Œï¼‰
+-- ä¾èµ–: sql/ry_20260417.sql + sql/lab/lab_init.sql + sql/lab/lab_patch_admin.sql + sql/lab/lab_seed.sql
+-- ç”¨æ³•: mysql -uroot -p --default-character-set=utf8mb4 ry-vue < sql/lab/lab_patch_qt_member_role.sql
 --
--- ±³¾°:
---   lab_seed.sql °Ñ qt_member °óµ½ role_id=2£¨ÈôÒÀÄ¬ÈÏÆÕÍ¨½ÇÉ«£©£¬¶ø 4000 ¶Î
---   Quanta ²Ëµ¥Ö»ÊÚÈ¨¸ø½ÇÉ« 3/4/5¡£µ¼ÖÂ qt_member µÇÂ¼ºó /getInfo ÎŞÈÎºÎ qt:*
---   È¨ÏŞ£¬Ç°¶ËÊØÎÀ°Ñ /dashboard£¨Ğè qt:dashboard:stats£©ÖØ¶¨Ïòµ½ /403¡£
---   ±¾²¹¶¡ĞÂ½¨¡¸ËşÔ±¡¹½ÇÉ«²¢ÊÚÓèËşÔ±¶Ë¿É¼û²Ëµ¥£¬°Ñ qt_member ¼Ó°ó¸Ã½ÇÉ«
---   £¨±£Áô role_id=2£¬¿ÉÖØ¸´Ö´ĞĞ¡¢²»Óë seed ³åÍ»£©¡£
+-- èƒŒæ™¯:
+--   lab_seed.sql æŠŠ qt_member ç»‘åˆ° role_id=2ï¼ˆè‹¥ä¾é»˜è®¤æ™®é€šè§’è‰²ï¼‰ï¼Œè€Œ 4000 æ®µ
+--   Quanta èœå•åªæˆæƒç»™è§’è‰² 3/4/5ã€‚å¯¼è‡´ qt_member ç™»å½•å /getInfo æ— ä»»ä½• qt:*
+--   æƒé™ï¼Œå‰ç«¯å®ˆå«æŠŠ /dashboardï¼ˆéœ€ qt:dashboard:statsï¼‰é‡å®šå‘åˆ° /403ã€‚
+--   æœ¬è¡¥ä¸æ–°å»ºã€Œå¡”å‘˜ã€è§’è‰²å¹¶æˆäºˆå¡”å‘˜ç«¯å¯è§èœå•ï¼ŒæŠŠ qt_member åŠ ç»‘è¯¥è§’è‰²
+--   ï¼ˆä¿ç•™ role_id=2ï¼Œå¯é‡å¤æ‰§è¡Œã€ä¸ä¸ seed å†²çªï¼‰ã€‚
 -- =============================================================================
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 SET @db = DATABASE();
 
--- 1) ĞÂÔö¡¸ËşÔ±¡¹½ÇÉ«
+-- 1) æ–°å¢ã€Œå¡”å‘˜ã€è§’è‰²
 INSERT INTO sys_role (role_id, role_name, role_key, role_sort, data_scope, menu_check_strictly, dept_check_strictly, status, del_flag, create_by, create_time, remark)
-SELECT 6, 'ËşÔ±', 'qt_member', 6, '1', 1, 1, '0', '0', 'admin', NOW(), 'Quanta ËşÔ±£¬½öËşÔ±¶Ë¿É¼û²Ëµ¥'
+SELECT 6, 'å¡”å‘˜', 'qt_member', 6, '1', 1, 1, '0', '0', 'admin', NOW(), 'Quanta å¡”å‘˜ï¼Œä»…å¡”å‘˜ç«¯å¯è§èœå•'
 WHERE NOT EXISTS (SELECT 1 FROM sys_role WHERE role_key = 'qt_member');
 
--- 2) ÊÚÓèËşÔ±¶Ë¿É¼û²Ëµ¥£¨¸¸²Ëµ¥ + 5 ¸ö C ²Ëµ¥ + ×ÊÁÏÏÂÔØ°´Å¥£©
---    4000 Quanta¹ÜÀí(¸¸)        -> ²Ëµ¥Ê÷¿É¼û
---    4004 ¿ØÖÆÌ¨Í³¼Æ             -> qt:dashboard:stats        (/dashboard)
---    4003 Ñ§Ï°×ÊÁÏ               -> qt:material:list          (/learning-materials)
---    4033 ×ÊÁÏÏÂÔØ               -> qt:material:download
---    4016 ½èÔÄ¼ÇÂ¼               -> system:borrow:list        (/book-borrows)
---    4017 Ô¤Ô¼¼ÇÂ¼               -> system:reservation:list   (/workstations)
---    4014 Ëş·ş¶©µ¥               -> system:order:list        (/clothing-orders)
+-- 2) æˆäºˆå¡”å‘˜ç«¯å¯è§èœå•ï¼ˆçˆ¶èœå• + 5 ä¸ª C èœå• + èµ„æ–™ä¸‹è½½æŒ‰é’®ï¼‰
+--    4000 Quantaç®¡ç†(çˆ¶)        -> èœå•æ ‘å¯è§
+--    4004 æ§åˆ¶å°ç»Ÿè®¡             -> qt:dashboard:stats        (/dashboard)
+--    4003 å­¦ä¹ èµ„æ–™               -> qt:material:list          (/learning-materials)
+--    4033 èµ„æ–™ä¸‹è½½               -> qt:material:download
+--    4016 å€Ÿé˜…è®°å½•               -> system:borrow:list        (/book-borrows)
+--    4017 é¢„çº¦è®°å½•               -> system:reservation:list   (/workstations)
+--    4014 å¡”æœè®¢å•               -> system:order:list        (/clothing-orders)
 INSERT IGNORE INTO sys_role_menu (role_id, menu_id)
 SELECT 6, menu_id FROM sys_menu WHERE menu_id IN (4000, 4003, 4004, 4014, 4016, 4017, 4033);
 
--- 3) °Ñ qt_member ¼Ó°ó¡¸ËşÔ±¡¹½ÇÉ«£¨±£ÁôÔ­ÓĞ role_id=2£¬INSERT IGNORE ¿ÉÖØ¸´Ö´ĞĞ£©
+-- 3) æŠŠ qt_member åŠ ç»‘ã€Œå¡”å‘˜ã€è§’è‰²ï¼ˆä¿ç•™åŸæœ‰ role_id=2ï¼ŒINSERT IGNORE å¯é‡å¤æ‰§è¡Œï¼‰
 INSERT IGNORE INTO sys_user_role (user_id, role_id)
 SELECT u.user_id, 6 FROM sys_user u WHERE u.user_name = 'qt_member';
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- Ğ£Ñé£ºqt_member ÏÖÓµÓĞ 5 ¸öÇ°¶Ë²Ëµ¥È¨ÏŞ
+-- æ ¡éªŒï¼šqt_member ç°æ‹¥æœ‰ 5 ä¸ªå‰ç«¯èœå•æƒé™
 SELECT 'qt_member_permissions' AS item,
        GROUP_CONCAT(m.perms ORDER BY m.menu_id SEPARATOR ', ') AS perms
 FROM sys_user_role ur
