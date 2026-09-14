@@ -7,6 +7,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
+import jakarta.validation.constraints.NotNull;
+import com.ruoyi.qt.validation.Create;
 
 /**
  * 实验室服装订单对象 qt_clothing_order
@@ -30,6 +32,7 @@ public class QtClothingOrder extends BaseEntity
     private Long userId;
 
     /** 服装款式ID */
+    @NotNull(groups = Create.class, message = "服装款式ID不能为空")
     @Excel(name = "服装款式ID")
     private Long itemId;
 

@@ -31,7 +31,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  * @date 2026-04-24
  */
 @RestController
-@RequestMapping("/system/book")
+@RequestMapping("/qt/book")
 public class QtBookController extends BaseController
 {
     @Autowired
@@ -43,7 +43,7 @@ public class QtBookController extends BaseController
     /**
      * 查询实验室图书列表
      */
-    // @PreAuthorize("@ss.hasPermi('system:book:list')")
+    // @PreAuthorize("@ss.hasPermi('qt:book:list')")
     @GetMapping("/list")
     public TableDataInfo list(QtBook qtBook)
     {
@@ -59,7 +59,7 @@ public class QtBookController extends BaseController
     /**
      * 导出实验室图书列表
      */
-    @PreAuthorize("@ss.hasPermi('system:book:export')")
+    @PreAuthorize("@ss.hasPermi('qt:book:export')")
     @Log(title = "实验室图书", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtBook qtBook)
@@ -72,7 +72,7 @@ public class QtBookController extends BaseController
     /**
      * 获取实验室图书详细信息
      */
-    // @PreAuthorize("@ss.hasPermi('system:book:query')")
+    // @PreAuthorize("@ss.hasPermi('qt:book:query')")
     @GetMapping(value = "/{bookId}")
     public AjaxResult getInfo(@PathVariable("bookId") Long bookId)
     {
@@ -82,7 +82,7 @@ public class QtBookController extends BaseController
     /**
      * 新增实验室图书
      */
-    @PreAuthorize("@ss.hasPermi('system:book:add')")
+    @PreAuthorize("@ss.hasPermi('qt:book:add')")
     @Log(title = "实验室图书", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody QtBook qtBook)
@@ -93,7 +93,7 @@ public class QtBookController extends BaseController
     /**
      * 修改实验室图书
      */
-    @PreAuthorize("@ss.hasPermi('system:book:edit')")
+    @PreAuthorize("@ss.hasPermi('qt:book:edit')")
     @Log(title = "实验室图书", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtBook qtBook)
@@ -104,7 +104,7 @@ public class QtBookController extends BaseController
     /**
      * 删除实验室图书
      */
-    @PreAuthorize("@ss.hasPermi('system:book:remove')")
+    @PreAuthorize("@ss.hasPermi('qt:book:remove')")
     @Log(title = "实验室图书", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{bookIds}")
     public AjaxResult remove(@PathVariable Long[] bookIds)

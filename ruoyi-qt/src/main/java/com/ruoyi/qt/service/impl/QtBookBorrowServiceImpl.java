@@ -1,57 +1,50 @@
 package com.ruoyi.qt.service.impl;
 
 import java.util.List;
-import com.ruoyi.common.constant.CacheConstants;
-import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.qt.cache.QtQueryCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
-import com.ruoyi.qt.mapper.QtBookBorrowMapper;
+import org.springframework.transaction.annotation.Transactional;
+import com.ruoyi.common.constant.CacheConstants;
+import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.qt.cache.QtQueryCache;
+import com.ruoyi.qt.domain.QtBook;
 import com.ruoyi.qt.domain.QtBookBorrow;
+import com.ruoyi.qt.mapper.QtBookBorrowMapper;
+import com.ruoyi.qt.mapper.QtBookMapper;
 import com.ruoyi.qt.service.IQtBookBorrowService;
 
 /**
  * 图书借阅记录Service业务层处理
- * 
- * @author ruoyi
- * @date 2026-04-24
  */
 @Service
-public class QtBookBorrowServiceImpl implements IQtBookBorrowService 
+public class QtBookBorrowServiceImpl implements IQtBookBorrowService
 {
+    private static final String STATUS_BORROWED = "BORROWED";
+    private static final String STATUS_RETURNED = "RETURNED";
+
     @Autowired
     private QtBookBorrowMapper qtBookBorrowMapper;
 
     @Autowired
+    private QtBookMapper qtBookMapper;
+
+    @Autowired
     private QtQueryCache qtQueryCache;
 
-    /**
-     * 借还会影响图书可借数量，手动缓存的分页列表要一并失效。
-     */
     private void evictBookCache()
     {
         qtQueryCache.evict(CacheConstants.CACHE_QT_BOOK_LIST);
     }
 
-    /**
-     * 查询图书借阅记录
-     * 
-     * @param borrowId 图书借阅记录主键
-     * @return 图书借阅记录
-     */
     @Override
     public QtBookBorrow selectQtBookBorrowByBorrowId(Long borrowId)
     {
         return qtBookBorrowMapper.selectQtBookBorrowByBorrowId(borrowId);
     }
 
-    /**
-     * 查询图书借阅记录列表
-     * 
-     * @param qtBookBorrow 图书借阅记录
-     * @return 图书借阅记录
-     */
     @Override
     public List<QtBookBorrow> selectQtBookBorrowList(QtBookBorrow qtBookBorrow)
     {
@@ -64,60 +57,95 @@ public class QtBookBorrowServiceImpl implements IQtBookBorrowService
         return qtBookBorrowMapper.selectQtBookBorrowDetailList(qtBookBorrow);
     }
 
-    /**
-     * 新增图书借阅记录
-     * 
-     * @param qtBookBorrow 图书借阅记录
-     * @return 结果
-     */
     @Override
+    @Transactional
     @CacheEvict(cacheNames = CacheConstants.CACHE_QT_BOOK_DETAIL, allEntries = true)
     public int insertQtBookBorrow(QtBookBorrow qtBookBorrow)
     {
+        if (qtBookBorrow.getBookId() == null)
+        {
+            throw new ServiceException("bookId is required");
+        }
+        QtBook book = qtBookMapper.selectQtBookByBookIdForUpdate(qtBookBorrow.getBookId());
+        if (book == null)
+        {
+            throw new ServiceException("图书不存在");
+        }
+        if ("1".equals(book.getStatus()))
+        {
+            throw new ServiceException("该图书已停借");
+        }
+        if (qtBookMapper.decrementAvailableCount(qtBookBorrow.getBookId()) == 0)
+        {
+            throw new ServiceException("暂无可借库存");
+        }
+        if (StringUtils.isEmpty(qtBookBorrow.getStatus()))
+        {
+            qtBookBorrow.setStatus(STATUS_BORROWED);
+        }
+        if (qtBookBorrow.getBorrowTime() == null)
+        {
+            qtBookBorrow.setBorrowTime(DateUtils.getNowDate());
+        }
         qtBookBorrow.setCreateTime(DateUtils.getNowDate());
         int rows = qtBookBorrowMapper.insertQtBookBorrow(qtBookBorrow);
-        // 借出会改变 qt_book.available_count，图书列表/详情缓存必须一起清
         evictBookCache();
         return rows;
     }
 
-    /**
-     * 修改图书借阅记录
-     * 
-     * @param qtBookBorrow 图书借阅记录
-     * @return 结果
-     */
     @Override
+    @Transactional
     @CacheEvict(cacheNames = CacheConstants.CACHE_QT_BOOK_DETAIL, allEntries = true)
     public int updateQtBookBorrow(QtBookBorrow qtBookBorrow)
     {
+        QtBookBorrow old = qtBookBorrowMapper.selectQtBookBorrowByBorrowId(qtBookBorrow.getBorrowId());
         qtBookBorrow.setUpdateTime(DateUtils.getNowDate());
         int rows = qtBookBorrowMapper.updateQtBookBorrow(qtBookBorrow);
+        if (old != null && isOutstanding(old.getStatus()) && STATUS_RETURNED.equals(effectiveStatus(qtBookBorrow, old)))
+        {
+            qtBookMapper.incrementAvailableCount(old.getBookId());
+        }
         evictBookCache();
         return rows;
     }
 
-    /**
-     * 批量删除图书借阅记录
-     * 
-     * @param borrowIds 需要删除的图书借阅记录主键
-     * @return 结果
-     */
     @Override
+    @Transactional
     public int deleteQtBookBorrowByBorrowIds(Long[] borrowIds)
     {
-        return qtBookBorrowMapper.deleteQtBookBorrowByBorrowIds(borrowIds);
+        if (borrowIds == null)
+        {
+            return 0;
+        }
+        int rows = 0;
+        for (Long borrowId : borrowIds)
+        {
+            rows += deleteQtBookBorrowByBorrowId(borrowId);
+        }
+        return rows;
     }
 
-    /**
-     * 删除图书借阅记录信息
-     * 
-     * @param borrowId 图书借阅记录主键
-     * @return 结果
-     */
     @Override
+    @Transactional
     public int deleteQtBookBorrowByBorrowId(Long borrowId)
     {
-        return qtBookBorrowMapper.deleteQtBookBorrowByBorrowId(borrowId);
+        QtBookBorrow old = qtBookBorrowMapper.selectQtBookBorrowByBorrowId(borrowId);
+        int rows = qtBookBorrowMapper.deleteQtBookBorrowByBorrowId(borrowId);
+        if (rows > 0 && old != null && isOutstanding(old.getStatus()))
+        {
+            qtBookMapper.incrementAvailableCount(old.getBookId());
+            evictBookCache();
+        }
+        return rows;
+    }
+
+    private static boolean isOutstanding(String status)
+    {
+        return !STATUS_RETURNED.equals(status);
+    }
+
+    private static String effectiveStatus(QtBookBorrow incoming, QtBookBorrow old)
+    {
+        return StringUtils.isNotEmpty(incoming.getStatus()) ? incoming.getStatus() : old.getStatus();
     }
 }

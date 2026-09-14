@@ -73,6 +73,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where reservation_id = #{reservationId}
     </select>
 
+    <select id="countOverlapping" resultType="int">
+        select count(*) from qt_workstation_reservation
+        where workstation_id = #{workstationId}
+        <if test="excludeId != null">
+            and reservation_id != #{excludeId}
+        </if>
+        and status not in ('CANCELED', 'FINISHED')
+        and reserve_start &lt; #{reserveEnd}
+        and reserve_end &gt; #{reserveStart}
+    </select>
+
     <insert id="insertQtWorkstationReservation" parameterType="QtWorkstationReservation" useGeneratedKeys="true" keyProperty="reservationId">
         insert into qt_workstation_reservation
         <trim prefix="(" suffix=")" suffixOverrides=",">

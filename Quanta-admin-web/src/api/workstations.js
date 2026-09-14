@@ -2,7 +2,7 @@ import { request } from '@/utils/request'
 
 export async function getReservationRecords(params = {}) {
   const response = await request({
-    url: '/system/reservation/detailList',
+    url: '/qt/reservation/detailList',
     method: 'get',
     params,
   })

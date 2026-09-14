@@ -67,7 +67,7 @@ onMounted(loadList)
       <ElTableColumn label="操作" min-width="230">
         <template #default="{ row }">
           <template v-if="row.status === 'SUBMITTED'">
-            <PermissionButton size="small" type="success" permissions="system:order:approve" :roles="['qt_mgmt', 'ceo']" @click="confirmReceipt(row)">确认收款</PermissionButton>
+            <PermissionButton size="small" type="success" permissions="qt:order:approve" :roles="['qt_mgmt', 'ceo']" @click="confirmReceipt(row)">确认收款</PermissionButton>
             <ElButton size="small" @click="showProof(row)">查看凭证</ElButton>
           </template>
           <span v-else>-</span>

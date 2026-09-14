@@ -42,7 +42,7 @@ export const menus = [
     path: '/workstations',
     name: 'Workstations',
     component: 'workstations/index',
-    meta: { title: '工位预约', icon: 'OfficeBuilding', group: '塔员端', permission: 'system:reservation:list' },
+    meta: { title: '工位预约', icon: 'OfficeBuilding', group: '塔员端', permission: 'qt:reservation:list' },
   },
   {
     path: '/learning-materials',
@@ -54,12 +54,12 @@ export const menus = [
     path: '/book-borrows',
     name: 'BookBorrows',
     component: 'book-borrows/index',
-    meta: { title: '图书借阅', icon: 'Reading', group: '塔员端', permission: 'system:borrow:list' },
+    meta: { title: '图书借阅', icon: 'Reading', group: '塔员端', permission: 'qt:borrow:list' },
   },
   {
     path: '/clothing-orders',
     name: 'ClothingOrders',
     component: 'clothing-orders/index',
-    meta: { title: '塔服订购', icon: 'ShoppingBag', group: '塔员端', permission: 'system:order:list' },
+    meta: { title: '塔服订购', icon: 'ShoppingBag', group: '塔员端', permission: 'qt:order:list' },
   },
 ]

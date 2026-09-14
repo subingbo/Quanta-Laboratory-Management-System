@@ -14,7 +14,7 @@ describe('clothing orders view', () => {
     const pinia = createPinia()
     setActivePinia(pinia)
     const store = useUserStore()
-    store.permissions = ['system:order:list', 'system:order:approve']
+    store.permissions = ['qt:order:list', 'qt:order:approve']
     store.roles = ['qt_mgmt']
     const wrapper = mount(ClothingOrdersView, { global: { plugins: [pinia, ElementPlus] } })
     await flushPromises()

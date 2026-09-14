@@ -3,7 +3,7 @@ import request from '../utils/request'
 /**
  * 塔服订购 —— 真实后端对接层。
  * 页面契约与 utils/memberMock 的 getShirtProduct / saveMockShirtOrder 对齐,
- * 数据源切换为 /system/item + /system/order。
+ * 数据源切换为 /qt/item + /qt/order。
  */
 
 interface QtClothingItemRow {
@@ -38,7 +38,7 @@ let cachedProduct: ShirtProduct | null = null
 
 export const getShirtProduct = async (): Promise<ShirtProduct> => {
   if (cachedProduct) return cachedProduct
-  const res = await request<{ rows?: QtClothingItemRow[] }>({ url: '/system/item/list?pageNum=1&pageSize=10', method: 'GET' })
+  const res = await request<{ rows?: QtClothingItemRow[] }>({ url: '/qt/item/list?pageNum=1&pageSize=10', method: 'GET' })
   const item = (res?.rows || []).find((row) => String(row.status) !== '1') || (res?.rows || [])[0]
   cachedProduct = {
     itemId: item?.itemId ?? 0,
@@ -55,7 +55,7 @@ export const saveShirtOrder = async (selection: { color: string; size: string })
   const product = await getShirtProduct()
   const orderNo = `QT${Date.now()}${Math.random().toString(36).slice(2, 8).toUpperCase()}`
   await request({
-    url: '/system/order',
+    url: '/qt/order',
     method: 'POST',
     data: {
       itemId: product.itemId,

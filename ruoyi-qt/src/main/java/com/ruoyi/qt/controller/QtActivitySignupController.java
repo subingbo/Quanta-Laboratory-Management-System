@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import com.ruoyi.qt.validation.Create;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.annotation.RepeatSubmit;
 import com.ruoyi.common.core.controller.BaseController;
@@ -30,7 +32,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  * @date 2026-04-24
  */
 @RestController
-@RequestMapping("/system/signup")
+@RequestMapping("/qt/signup")
 public class QtActivitySignupController extends BaseController
 {
     @Autowired
@@ -63,24 +65,29 @@ public class QtActivitySignupController extends BaseController
     /**
      * 导出活动报名列表
      */
-    @PreAuthorize("@ss.hasPermi('system:signup:export')")
+    @PreAuthorize("@ss.hasPermi('qt:signup:export')")
     @Log(title = "活动报名", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtActivitySignup qtActivitySignup)
     {
+        QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_SIGNUP_LIST, qtActivitySignup::setUserId);
         List<QtActivitySignup> list = qtActivitySignupService.selectQtActivitySignupList(qtActivitySignup);
         ExcelUtil<QtActivitySignup> util = new ExcelUtil<QtActivitySignup>(QtActivitySignup.class);
         util.exportExcel(response, list, "活动报名数据");
     }
 
     /**
-     * 获取活动报名详细信息
+     * 获取活动报名详细信息。登录即可，非管理员只能看自己的。
      */
-    // @PreAuthorize("@ss.hasPermi('system:signup:query')")
     @GetMapping(value = "/{signupId}")
     public AjaxResult getInfo(@PathVariable("signupId") Long signupId)
     {
-        return success(qtActivitySignupService.selectQtActivitySignupBySignupId(signupId));
+        QtActivitySignup signup = qtActivitySignupService.selectQtActivitySignupBySignupId(signupId);
+        if (signup != null)
+        {
+            QtAuthUtils.assertOwnerOrAdmin(signup.getUserId(), QtAuthUtils.PERM_SIGNUP_LIST);
+        }
+        return success(signup);
     }
 
     /**
@@ -90,7 +97,7 @@ public class QtActivitySignupController extends BaseController
     @Log(title = "活动报名", businessType = BusinessType.INSERT)
     @RepeatSubmit
     @PostMapping
-    public AjaxResult add(@RequestBody QtActivitySignup qtActivitySignup)
+    public AjaxResult add(@Validated(Create.class) @RequestBody QtActivitySignup qtActivitySignup)
     {
         if (qtActivitySignup.getActivityId() == null)
         {
@@ -119,7 +126,7 @@ public class QtActivitySignupController extends BaseController
     /**
      * 修改活动报名
      */
-    @PreAuthorize("@ss.hasPermi('system:signup:edit')")
+    @PreAuthorize("@ss.hasPermi('qt:signup:edit')")
     @Log(title = "活动报名", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtActivitySignup qtActivitySignup)
@@ -130,7 +137,7 @@ public class QtActivitySignupController extends BaseController
     /**
      * 删除活动报名
      */
-    @PreAuthorize("@ss.hasPermi('system:signup:remove')")
+    @PreAuthorize("@ss.hasPermi('qt:signup:remove')")
     @Log(title = "活动报名", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{signupIds}")
     public AjaxResult remove(@PathVariable Long[] signupIds)

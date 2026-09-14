@@ -22,6 +22,7 @@ import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.framework.config.ServerConfig;
+import com.ruoyi.framework.security.ProfileAccessSigner;
 import com.ruoyi.qt.domain.QtInterviewApplication;
 import com.ruoyi.qt.domain.QtInterviewEvaluation;
 import com.ruoyi.qt.domain.QtInterviewOfferBody;
@@ -39,6 +40,9 @@ public class QtInterviewAdminController extends BaseController
 
     @Autowired
     private ServerConfig serverConfig;
+
+    @Autowired
+    private ProfileAccessSigner profileAccessSigner;
 
     @PreAuthorize("@ss.hasPermi('qt:interview:admin:list')")
     @GetMapping("/applications")
@@ -195,11 +199,11 @@ public class QtInterviewAdminController extends BaseController
             String path = application.getPhotoUrl();
             if (path.startsWith("http://") || path.startsWith("https://"))
             {
-                application.setPhotoAccessUrl(path);
+                application.setPhotoAccessUrl(profileAccessSigner.signUrl(path));
             }
             else
             {
-                application.setPhotoAccessUrl(serverConfig.getUrl() + path);
+                application.setPhotoAccessUrl(profileAccessSigner.signUrl(serverConfig.getUrl() + path));
             }
         }
     }

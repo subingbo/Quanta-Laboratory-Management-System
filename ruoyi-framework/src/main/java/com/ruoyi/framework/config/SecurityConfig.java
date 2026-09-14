@@ -15,7 +15,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.filter.CorsFilter;
 import com.ruoyi.framework.config.properties.PermitAllUrlProperties;
+import org.springframework.beans.factory.annotation.Value;
 import com.ruoyi.framework.security.filter.JwtAuthenticationTokenFilter;
+import com.ruoyi.framework.security.filter.ProfileAccessFilter;
 import com.ruoyi.framework.security.handle.AuthenticationEntryPointImpl;
 import com.ruoyi.framework.security.handle.LogoutSuccessHandlerImpl;
 
@@ -57,6 +59,12 @@ public class SecurityConfig
      */
     @Autowired
     private PermitAllUrlProperties permitAllUrl;
+
+    @Autowired
+    private ProfileAccessFilter profileAccessFilter;
+
+    @Value("${springdoc.swagger-ui.enabled:false}")
+    private boolean swaggerEnabled;
 
 	/**
 	 * 身份验证实现
@@ -103,15 +111,23 @@ public class SecurityConfig
                 requests.requestMatchers("/login", "/register", "/captchaImage").permitAll()
                     // 静态资源，可匿名访问。上游的 "/**.html" 是递归通配（/any/path/evil.html 也放行），
                     // 本站前端由 Nginx 直出，后端只需根路径与上传件访问，故收窄为精确匹配
-                    .requestMatchers(HttpMethod.GET, "/", "/index.html", "/favicon.ico", "/*.css", "/*.js", "/profile/**").permitAll()
-                    .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
-                    // 除上面外的所有请求全部需要鉴权认证
-                    .anyRequest().authenticated();
+                    .requestMatchers(HttpMethod.GET, "/", "/index.html", "/favicon.ico", "/*.css", "/*.js", "/profile/**").permitAll();
+                if (swaggerEnabled)
+                {
+                    requests.requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll();
+                }
+                else
+                {
+                    requests.requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**").denyAll();
+                }
+                // 除上面外的所有请求全部需要鉴权认证
+                requests.anyRequest().authenticated();
             })
             // 添加Logout filter
             .logout(logout -> logout.logoutUrl("/logout").logoutSuccessHandler(logoutSuccessHandler))
             // 添加JWT filter
             .addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(profileAccessFilter, JwtAuthenticationTokenFilter.class)
             // 添加CORS filter
             .addFilterBefore(corsFilter, JwtAuthenticationTokenFilter.class)
             .addFilterBefore(corsFilter, LogoutFilter.class)

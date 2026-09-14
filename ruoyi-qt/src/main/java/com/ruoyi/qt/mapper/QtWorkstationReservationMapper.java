@@ -1,6 +1,8 @@
 package com.ruoyi.qt.mapper;
 
+import java.util.Date;
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 import com.ruoyi.qt.domain.QtWorkstationReservation;
 
 /**
@@ -34,6 +36,9 @@ public interface QtWorkstationReservationMapper
      * @return 工位预约记录集合
      */
     public List<QtWorkstationReservation> selectQtWorkstationReservationDetailList(QtWorkstationReservation qtWorkstationReservation);
+
+    public int countOverlapping(@Param("workstationId") Long workstationId, @Param("reserveStart") Date reserveStart,
+            @Param("reserveEnd") Date reserveEnd, @Param("excludeId") Long excludeId);
 
     /**
      * 新增工位预约记录

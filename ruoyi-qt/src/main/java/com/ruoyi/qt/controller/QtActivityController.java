@@ -32,7 +32,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  * @date 2026-04-24
  */
 @RestController
-@RequestMapping("/system/activity")
+@RequestMapping("/qt/activity")
 public class QtActivityController extends BaseController
 {
     @Autowired
@@ -63,7 +63,7 @@ public class QtActivityController extends BaseController
     /**
      * 导出实验室活动列表
      */
-    @PreAuthorize("@ss.hasPermi('system:activity:export')")
+    @PreAuthorize("@ss.hasPermi('qt:activity:export')")
     @Log(title = "实验室活动", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtActivity qtActivity)
@@ -91,7 +91,7 @@ public class QtActivityController extends BaseController
     /**
      * 新增实验室活动
      */
-    @PreAuthorize("@ss.hasPermi('system:activity:add')")
+    @PreAuthorize("@ss.hasPermi('qt:activity:add')")
     @Log(title = "实验室活动", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody QtActivity qtActivity)
@@ -110,7 +110,7 @@ public class QtActivityController extends BaseController
     /**
      * 修改实验室活动
      */
-    @PreAuthorize("@ss.hasPermi('system:activity:edit')")
+    @PreAuthorize("@ss.hasPermi('qt:activity:edit')")
     @Log(title = "实验室活动", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtActivity qtActivity)
@@ -121,7 +121,7 @@ public class QtActivityController extends BaseController
     /**
      * 删除实验室活动
      */
-    @PreAuthorize("@ss.hasPermi('system:activity:remove')")
+    @PreAuthorize("@ss.hasPermi('qt:activity:remove')")
     @Log(title = "实验室活动", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{activityIds}")
     public AjaxResult remove(@PathVariable Long[] activityIds)

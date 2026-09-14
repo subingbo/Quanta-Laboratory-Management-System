@@ -6,6 +6,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
+import jakarta.validation.constraints.NotNull;
+import com.ruoyi.qt.validation.Create;
 
 /**
  * 图书借阅记录对象 qt_book_borrow
@@ -21,6 +23,7 @@ public class QtBookBorrow extends BaseEntity
     private Long borrowId;
 
     /** 图书ID */
+    @NotNull(groups = Create.class, message = "图书ID不能为空")
     @Excel(name = "图书ID")
     private Long bookId;
 

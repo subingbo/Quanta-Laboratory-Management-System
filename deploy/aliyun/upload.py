@@ -149,7 +149,7 @@ def cmd_sync(args):
     e.run(f"chmod +x {shlex.quote(e.app_home)}/run.sh {shlex.quote(e.deploy_dir)}/provision.sh "
           f"{shlex.quote(e.deploy_dir)}/apply-nginx.sh {shlex.quote(e.deploy_dir)}/ensure-cert.sh")
     e.close()
-    print("✅ sync 完成")
+    print("OK sync done")
 
 
 def cmd_web(args):
@@ -174,7 +174,7 @@ def cmd_web(args):
         n += 1
     sftp.close()
     e.close()
-    print(f"✅ 已上传 {n} 个前端文件 → {remote}")
+    print(f"OK uploaded {n} frontend files -> {remote}")
 
 def cmd_provision(args):
     env = load_env(HERE / ".env")
@@ -202,7 +202,7 @@ def cmd_verify(args):
     code, out, err = e.run("set -o pipefail; curl -sSf --max-time 10 http://127.0.0.1:8080/captchaImage "
                            "-o /tmp/cap.json && head -c 220 /tmp/cap.json", check=False)
     print("--- exit", code); 
-    if code == 0: print("✅ backend OK")
+    if code == 0: print("OK backend")
     else:
         print("backend 未起来或路径不对。最近日志：")
         e.run("journalctl -u ruoyi -n 60 --no-pager || tail -n 80 " + e.app_home + "/logs/stderr.log",

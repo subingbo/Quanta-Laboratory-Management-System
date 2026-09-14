@@ -5,7 +5,7 @@ import request from '../utils/request'
 /**
  * 图书借阅 —— 真实后端对接层。
  * 页面契约与 utils/libraryMock 保持一致(LibraryBook / BorrowBookResult),
- * 数据源切换为 /system/book + /system/borrow。
+ * 数据源切换为 /qt/book + /qt/borrow。
  */
 
 interface QtBookRow {
@@ -40,12 +40,12 @@ const toLibraryBook = (row: QtBookRow): LibraryBook => {
 }
 
 export const getLibraryBooks = async (): Promise<LibraryBook[]> => {
-  const res = await request<{ rows?: QtBookRow[] }>({ url: '/system/book/list?pageNum=1&pageSize=500', method: 'GET' })
+  const res = await request<{ rows?: QtBookRow[] }>({ url: '/qt/book/list?pageNum=1&pageSize=500', method: 'GET' })
   return (res?.rows || []).map(toLibraryBook)
 }
 
 const fetchBook = async (bookId: string): Promise<LibraryBook> => {
-  const res = await request<{ data?: QtBookRow }>({ url: `/system/book/${bookId}`, method: 'GET' })
+  const res = await request<{ data?: QtBookRow }>({ url: `/qt/book/${bookId}`, method: 'GET' })
   return toLibraryBook(res?.data || { bookId: Number(bookId) })
 }
 
@@ -55,7 +55,7 @@ export const borrowBook = async (bookId: string, now = new Date()): Promise<Borr
   const dueOn = dateOnly(calculateBookDueDate(now, book.category))
   const categoryLabel = book.category === 'textbook' ? '教材类' : '非教材类'
   await request({
-    url: '/system/borrow',
+    url: '/qt/borrow',
     method: 'POST',
     data: { bookId: Number(bookId), dueTime: `${dueOn} 23:59:59` },
   })

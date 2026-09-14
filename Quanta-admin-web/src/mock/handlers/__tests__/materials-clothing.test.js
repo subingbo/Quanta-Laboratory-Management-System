@@ -16,7 +16,7 @@ describe('materials and clothing permissions', () => {
   })
 
   it('allows management to confirm a submitted order', () => {
-    const response = clothingOrderHandlers[1].handle(config('mock-token-product-manager', { path: '/system/order/6/approve' }))
+    const response = clothingOrderHandlers[1].handle(config('mock-token-product-manager', { path: '/qt/order/6/approve' }))
     expect(response.code).toBe(200)
   })
 })
