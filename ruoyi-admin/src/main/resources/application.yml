@@ -13,6 +13,17 @@ ruoyi:
   # 验证码类型 math 数字计算 char 字符验证
   captchaType: math
 
+# Quanta 业务配置
+qt:
+  cache:
+    # 业务查询缓存总开关；出问题时改成 false 即刻退回全部直查，无需回滚代码
+    enabled: true
+  upload:
+    # 图片类（证件照/头像/收款码/效果图/支付凭证）上限 MB，与 FileValidator.SIZE_IMAGE 对应
+    image-max-mb: 5
+    # 文档类（学习资料）上限 MB，需同时不超过 spring.servlet.multipart.max-file-size
+    document-max-mb: 20
+
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
@@ -23,13 +34,13 @@ server:
   tomcat:
     # tomcat的URI编码
     uri-encoding: UTF-8
-    # 连接数满后的排队数，默认为100
-    accept-count: 1000
+    # 排队数：2C 机器上 1000 只是把过载往后推，快速失败比长时间排队更好
+    accept-count: 200
     threads:
-      # tomcat最大线程数，默认为200
-      max: 800
-      # Tomcat启动初始化的线程数，默认值10
-      min-spare: 100
+      # 上游默认 800，但数据库连接池只有 50，线程开再多也只是互相抢连接；2C 上 200 已足够
+      max: 200
+      # Tomcat启动初始化的线程数
+      min-spare: 20
 
 # 日志配置
 logging:
@@ -56,10 +67,10 @@ spring:
   # 文件上传
   servlet:
     multipart:
-      # 单个文件大小
-      max-file-size: 10MB
+      # 单个文件大小（学习资料档；图片类另有 5MB 档，由 FileValidator 按场景收紧）
+      max-file-size: 20MB
       # 设置总上传的文件大小
-      max-request-size: 20MB
+      max-request-size: 25MB
   jackson:
     time-zone: GMT+8
     date-format: yyyy-MM-dd HH:mm:ss
@@ -96,8 +107,10 @@ spring:
 token:
   # 令牌自定义标识
   header: Authorization
-  # 令牌密钥
-  secret: abcdefghijklmnopqrstuvwxyz
+  # 令牌密钥。绝不把真实值写进仓库（本仓库是公开 fork）：
+  #   生产由 deploy/aliyun/run.sh 从 .env 注入 TOKEN_SECRET（≥32 位随机串）
+  #   本地未配置时 TokenService 会随机生成并打告警，重启即失效
+  secret: ${TOKEN_SECRET:}
   # 令牌有效期（默认30分钟）
   expireTime: 30
 

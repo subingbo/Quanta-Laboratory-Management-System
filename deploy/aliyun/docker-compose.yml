@@ -56,9 +56,10 @@ services:
       - "yes"
       - --requirepass
       - "${REDIS_PASSWORD:?set in .env}"
-      # 小内存机器：最多用 128M，只淘汰带 TTL 的键（若依缓存/令牌都有过期时间）
+      # 小内存机器：最多用 256M。业务缓存键全部带 TTL（见 RedisConfig 的 TTL 表），
+      # 因此 volatile-lru 可淘汰所有缓存键；给到 256M 是为了缓存涨满时不至于挤掉登录令牌
       - --maxmemory
-      - "128mb"
+      - "256mb"
       - --maxmemory-policy
       - volatile-lru
     volumes:
