@@ -5,8 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.qt.domain.QtInterviewApplication;
@@ -94,6 +97,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_RECRUIT_STATISTICS, allEntries = true)
     public QtInterviewEvaluation saveEvaluation(QtInterviewEvaluation evaluation, Long operatorUserId, String operator)
     {
         validateEvaluation(evaluation);
@@ -120,6 +124,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_RECRUIT_STATISTICS, allEntries = true)
     public QtInterviewEvaluation updateEvaluation(QtInterviewEvaluation evaluation, Long operatorUserId, String operator)
     {
         QtInterviewEvaluation old = qtInterviewMapper.selectEvaluationById(evaluation.getEvaluationId());
@@ -146,6 +151,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_RECRUIT_STATISTICS, allEntries = true)
     public Map<String, Object> offer(QtInterviewOfferBody body, String operator)
     {
         if (body == null || body.getApplicationId() == null)
@@ -250,6 +256,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_RECRUIT_STATISTICS, allEntries = true)
     public Map<String, Object> updateJoinStatus(Long applicationId, QtStatusBody body, String operator)
     {
         QtInterviewApplication application = selectApplication(applicationId);
@@ -276,6 +283,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_RECRUIT_STATISTICS, allEntries = true)
     public Map<String, Object> updateFinalStatus(Long applicationId, QtStatusBody body, String operator)
     {
         QtInterviewApplication application = selectApplication(applicationId);
@@ -295,6 +303,8 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
     }
 
     @Override
+    @Cacheable(cacheNames = CacheConstants.CACHE_QT_RECRUIT_STATISTICS,
+            key = "T(com.ruoyi.qt.cache.QtCacheKeys).scopedDept()")
     public Map<String, Object> statistics()
     {
         String scoped = QtAuthUtils.scopedDepartment();

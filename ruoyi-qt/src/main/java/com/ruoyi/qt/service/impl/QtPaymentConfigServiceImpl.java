@@ -1,9 +1,12 @@
 package com.ruoyi.qt.service.impl;
 
 import java.util.List;
+import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import com.ruoyi.qt.mapper.QtPaymentConfigMapper;
 import com.ruoyi.qt.domain.QtPaymentConfig;
@@ -28,6 +31,7 @@ public class QtPaymentConfigServiceImpl implements IQtPaymentConfigService
      * @return 固定付款码配置
      */
     @Override
+    @Cacheable(cacheNames = CacheConstants.CACHE_QT_PAYMENT_CONFIG, key = "'detail:' + #configId")
     public QtPaymentConfig selectQtPaymentConfigByConfigId(Long configId)
     {
         return qtPaymentConfigMapper.selectQtPaymentConfigByConfigId(configId);
@@ -52,6 +56,7 @@ public class QtPaymentConfigServiceImpl implements IQtPaymentConfigService
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_PAYMENT_CONFIG, allEntries = true)
     public int insertQtPaymentConfig(QtPaymentConfig qtPaymentConfig)
     {
         qtPaymentConfig.setCreateTime(DateUtils.getNowDate());
@@ -65,6 +70,7 @@ public class QtPaymentConfigServiceImpl implements IQtPaymentConfigService
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_PAYMENT_CONFIG, allEntries = true)
     public int updateQtPaymentConfig(QtPaymentConfig qtPaymentConfig)
     {
         qtPaymentConfig.setUpdateTime(DateUtils.getNowDate());
@@ -79,6 +85,7 @@ public class QtPaymentConfigServiceImpl implements IQtPaymentConfigService
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_PAYMENT_CONFIG, allEntries = true)
     public int deleteQtPaymentConfigByConfigIds(Long[] configIds)
     {
         return qtPaymentConfigMapper.deleteQtPaymentConfigByConfigIds(configIds);
@@ -91,6 +98,7 @@ public class QtPaymentConfigServiceImpl implements IQtPaymentConfigService
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_PAYMENT_CONFIG, allEntries = true)
     public int deleteQtPaymentConfigByConfigId(Long configId)
     {
         return qtPaymentConfigMapper.deleteQtPaymentConfigByConfigId(configId);

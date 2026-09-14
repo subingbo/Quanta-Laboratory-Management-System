@@ -1,9 +1,12 @@
 package com.ruoyi.qt.service.impl;
 
 import java.util.List;
+import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import com.ruoyi.qt.mapper.QtActivityMapper;
 import com.ruoyi.qt.domain.QtActivity;
@@ -28,6 +31,7 @@ public class QtActivityServiceImpl implements IQtActivityService
      * @return 实验室活动
      */
     @Override
+    @Cacheable(cacheNames = CacheConstants.CACHE_QT_ACTIVITY_DETAIL, key = "#activityId")
     public QtActivity selectQtActivityByActivityId(Long activityId)
     {
         return qtActivityMapper.selectQtActivityByActivityId(activityId);
@@ -52,6 +56,7 @@ public class QtActivityServiceImpl implements IQtActivityService
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_ACTIVITY_LIST, allEntries = true)
     public int insertQtActivity(QtActivity qtActivity)
     {
         if (StringUtils.isEmpty(qtActivity.getActivityType()))
@@ -70,6 +75,8 @@ public class QtActivityServiceImpl implements IQtActivityService
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = { CacheConstants.CACHE_QT_ACTIVITY_DETAIL, CacheConstants.CACHE_QT_ACTIVITY_LIST },
+            allEntries = true)
     public int updateQtActivity(QtActivity qtActivity)
     {
         if (qtActivity.getActivityType() != null)
@@ -87,6 +94,8 @@ public class QtActivityServiceImpl implements IQtActivityService
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = { CacheConstants.CACHE_QT_ACTIVITY_DETAIL, CacheConstants.CACHE_QT_ACTIVITY_LIST },
+            allEntries = true)
     public int deleteQtActivityByActivityIds(Long[] activityIds)
     {
         return qtActivityMapper.deleteQtActivityByActivityIds(activityIds);
@@ -99,6 +108,8 @@ public class QtActivityServiceImpl implements IQtActivityService
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = { CacheConstants.CACHE_QT_ACTIVITY_DETAIL, CacheConstants.CACHE_QT_ACTIVITY_LIST },
+            allEntries = true)
     public int deleteQtActivityByActivityId(Long activityId)
     {
         return qtActivityMapper.deleteQtActivityByActivityId(activityId);

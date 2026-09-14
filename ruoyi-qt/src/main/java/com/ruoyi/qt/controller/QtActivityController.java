@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.ruoyi.common.annotation.Log;
+import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.qt.cache.QtCacheKeys;
+import com.ruoyi.qt.cache.QtQueryCache;
 import com.ruoyi.qt.domain.QtActivity;
 import com.ruoyi.qt.service.IQtActivityService;
 import com.ruoyi.qt.util.QtAuthUtils;
@@ -35,6 +38,9 @@ public class QtActivityController extends BaseController
     @Autowired
     private IQtActivityService qtActivityService;
 
+    @Autowired
+    private QtQueryCache qtQueryCache;
+
     /**
      * 查询实验室活动列表
      */
@@ -45,9 +51,13 @@ public class QtActivityController extends BaseController
         {
             qtActivity.setStatus("PUBLISHED");
         }
-        startPage();
-        List<QtActivity> list = qtActivityService.selectQtActivityList(qtActivity);
-        return getDataTable(list);
+        // 非管理员被强制 status=PUBLISHED，指纹含 status，因此不会串到管理员的未发布数据
+        return qtQueryCache.loadPage(CacheConstants.CACHE_QT_ACTIVITY_LIST, QtCacheKeys.list(qtActivity),
+                CacheConstants.TTL_QT_ACTIVITY_LIST, QtActivity.class, () -> {
+                    startPage();
+                    List<QtActivity> list = qtActivityService.selectQtActivityList(qtActivity);
+                    return getDataTable(list);
+                });
     }
 
     /**

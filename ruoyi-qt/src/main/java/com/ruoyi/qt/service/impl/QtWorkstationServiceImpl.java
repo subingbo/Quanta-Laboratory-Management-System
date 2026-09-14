@@ -1,7 +1,9 @@
 package com.ruoyi.qt.service.impl;
 
 import java.util.List;
+import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.qt.cache.QtQueryCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.qt.mapper.QtWorkstationMapper;
@@ -19,6 +21,9 @@ public class QtWorkstationServiceImpl implements IQtWorkstationService
 {
     @Autowired
     private QtWorkstationMapper qtWorkstationMapper;
+
+    @Autowired
+    private QtQueryCache qtQueryCache;
 
     /**
      * 查询实验室工位
@@ -54,7 +59,9 @@ public class QtWorkstationServiceImpl implements IQtWorkstationService
     public int insertQtWorkstation(QtWorkstation qtWorkstation)
     {
         qtWorkstation.setCreateTime(DateUtils.getNowDate());
-        return qtWorkstationMapper.insertQtWorkstation(qtWorkstation);
+        int rows = qtWorkstationMapper.insertQtWorkstation(qtWorkstation);
+        qtQueryCache.evict(CacheConstants.CACHE_QT_WORKSTATION_LIST);
+        return rows;
     }
 
     /**
@@ -67,7 +74,9 @@ public class QtWorkstationServiceImpl implements IQtWorkstationService
     public int updateQtWorkstation(QtWorkstation qtWorkstation)
     {
         qtWorkstation.setUpdateTime(DateUtils.getNowDate());
-        return qtWorkstationMapper.updateQtWorkstation(qtWorkstation);
+        int rows = qtWorkstationMapper.updateQtWorkstation(qtWorkstation);
+        qtQueryCache.evict(CacheConstants.CACHE_QT_WORKSTATION_LIST);
+        return rows;
     }
 
     /**
@@ -79,7 +88,9 @@ public class QtWorkstationServiceImpl implements IQtWorkstationService
     @Override
     public int deleteQtWorkstationByWorkstationIds(Long[] workstationIds)
     {
-        return qtWorkstationMapper.deleteQtWorkstationByWorkstationIds(workstationIds);
+        int rows = qtWorkstationMapper.deleteQtWorkstationByWorkstationIds(workstationIds);
+        qtQueryCache.evict(CacheConstants.CACHE_QT_WORKSTATION_LIST);
+        return rows;
     }
 
     /**
@@ -91,6 +102,8 @@ public class QtWorkstationServiceImpl implements IQtWorkstationService
     @Override
     public int deleteQtWorkstationByWorkstationId(Long workstationId)
     {
-        return qtWorkstationMapper.deleteQtWorkstationByWorkstationId(workstationId);
+        int rows = qtWorkstationMapper.deleteQtWorkstationByWorkstationId(workstationId);
+        qtQueryCache.evict(CacheConstants.CACHE_QT_WORKSTATION_LIST);
+        return rows;
     }
 }

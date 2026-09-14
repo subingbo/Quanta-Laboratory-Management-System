@@ -1,8 +1,12 @@
 package com.ruoyi.qt.service.impl;
 
 import java.util.List;
+import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.qt.cache.QtQueryCache;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import com.ruoyi.qt.mapper.QtBookMapper;
 import com.ruoyi.qt.domain.QtBook;
@@ -20,6 +24,9 @@ public class QtBookServiceImpl implements IQtBookService
     @Autowired
     private QtBookMapper qtBookMapper;
 
+    @Autowired
+    private QtQueryCache qtQueryCache;
+
     /**
      * 查询实验室图书
      * 
@@ -27,6 +34,7 @@ public class QtBookServiceImpl implements IQtBookService
      * @return 实验室图书
      */
     @Override
+    @Cacheable(cacheNames = CacheConstants.CACHE_QT_BOOK_DETAIL, key = "#bookId")
     public QtBook selectQtBookByBookId(Long bookId)
     {
         return qtBookMapper.selectQtBookByBookId(bookId);
@@ -54,7 +62,9 @@ public class QtBookServiceImpl implements IQtBookService
     public int insertQtBook(QtBook qtBook)
     {
         qtBook.setCreateTime(DateUtils.getNowDate());
-        return qtBookMapper.insertQtBook(qtBook);
+        int rows = qtBookMapper.insertQtBook(qtBook);
+        qtQueryCache.evict(CacheConstants.CACHE_QT_BOOK_LIST);
+        return rows;
     }
 
     /**
@@ -64,10 +74,13 @@ public class QtBookServiceImpl implements IQtBookService
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_BOOK_DETAIL, allEntries = true)
     public int updateQtBook(QtBook qtBook)
     {
         qtBook.setUpdateTime(DateUtils.getNowDate());
-        return qtBookMapper.updateQtBook(qtBook);
+        int rows = qtBookMapper.updateQtBook(qtBook);
+        qtQueryCache.evict(CacheConstants.CACHE_QT_BOOK_LIST);
+        return rows;
     }
 
     /**
@@ -77,9 +90,12 @@ public class QtBookServiceImpl implements IQtBookService
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_BOOK_DETAIL, allEntries = true)
     public int deleteQtBookByBookIds(Long[] bookIds)
     {
-        return qtBookMapper.deleteQtBookByBookIds(bookIds);
+        int rows = qtBookMapper.deleteQtBookByBookIds(bookIds);
+        qtQueryCache.evict(CacheConstants.CACHE_QT_BOOK_LIST);
+        return rows;
     }
 
     /**
@@ -89,8 +105,11 @@ public class QtBookServiceImpl implements IQtBookService
      * @return 结果
      */
     @Override
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_BOOK_DETAIL, key = "#bookId")
     public int deleteQtBookByBookId(Long bookId)
     {
-        return qtBookMapper.deleteQtBookByBookId(bookId);
+        int rows = qtBookMapper.deleteQtBookByBookId(bookId);
+        qtQueryCache.evict(CacheConstants.CACHE_QT_BOOK_LIST);
+        return rows;
     }
 }

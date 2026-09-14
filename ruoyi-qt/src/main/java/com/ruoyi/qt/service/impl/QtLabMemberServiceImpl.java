@@ -8,8 +8,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.StringUtils;
@@ -47,6 +50,7 @@ public class QtLabMemberServiceImpl implements IQtLabMemberService
     }
 
     @Override
+    @Cacheable(cacheNames = CacheConstants.CACHE_QT_MEMBER_COHORTS, key = "'all'")
     public Map<String, Object> selectCohorts()
     {
         List<QtCohort> list = qtCohortMapper.selectCohortList(new QtCohort());
@@ -68,6 +72,7 @@ public class QtLabMemberServiceImpl implements IQtLabMemberService
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_MEMBER_COHORTS, allEntries = true)
     public Map<String, Object> retain(Long userId, QtMemberRetainBody body, String operator)
     {
         if (body == null || !Boolean.TRUE.equals(body.getRetain()))
@@ -137,6 +142,7 @@ public class QtLabMemberServiceImpl implements IQtLabMemberService
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_MEMBER_COHORTS, allEntries = true)
     public void rollover()
     {
         QtCohort current = qtCohortMapper.selectCurrentCohort();

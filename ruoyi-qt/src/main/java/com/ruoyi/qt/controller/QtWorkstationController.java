@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.ruoyi.common.annotation.Log;
+import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.qt.cache.QtCacheKeys;
+import com.ruoyi.qt.cache.QtQueryCache;
 import com.ruoyi.qt.domain.QtWorkstation;
 import com.ruoyi.qt.service.IQtWorkstationService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
@@ -34,6 +37,9 @@ public class QtWorkstationController extends BaseController
     @Autowired
     private IQtWorkstationService qtWorkstationService;
 
+    @Autowired
+    private QtQueryCache qtQueryCache;
+
     /**
      * 查询实验室工位列表
      */
@@ -41,9 +47,12 @@ public class QtWorkstationController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(QtWorkstation qtWorkstation)
     {
-        startPage();
-        List<QtWorkstation> list = qtWorkstationService.selectQtWorkstationList(qtWorkstation);
-        return getDataTable(list);
+        return qtQueryCache.loadPage(CacheConstants.CACHE_QT_WORKSTATION_LIST, QtCacheKeys.list(qtWorkstation),
+                CacheConstants.TTL_QT_WORKSTATION_LIST, QtWorkstation.class, () -> {
+                    startPage();
+                    List<QtWorkstation> list = qtWorkstationService.selectQtWorkstationList(qtWorkstation);
+                    return getDataTable(list);
+                });
     }
 
     /**

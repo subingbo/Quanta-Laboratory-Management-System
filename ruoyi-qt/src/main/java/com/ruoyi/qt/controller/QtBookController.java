@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.ruoyi.common.annotation.Log;
+import com.ruoyi.common.constant.CacheConstants;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.qt.cache.QtCacheKeys;
+import com.ruoyi.qt.cache.QtQueryCache;
 import com.ruoyi.qt.domain.QtBook;
 import com.ruoyi.qt.service.IQtBookService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
@@ -34,6 +37,9 @@ public class QtBookController extends BaseController
     @Autowired
     private IQtBookService qtBookService;
 
+    @Autowired
+    private QtQueryCache qtQueryCache;
+
     /**
      * 查询实验室图书列表
      */
@@ -41,9 +47,13 @@ public class QtBookController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(QtBook qtBook)
     {
-        startPage();
-        List<QtBook> list = qtBookService.selectQtBookList(qtBook);
-        return getDataTable(list);
+        // 小程序图书页一次拉全表本地分页，是站内最热的读；缓存整份已组装好的响应以保住 total
+        return qtQueryCache.loadPage(CacheConstants.CACHE_QT_BOOK_LIST, QtCacheKeys.list(qtBook),
+                CacheConstants.TTL_QT_BOOK_LIST, QtBook.class, () -> {
+                    startPage();
+                    List<QtBook> list = qtBookService.selectQtBookList(qtBook);
+                    return getDataTable(list);
+                });
     }
 
     /**
