@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { selectActivity } from './activity'
+import { mapSignup, selectActivity } from './activity'
 
 describe('activity backend mapping', () => {
   const rows = [
@@ -10,5 +10,14 @@ describe('activity backend mapping', () => {
   it('selects legacy general activities by title', () => {
     expect(selectActivity(rows, 'LECTURE')?.activityId).toBe(1)
     expect(selectActivity(rows, 'SHARING')?.activityId).toBe(2)
+  })
+
+  it('maps the authenticated users signup row', () => {
+    expect(mapSignup({ activityId: 9, status: 'APPLIED', signupTime: '2026-09-14', remark: null })).toEqual({
+      activityId: 9,
+      status: 'APPLIED',
+      signupTime: '2026-09-14',
+      remark: '',
+    })
   })
 })

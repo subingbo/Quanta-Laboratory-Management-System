@@ -348,6 +348,6 @@ Expected: only the user's original `manifest.json` and `.local/` remain uncommit
 
 ## Live-contract verification adjustments
 
-- Activity content remains server-backed, but signup state and submission stay mocked because `/system/signup/detailList` currently fails on the missing `qt_activity_signup.remark` column.
+- Activity content, signup state, and signup submission are server-backed after `lab_patch_signup_remark.sql` repaired the missing column on 2026-09-14.
 - Workstation booking stays mocked because member-scoped reservation results omit other users' occupancy and reservation timestamps serialize without the time slots required by the UI.
 - Learning materials were additionally connected through `GET /qt/materials` and authenticated material download.

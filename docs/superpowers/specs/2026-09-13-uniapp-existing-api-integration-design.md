@@ -17,7 +17,7 @@ Connect every Quanta uni-app business flow that already has a backend endpoint t
 ### Activities
 
 - Load published activities from `GET /system/activity/list` and select the relevant `LECTURE` or `SHARING` activity.
-- Keep signup state and submission in the existing mock store because live verification found `/system/signup/detailList` returns `code=500`: its mapper selects a missing `qt_activity_signup.remark` database column.
+- Load signup state from `GET /system/signup/detailList` and submit through `POST /system/signup`; the missing `qt_activity_signup.remark` column was repaired by the 2026-09-14 backend patch.
 - Keep the current mock guest records because no activity guest endpoint exists.
 
 ### Member identity, directory, and home
@@ -66,7 +66,6 @@ Pages retain their current layout. Each asynchronous write uses a submitting gua
 The following keep their existing mock-backed behavior and are deliberately not implemented on the backend in this change:
 
 - Candidate-facing accept or decline of a second-interview invitation.
-- Activity signup state and submission until the missing `qt_activity_signup.remark` column/mapper mismatch is fixed.
 - Activity guest/speaker records for the elite sharing page.
 - Member business-card read and write, biography, active-talent flag, and card-availability flag.
 - Member-home banner/content management.

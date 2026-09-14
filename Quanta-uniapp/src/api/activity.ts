@@ -1,5 +1,5 @@
 import request from '../utils/request'
-import type { MockActivity } from '../utils/mockActivity'
+import type { LocalActivitySignup, MockActivity } from '../utils/mockActivity'
 import type { TableResponse } from './contracts'
 
 export interface ActivityDto {
@@ -14,6 +14,13 @@ export interface ActivityDto {
   locationDesc?: string
   capacity?: number
   status: MockActivity['status']
+}
+
+export interface ActivitySignupDto {
+  activityId: number
+  status: LocalActivitySignup['status']
+  signupTime: string
+  remark?: string | null
 }
 
 export type ActivityKind = 'LECTURE' | 'SHARING'
@@ -46,6 +53,13 @@ export const selectActivity = (rows: ActivityDto[], kind: ActivityKind) => {
   return rows.find((row) => row.title?.includes(keyword))
 }
 
+export const mapSignup = (row: ActivitySignupDto): LocalActivitySignup => ({
+  activityId: Number(row.activityId),
+  status: row.status,
+  signupTime: row.signupTime,
+  remark: row.remark || '',
+})
+
 export const getPublishedActivityRows = async () => {
   const response = await request<TableResponse<ActivityDto>>({
     url: '/system/activity/list',
@@ -60,4 +74,22 @@ export const getActivityByKind = async (kind: ActivityKind) => {
   const row = selectActivity(await getPublishedActivityRows(), kind)
   if (!row) throw new Error(kind === 'LECTURE' ? '暂无已发布宣讲会' : '暂无已发布精英分享会')
   return mapActivity({ ...row, activityType: kind })
+}
+
+export const getMyActivitySignup = async (activityId: number) => {
+  const response = await request<TableResponse<ActivitySignupDto>>({
+    url: '/system/signup/detailList',
+    data: { activityId, pageNum: 1, pageSize: 20 },
+  })
+  const row = (response.rows || []).find((item) => Number(item.activityId) === Number(activityId))
+  return row ? mapSignup(row) : null
+}
+
+export const signupActivity = async (activityId: number, remark = '') => {
+  await request({
+    url: '/system/signup',
+    method: 'POST',
+    data: { activityId, remark },
+  })
+  return getMyActivitySignup(activityId)
 }
