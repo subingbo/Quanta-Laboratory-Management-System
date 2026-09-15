@@ -6,7 +6,14 @@ import { hasAnyPermission } from '@/composables/usePermission'
 import { setUnauthorizedHandler } from '@/utils/unauthorized'
 import { safeInternalRedirect } from '@/utils/redirect'
 
-const publicPaths = new Set(['/login', '/403'])
+const publicPaths = new Set([
+  '/',
+  '/login',
+  '/login/freshman',
+  '/login/member',
+  '/admin/login',
+  '/403',
+])
 
 export function setupRouterGuard(router) {
   NProgress.configure({ showSpinner: false })
@@ -17,9 +24,9 @@ export function setupRouterGuard(router) {
     const redirect = router.currentRoute.value.fullPath
     userStore.reset()
     permissionStore.resetRoutes()
-    if (router.currentRoute.value.path !== '/login') {
+    if (router.currentRoute.value.path !== '/admin/login') {
       await router.replace({
-        path: '/login',
+        path: '/admin/login',
         query: redirect === safeInternalRedirect(redirect, '') ? { redirect } : {},
       })
     }
@@ -31,13 +38,15 @@ export function setupRouterGuard(router) {
     const permissionStore = usePermissionStore(pinia)
 
     if (publicPaths.has(to.path)) {
-      if (to.path === '/login' && userStore.token) return '/dashboard'
+      if ((to.path === '/login' || to.path === '/admin/login') && userStore.token) {
+        return '/admin/dashboard'
+      }
       return true
     }
 
     if (!userStore.token) {
       return {
-        path: '/login',
+        path: '/admin/login',
         query:
           to.fullPath === safeInternalRedirect(to.fullPath, '')
             ? { redirect: to.fullPath }
@@ -63,7 +72,7 @@ export function setupRouterGuard(router) {
       userStore.reset()
       permissionStore.resetRoutes()
       return {
-        path: '/login',
+        path: '/admin/login',
         query:
           to.fullPath === safeInternalRedirect(to.fullPath, '')
             ? { redirect: to.fullPath }

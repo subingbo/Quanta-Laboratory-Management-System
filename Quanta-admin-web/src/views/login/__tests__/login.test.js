@@ -13,7 +13,7 @@ async function mountLogin() {
     history: createMemoryHistory(),
     routes: [
       { path: '/login', component: LoginView },
-      { path: '/dashboard', component: { template: '<div>dashboard</div>' } },
+      { path: '/admin/dashboard', component: { template: '<div>dashboard</div>' } },
     ],
   })
   await router.push('/login')
@@ -54,6 +54,6 @@ describe('login view', () => {
     await flushPromises()
 
     expect(userStore.login).toHaveBeenCalledOnce()
-    expect(router.currentRoute.value.path).toBe('/dashboard')
+    expect(router.currentRoute.value.path).toBe('/admin/dashboard')
   })
 })

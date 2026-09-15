@@ -4,6 +4,30 @@ import { getRouters } from '@/api/auth'
 import { transformRoutes } from '@/router/route-transformer'
 import { selectWebRoutes } from '@/router/route-source'
 
+function withAdminPrefix(path) {
+  if (typeof path !== 'string' || !path.startsWith('/')) return path
+  if (path === '/admin' || path.startsWith('/admin/')) return path
+  return `/admin${path}`
+}
+
+function prefixAdminRoute(route, topLevel = false) {
+  const normalized = {
+    ...route,
+    path: topLevel || route.path?.startsWith('/') ? withAdminPrefix(route.path) : route.path,
+  }
+  if (typeof route.redirect === 'string') {
+    normalized.redirect = withAdminPrefix(route.redirect)
+  }
+  if (route.children) {
+    normalized.children = route.children.map((child) => prefixAdminRoute(child))
+  }
+  return normalized
+}
+
+export function prefixAdminRoutes(routes = []) {
+  return routes.map((route) => prefixAdminRoute(route, true))
+}
+
 export const usePermissionStore = defineStore('permission', () => {
   const routes = ref([])
   const initialized = ref(false)
@@ -16,7 +40,9 @@ export const usePermissionStore = defineStore('permission', () => {
 
     initializing.value = getRouters()
       .then((response) => {
-        routes.value = transformRoutes(selectWebRoutes(response.data || [], permissions))
+        routes.value = prefixAdminRoutes(
+          transformRoutes(selectWebRoutes(response.data || [], permissions)),
+        )
         return routes.value
       })
       .finally(() => {

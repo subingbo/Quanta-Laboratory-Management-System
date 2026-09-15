@@ -20,7 +20,7 @@ async function handleCommand(command) {
   if (command !== 'logout') return
   await userStore.logout()
   permissionStore.resetRoutes()
-  await router.replace('/login')
+  await router.replace('/admin/login')
 }
 </script>
 
@@ -41,4 +41,3 @@ async function handleCommand(command) {
     </template>
   </ElDropdown>
 </template>
-

@@ -34,19 +34,20 @@ describe('global route guard', () => {
     const router = createTestRouter()
     await router.push('/members')
 
-    expect(router.currentRoute.value.path).toBe('/login')
+    expect(router.currentRoute.value.path).toBe('/admin/login')
     expect(router.currentRoute.value.query.redirect).toBe('/members')
   })
 
-  it('restores user info and installs dynamic routes after login', async () => {
+  it('restores user info and installs prefixed dynamic routes on a cold deep link', async () => {
     const router = createTestRouter()
     await userStore.login({ username: 'admin', password: 'quanta123' })
-    await router.push('/dashboard')
+    await router.push('/admin/dashboard')
 
     expect(router.currentRoute.value.name).toBe('Dashboard')
     expect(userStore.displayName).toBe('李明华')
     expect(permissionStore.initialized).toBe(true)
     expect(router.hasRoute('Members')).toBe(true)
+    expect(permissionStore.routes.every((route) => route.path.startsWith('/admin/'))).toBe(true)
   }, 30000)
 
   it('sends a logged-in user to 403 when page permission is missing', async () => {

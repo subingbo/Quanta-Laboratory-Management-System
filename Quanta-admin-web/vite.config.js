@@ -1,12 +1,11 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
 export default defineConfig(({ mode }) => ({
-  // 生产环境由 Nginx 挂载在 /admin/，开发环境仍保持根路径，避免影响本地联调。
-  base: mode === 'production' ? '/admin/' : '/',
+  base: '/',
   plugins: [
     vue(),
     ...(mode === 'test'
@@ -20,7 +19,7 @@ export default defineConfig(({ mode }) => ({
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@': resolve(process.cwd(), 'src'),
     },
   },
   server: {
