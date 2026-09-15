@@ -17,6 +17,7 @@ export const mockAccounts = [
     roles: ['ceo'],
     permissions: [
       'qt:dashboard:stats',
+      'qt:metrics:list',
       'qt:member:list',
       'system:user:import',
       'system:user:remove',

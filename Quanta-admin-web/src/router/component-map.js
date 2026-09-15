@@ -3,6 +3,7 @@ export const unknownRouteComponent = () => import('@/views/error/ComponentError.
 const componentMap = {
   Layout: () => import('@/layout/AppLayout.vue'),
   'dashboard/index': () => import('@/views/dashboard/index.vue'),
+  'metrics/index': () => import('@/views/metrics/index.vue'),
   'members/index': () => import('@/views/members/index.vue'),
   'recruitment/index': () => import('@/views/recruitment/index.vue'),
   'sharing-signups/index': () => import('@/views/sharing-signups/index.vue'),

@@ -48,5 +48,6 @@ describe('route transformer', () => {
     expect(isKnownComponent('book-borrows/index')).toBe(true)
     expect(isKnownComponent('learning-materials/index')).toBe(true)
     expect(isKnownComponent('clothing-orders/index')).toBe(true)
+    expect(isKnownComponent('metrics/index')).toBe(true)
   })
 })

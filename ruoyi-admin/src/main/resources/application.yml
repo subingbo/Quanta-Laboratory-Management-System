@@ -21,6 +21,12 @@ qt:
   cache:
     # 业务查询缓存总开关；出问题时改成 false 即刻退回全部直查，无需回滚代码
     enabled: true
+  metrics:
+    # 访问指标总开关；只做内存计数，每 window-seconds 落库一行全局 + Top URI
+    enabled: true
+    window-seconds: 60
+    top-uris: 20
+    retain-days: 30
   upload:
     # 图片类（证件照/头像/收款码/效果图/支付凭证）上限 MB，与 FileValidator.SIZE_IMAGE 对应
     image-max-mb: 5

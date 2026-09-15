@@ -15,6 +15,12 @@ export const menus = [
     meta: { title: '控制台', icon: 'DataAnalysis', group: '总览', permission: 'qt:dashboard:stats' },
   },
   {
+    path: '/metrics',
+    name: 'AccessMetrics',
+    component: 'metrics/index',
+    meta: { title: '访问指标', icon: 'Odometer', group: '总览', permission: 'qt:metrics:list' },
+  },
+  {
     path: '/members',
     name: 'Members',
     component: 'members/index',

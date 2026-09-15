@@ -12,6 +12,17 @@ export const mockRouters = [
     },
   },
   {
+    path: '/metrics',
+    name: 'AccessMetrics',
+    component: 'metrics/index',
+    meta: {
+      title: '访问指标',
+      icon: 'Odometer',
+      group: '总览',
+      permission: 'qt:metrics:list',
+    },
+  },
+  {
     path: '/members',
     name: 'Members',
     component: 'members/index',
