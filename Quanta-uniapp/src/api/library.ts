@@ -46,7 +46,7 @@ export const mapBook = (row: BookDto): LibraryBook => {
 }
 
 export const getLibraryBooks = async () => {
-  const response = await request<TableResponse<BookDto>>({ url: '/system/book/list', data: { pageNum: 1, pageSize: 1000 } })
+  const response = await request<TableResponse<BookDto>>({ url: '/qt/book/list', data: { pageNum: 1, pageSize: 1000 } })
   return (response.rows || []).map(mapBook)
 }
 
@@ -56,7 +56,7 @@ export const borrowBook = async (bookId: string, now = new Date()): Promise<Borr
   if (!book) throw new Error('书籍不存在')
   if (book.status !== 'available') throw new Error('该书当前不可借阅')
   const dueDate = calculateBookDueDate(now, book.category)
-  await request({ url: '/system/borrow', method: 'POST', data: { bookId: Number(bookId), dueTime: dateOnly(dueDate) } })
+  await request({ url: '/qt/borrow', method: 'POST', data: { bookId: Number(bookId), dueTime: `${dateOnly(dueDate)} 23:59:59` } })
   return {
     book: { ...book, status: 'borrowed' },
     borrowedOn: dateOnly(now),

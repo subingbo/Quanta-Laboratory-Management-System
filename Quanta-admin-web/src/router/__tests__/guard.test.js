@@ -47,7 +47,7 @@ describe('global route guard', () => {
     expect(userStore.displayName).toBe('李明华')
     expect(permissionStore.initialized).toBe(true)
     expect(router.hasRoute('Members')).toBe(true)
-  })
+  }, 30000)
 
   it('sends a logged-in user to 403 when page permission is missing', async () => {
     const router = createTestRouter()

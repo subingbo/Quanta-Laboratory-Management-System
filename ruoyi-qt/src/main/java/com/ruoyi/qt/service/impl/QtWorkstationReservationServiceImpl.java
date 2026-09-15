@@ -1,43 +1,32 @@
 package com.ruoyi.qt.service.impl;
 
+import java.util.Date;
 import java.util.List;
-import com.ruoyi.common.utils.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.qt.mapper.QtWorkstationReservationMapper;
+import org.springframework.transaction.annotation.Transactional;
+import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.qt.domain.QtWorkstationReservation;
+import com.ruoyi.qt.mapper.QtWorkstationReservationMapper;
 import com.ruoyi.qt.service.IQtWorkstationReservationService;
 
 /**
  * 工位预约记录Service业务层处理
- * 
- * @author ruoyi
- * @date 2026-04-24
  */
 @Service
-public class QtWorkstationReservationServiceImpl implements IQtWorkstationReservationService 
+public class QtWorkstationReservationServiceImpl implements IQtWorkstationReservationService
 {
     @Autowired
     private QtWorkstationReservationMapper qtWorkstationReservationMapper;
 
-    /**
-     * 查询工位预约记录
-     * 
-     * @param reservationId 工位预约记录主键
-     * @return 工位预约记录
-     */
     @Override
     public QtWorkstationReservation selectQtWorkstationReservationByReservationId(Long reservationId)
     {
         return qtWorkstationReservationMapper.selectQtWorkstationReservationByReservationId(reservationId);
     }
 
-    /**
-     * 查询工位预约记录列表
-     * 
-     * @param qtWorkstationReservation 工位预约记录
-     * @return 工位预约记录
-     */
     @Override
     public List<QtWorkstationReservation> selectQtWorkstationReservationList(QtWorkstationReservation qtWorkstationReservation)
     {
@@ -50,53 +39,78 @@ public class QtWorkstationReservationServiceImpl implements IQtWorkstationReserv
         return qtWorkstationReservationMapper.selectQtWorkstationReservationDetailList(qtWorkstationReservation);
     }
 
-    /**
-     * 新增工位预约记录
-     * 
-     * @param qtWorkstationReservation 工位预约记录
-     * @return 结果
-     */
     @Override
-    public int insertQtWorkstationReservation(QtWorkstationReservation qtWorkstationReservation)
+    @Transactional
+    public int insertQtWorkstationReservation(QtWorkstationReservation reservation)
     {
-        qtWorkstationReservation.setCreateTime(DateUtils.getNowDate());
-        return qtWorkstationReservationMapper.insertQtWorkstationReservation(qtWorkstationReservation);
+        assertSlot(reservation);
+        if (StringUtils.isEmpty(reservation.getStatus()))
+        {
+            reservation.setStatus("PENDING");
+        }
+        assertNoOverlap(reservation.getWorkstationId(), reservation.getReserveStart(), reservation.getReserveEnd(), null);
+        reservation.setCreateTime(DateUtils.getNowDate());
+        return qtWorkstationReservationMapper.insertQtWorkstationReservation(reservation);
     }
 
-    /**
-     * 修改工位预约记录
-     * 
-     * @param qtWorkstationReservation 工位预约记录
-     * @return 结果
-     */
     @Override
-    public int updateQtWorkstationReservation(QtWorkstationReservation qtWorkstationReservation)
+    @Transactional
+    public int updateQtWorkstationReservation(QtWorkstationReservation reservation)
     {
-        qtWorkstationReservation.setUpdateTime(DateUtils.getNowDate());
-        return qtWorkstationReservationMapper.updateQtWorkstationReservation(qtWorkstationReservation);
+        QtWorkstationReservation old = qtWorkstationReservationMapper.selectQtWorkstationReservationByReservationId(reservation.getReservationId());
+        if (old == null)
+        {
+            throw new ServiceException("预约记录不存在");
+        }
+        Long workstationId = reservation.getWorkstationId() != null ? reservation.getWorkstationId() : old.getWorkstationId();
+        Date start = reservation.getReserveStart() != null ? reservation.getReserveStart() : old.getReserveStart();
+        Date end = reservation.getReserveEnd() != null ? reservation.getReserveEnd() : old.getReserveEnd();
+        String status = StringUtils.isNotEmpty(reservation.getStatus()) ? reservation.getStatus() : old.getStatus();
+        if (!"CANCELED".equals(status) && !"FINISHED".equals(status))
+        {
+            assertNoOverlap(workstationId, start, end, reservation.getReservationId());
+        }
+        reservation.setUpdateTime(DateUtils.getNowDate());
+        return qtWorkstationReservationMapper.updateQtWorkstationReservation(reservation);
     }
 
-    /**
-     * 批量删除工位预约记录
-     * 
-     * @param reservationIds 需要删除的工位预约记录主键
-     * @return 结果
-     */
     @Override
     public int deleteQtWorkstationReservationByReservationIds(Long[] reservationIds)
     {
         return qtWorkstationReservationMapper.deleteQtWorkstationReservationByReservationIds(reservationIds);
     }
 
-    /**
-     * 删除工位预约记录信息
-     * 
-     * @param reservationId 工位预约记录主键
-     * @return 结果
-     */
     @Override
     public int deleteQtWorkstationReservationByReservationId(Long reservationId)
     {
         return qtWorkstationReservationMapper.deleteQtWorkstationReservationByReservationId(reservationId);
+    }
+
+    private void assertSlot(QtWorkstationReservation reservation)
+    {
+        if (reservation.getWorkstationId() == null)
+        {
+            throw new ServiceException("工位ID不能为空");
+        }
+        if (reservation.getReserveStart() == null || reservation.getReserveEnd() == null)
+        {
+            throw new ServiceException("预约起止时间不能为空");
+        }
+        if (!reservation.getReserveEnd().after(reservation.getReserveStart()))
+        {
+            throw new ServiceException("预约结束时间必须晚于开始时间");
+        }
+    }
+
+    private void assertNoOverlap(Long workstationId, Date start, Date end, Long excludeId)
+    {
+        if (workstationId == null || start == null || end == null)
+        {
+            return;
+        }
+        if (qtWorkstationReservationMapper.countOverlapping(workstationId, start, end, excludeId) > 0)
+        {
+            throw new ServiceException("该工位在此时间段已被预约");
+        }
     }
 }

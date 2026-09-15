@@ -8,11 +8,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.filter.RefererFilter;
 import com.ruoyi.common.filter.RepeatableFilter;
 import com.ruoyi.common.filter.XssFilter;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.framework.metrics.AccessMetricsCollector;
+import com.ruoyi.framework.metrics.AccessMetricsFilter;
 
 /**
  * Filter配置
@@ -30,6 +33,9 @@ public class FilterConfig
 
     @Value("${referer.allowed-domains}")
     private String allowedDomains;
+
+    @Value("${qt.metrics.enabled:true}")
+    private boolean metricsEnabled;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Bean
@@ -74,6 +80,19 @@ public class FilterConfig
         registration.addUrlPatterns("/*");
         registration.setName("repeatableFilter");
         registration.setOrder(FilterRegistrationBean.LOWEST_PRECEDENCE);
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<AccessMetricsFilter> accessMetricsFilterRegistration(AccessMetricsCollector collector)
+    {
+        AccessMetricsFilter filter = new AccessMetricsFilter(collector, metricsEnabled);
+        FilterRegistrationBean<AccessMetricsFilter> registration = new FilterRegistrationBean<AccessMetricsFilter>();
+        registration.setFilter(filter);
+        registration.addUrlPatterns("/*");
+        registration.setName("accessMetricsFilter");
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 30);
+        registration.setDispatcherTypes(DispatcherType.REQUEST);
         return registration;
     }
 

@@ -8,6 +8,7 @@ import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.ruoyi.qt.mapper.QtClothingOrderMapper;
 import com.ruoyi.qt.domain.QtClothingOrder;
 import com.ruoyi.qt.service.IQtClothingOrderService;
@@ -61,6 +62,7 @@ public class QtClothingOrderServiceImpl implements IQtClothingOrderService
      * @return 结果
      */
     @Override
+    @Transactional
     public int insertQtClothingOrder(QtClothingOrder qtClothingOrder)
     {
         if (StringUtils.isEmpty(qtClothingOrder.getOrderNo()))
@@ -133,6 +135,7 @@ public class QtClothingOrderServiceImpl implements IQtClothingOrderService
     }
 
     @Override
+    @Transactional
     public int approveOrder(Long orderId, String operator)
     {
         QtClothingOrder order = qtClothingOrderMapper.selectQtClothingOrderByOrderId(orderId);

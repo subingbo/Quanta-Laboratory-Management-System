@@ -36,7 +36,7 @@ import com.ruoyi.framework.config.ServerConfig;
  * @date 2026-04-24
  */
 @RestController
-@RequestMapping("/system/payment-config")
+@RequestMapping("/qt/payment-config")
 public class QtPaymentConfigController extends BaseController
 {
     @Autowired
@@ -47,7 +47,7 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 查询固定付款码配置列表
      */
-    // @PreAuthorize("@ss.hasPermi('system:payment-config:list')")
+    // @PreAuthorize("@ss.hasPermi('qt:payment-config:list')")
     @GetMapping("/list")
     public TableDataInfo list(QtPaymentConfig qtPaymentConfig)
     {
@@ -60,7 +60,7 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 导出固定付款码配置列表
      */
-    @PreAuthorize("@ss.hasPermi('system:payment-config:export')")
+    @PreAuthorize("@ss.hasPermi('qt:payment-config:export')")
     @Log(title = "固定付款码配置", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtPaymentConfig qtPaymentConfig)
@@ -73,7 +73,7 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 获取固定付款码配置详细信息
      */
-    // @PreAuthorize("@ss.hasPermi('system:payment-config:query')")
+    // @PreAuthorize("@ss.hasPermi('qt:payment-config:query')")
     @GetMapping(value = "/{configId}")
     public AjaxResult getInfo(@PathVariable("configId") Long configId)
     {
@@ -85,7 +85,7 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 新增固定付款码配置
      */
-    @PreAuthorize("@ss.hasPermi('system:payment-config:add')")
+    @PreAuthorize("@ss.hasPermi('qt:payment-config:add')")
     @Log(title = "固定付款码配置", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(QtPaymentConfig qtPaymentConfig,
@@ -108,7 +108,7 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 修改固定付款码配置
      */
-    @PreAuthorize("@ss.hasPermi('system:payment-config:edit')")
+    @PreAuthorize("@ss.hasPermi('qt:payment-config:edit')")
     @Log(title = "固定付款码配置", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(QtPaymentConfig qtPaymentConfig,
@@ -133,7 +133,7 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 删除固定付款码配置
      */
-    @PreAuthorize("@ss.hasPermi('system:payment-config:remove')")
+    @PreAuthorize("@ss.hasPermi('qt:payment-config:remove')")
     @Log(title = "固定付款码配置", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{configIds}")
     public AjaxResult remove(@PathVariable Long[] configIds)
@@ -144,7 +144,7 @@ public class QtPaymentConfigController extends BaseController
     /**
      * 清空付款码图片（逻辑删除）
      */
-    @PreAuthorize("@ss.hasPermi('system:payment-config:edit')")
+    @PreAuthorize("@ss.hasPermi('qt:payment-config:edit')")
     @Log(title = "固定付款码配置", businessType = BusinessType.UPDATE)
     @DeleteMapping("/image/{configId}")
     public AjaxResult removeImage(@PathVariable Long configId)

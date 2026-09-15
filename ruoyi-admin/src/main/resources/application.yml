@@ -12,12 +12,21 @@ ruoyi:
   addressEnabled: false
   # 验证码类型 math 数字计算 char 字符验证
   captchaType: math
+  # 跨域来源，逗号分隔。本地默认 * ；生产用 CORS_ALLOWED_ORIGINS 收紧
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
 
 # Quanta 业务配置
 qt:
   cache:
     # 业务查询缓存总开关；出问题时改成 false 即刻退回全部直查，无需回滚代码
     enabled: true
+  metrics:
+    # 访问指标总开关；只做内存计数，每 window-seconds 落库一行全局 + Top URI
+    enabled: true
+    window-seconds: 60
+    top-uris: 20
+    retain-days: 30
   upload:
     # 图片类（证件照/头像/收款码/效果图/支付凭证）上限 MB，与 FileValidator.SIZE_IMAGE 对应
     image-max-mb: 5
@@ -48,7 +57,7 @@ server:
 # 日志配置
 logging:
   level:
-    com.ruoyi: debug
+    com.ruoyi: ${LOG_LEVEL:info}
     org.springframework: warn
 
 # 用户配置
@@ -137,7 +146,7 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    enabled: true
+    enabled: ${SWAGGER_ENABLED:true}
     path: /swagger-ui.html
     tags-sorter: alpha
   group-configs:
@@ -160,4 +169,4 @@ xss:
   # 排除链接（多个用逗号分隔）
   excludes: /system/notice
   # 匹配链接
-  urlPatterns: /system/*,/monitor/*,/tool/*
+  urlPatterns: /system/*,/monitor/*,/tool/*,/qt/*

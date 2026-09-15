@@ -3,9 +3,12 @@ package com.ruoyi.framework.web.service;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.concurrent.TimeUnit;
 import java.security.SecureRandom;
 import java.util.Base64;
+import javax.crypto.SecretKey;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +27,7 @@ import com.ruoyi.common.utils.ip.IpUtils;
 import com.ruoyi.common.utils.uuid.IdUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -79,6 +82,14 @@ public class TokenService
             log.warn("未配置有效的 token.secret（TOKEN_SECRET），已启用一次性随机密钥："
                     + "服务重启后所有已签发令牌立即失效，且多实例之间无法互认。生产环境请在 deploy/aliyun/.env 中配置 TOKEN_SECRET。");
         }
+    }
+
+    /**
+     * 当前实际使用的签名密钥（含本地随机兜底后的值），供文件访问签名等复用。
+     */
+    public String getSigningSecret()
+    {
+        return secret;
     }
 
     /**
@@ -204,10 +215,10 @@ public class TokenService
      */
     private String createToken(Map<String, Object> claims)
     {
-        String token = Jwts.builder()
-                .setClaims(claims)
-                .signWith(SignatureAlgorithm.HS512, secret).compact();
-        return token;
+        return Jwts.builder()
+                .claims(claims)
+                .signWith(jwtKey())
+                .compact();
     }
 
     /**
@@ -219,9 +230,27 @@ public class TokenService
     private Claims parseToken(String token)
     {
         return Jwts.parser()
-                .setSigningKey(secret)
-                .parseClaimsJws(token)
-                .getBody();
+                .verifyWith(jwtKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    private SecretKey jwtKey()
+    {
+        byte[] bytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (bytes.length < 64)
+        {
+            try
+            {
+                bytes = MessageDigest.getInstance("SHA-512").digest(bytes);
+            }
+            catch (Exception e)
+            {
+                throw new IllegalStateException("无法派生 JWT 密钥", e);
+            }
+        }
+        return Keys.hmacShaKeyFor(bytes);
     }
 
     /**

@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import com.ruoyi.qt.validation.Create;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.annotation.RepeatSubmit;
 import com.ruoyi.common.core.controller.BaseController;
@@ -23,13 +25,14 @@ import com.ruoyi.qt.util.QtAuthUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.framework.config.ServerConfig;
+import com.ruoyi.framework.security.ProfileAccessSigner;
 import com.ruoyi.common.utils.StringUtils;
 
 /**
  * 实验室服装订单Controller
  */
 @RestController
-@RequestMapping("/system/order")
+@RequestMapping("/qt/order")
 public class QtClothingOrderController extends BaseController
 {
     @Autowired
@@ -37,6 +40,9 @@ public class QtClothingOrderController extends BaseController
 
     @Autowired
     private ServerConfig serverConfig;
+
+    @Autowired
+    private ProfileAccessSigner profileAccessSigner;
 
     @GetMapping("/list")
     public TableDataInfo list(QtClothingOrder qtClothingOrder)
@@ -58,11 +64,12 @@ public class QtClothingOrderController extends BaseController
         return getDataTable(list);
     }
 
-    @PreAuthorize("@ss.hasPermi('system:order:export')")
+    @PreAuthorize("@ss.hasPermi('qt:order:export')")
     @Log(title = "实验室服装订单", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtClothingOrder qtClothingOrder)
     {
+        QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_ORDER_LIST, qtClothingOrder::setUserId);
         List<QtClothingOrder> list = qtClothingOrderService.selectQtClothingOrderList(qtClothingOrder);
         ExcelUtil<QtClothingOrder> util = new ExcelUtil<QtClothingOrder>(QtClothingOrder.class);
         util.exportExcel(response, list, "实验室服装订单数据");
@@ -74,11 +81,8 @@ public class QtClothingOrderController extends BaseController
         QtClothingOrder order = qtClothingOrderService.selectQtClothingOrderByOrderId(orderId);
         if (order != null)
         {
+            QtAuthUtils.assertOwnerOrAdmin(order.getUserId(), QtAuthUtils.PERM_ORDER_LIST);
             fillOrderAliases(java.util.Collections.singletonList(order));
-            if (!QtAuthUtils.hasAdminList(QtAuthUtils.PERM_ORDER_LIST) && !getUserId().equals(order.getUserId()))
-            {
-                return error("无权查看该订单");
-            }
         }
         return success(order);
     }
@@ -86,7 +90,7 @@ public class QtClothingOrderController extends BaseController
     @Log(title = "实验室服装订单", businessType = BusinessType.INSERT)
     @RepeatSubmit
     @PostMapping
-    public AjaxResult add(@RequestBody QtClothingOrder qtClothingOrder)
+    public AjaxResult add(@Validated(Create.class) @RequestBody QtClothingOrder qtClothingOrder)
     {
         if (qtClothingOrder.getUserId() == null || !QtAuthUtils.hasAdminList(QtAuthUtils.PERM_ORDER_LIST))
         {
@@ -96,7 +100,7 @@ public class QtClothingOrderController extends BaseController
         return toAjax(qtClothingOrderService.insertQtClothingOrder(qtClothingOrder));
     }
 
-    @PreAuthorize("@ss.hasPermi('system:order:edit')")
+    @PreAuthorize("@ss.hasPermi('qt:order:edit')")
     @Log(title = "实验室服装订单", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtClothingOrder qtClothingOrder)
@@ -104,7 +108,7 @@ public class QtClothingOrderController extends BaseController
         return toAjax(qtClothingOrderService.updateQtClothingOrder(qtClothingOrder));
     }
 
-    @PreAuthorize("@ss.hasPermi('system:order:approve')")
+    @PreAuthorize("@ss.hasPermi('qt:order:approve')")
     @Log(title = "塔服确认收款", businessType = BusinessType.UPDATE)
     @PutMapping("/{orderId}/approve")
     public AjaxResult approve(@PathVariable Long orderId)
@@ -112,7 +116,7 @@ public class QtClothingOrderController extends BaseController
         return toAjax(qtClothingOrderService.approveOrder(orderId, getUsername()));
     }
 
-    @PreAuthorize("@ss.hasPermi('system:order:remove')")
+    @PreAuthorize("@ss.hasPermi('qt:order:remove')")
     @Log(title = "实验室服装订单", businessType = BusinessType.DELETE)
     @DeleteMapping("/{orderIds}")
     public AjaxResult remove(@PathVariable Long[] orderIds)
@@ -134,11 +138,11 @@ public class QtClothingOrderController extends BaseController
                 String path = order.getPaymentProofPath();
                 if (path.startsWith("http://") || path.startsWith("https://"))
                 {
-                    order.setPaymentProofUrl(path);
+                    order.setPaymentProofUrl(profileAccessSigner.signUrl(path));
                 }
                 else
                 {
-                    order.setPaymentProofUrl(serverConfig.getUrl() + path);
+                    order.setPaymentProofUrl(profileAccessSigner.signUrl(serverConfig.getUrl() + path));
                 }
             }
         }

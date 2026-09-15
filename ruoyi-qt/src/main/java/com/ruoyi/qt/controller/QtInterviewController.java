@@ -26,6 +26,7 @@ import com.ruoyi.qt.domain.QtInterviewProfile;
 import com.ruoyi.qt.domain.QtInterviewResult;
 import com.ruoyi.qt.service.IQtInterviewService;
 import com.ruoyi.framework.config.ServerConfig;
+import com.ruoyi.framework.security.ProfileAccessSigner;
 
 @RestController
 @RequestMapping("/qt/interview")
@@ -36,6 +37,9 @@ public class QtInterviewController extends BaseController
 
     @Autowired
     private ServerConfig serverConfig;
+
+    @Autowired
+    private ProfileAccessSigner profileAccessSigner;
 
     @PostMapping("/apply")
     @RateLimiter(time = 60, count = 10, limitType = LimitType.USER, key = "rate_limit:apply:")
@@ -171,9 +175,9 @@ public class QtInterviewController extends BaseController
         String imagePath = application.getPhotoUrl();
         if (imagePath.startsWith("http://") || imagePath.startsWith("https://"))
         {
-            application.setPhotoAccessUrl(imagePath);
+            application.setPhotoAccessUrl(profileAccessSigner.signUrl(imagePath));
             return;
         }
-        application.setPhotoAccessUrl(serverConfig.getUrl() + imagePath);
+        application.setPhotoAccessUrl(profileAccessSigner.signUrl(serverConfig.getUrl() + imagePath));
     }
 }

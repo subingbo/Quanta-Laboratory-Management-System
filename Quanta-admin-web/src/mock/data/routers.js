@@ -12,6 +12,17 @@ export const mockRouters = [
     },
   },
   {
+    path: '/metrics',
+    name: 'AccessMetrics',
+    component: 'metrics/index',
+    meta: {
+      title: '访问指标',
+      icon: 'Odometer',
+      group: '总览',
+      permission: 'qt:metrics:list',
+    },
+  },
+  {
     path: '/members',
     name: 'Members',
     component: 'members/index',
@@ -64,7 +75,7 @@ export const mockRouters = [
       title: '工位预约',
       icon: 'OfficeBuilding',
       group: '塔员端',
-      permission: 'system:reservation:list',
+      permission: 'qt:reservation:list',
     },
   },
   {
@@ -86,7 +97,7 @@ export const mockRouters = [
       title: '图书借阅',
       icon: 'Reading',
       group: '塔员端',
-      permission: 'system:borrow:list',
+      permission: 'qt:borrow:list',
     },
   },
   {
@@ -98,7 +109,7 @@ export const mockRouters = [
       icon: 'ShoppingBag',
       group: '塔员端',
       badge: 1,
-      permission: 'system:order:list',
+      permission: 'qt:order:list',
     },
   },
 ]

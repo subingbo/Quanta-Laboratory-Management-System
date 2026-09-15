@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import com.ruoyi.qt.validation.Create;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.annotation.RepeatSubmit;
 import com.ruoyi.common.core.controller.BaseController;
@@ -30,7 +32,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  * @date 2026-04-24
  */
 @RestController
-@RequestMapping("/system/reservation")
+@RequestMapping("/qt/reservation")
 public class QtWorkstationReservationController extends BaseController
 {
     @Autowired
@@ -63,24 +65,29 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 导出工位预约记录列表
      */
-    @PreAuthorize("@ss.hasPermi('system:reservation:export')")
+    @PreAuthorize("@ss.hasPermi('qt:reservation:export')")
     @Log(title = "工位预约记录", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtWorkstationReservation qtWorkstationReservation)
     {
+        QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_RESERVATION_LIST, qtWorkstationReservation::setUserId);
         List<QtWorkstationReservation> list = qtWorkstationReservationService.selectQtWorkstationReservationList(qtWorkstationReservation);
         ExcelUtil<QtWorkstationReservation> util = new ExcelUtil<QtWorkstationReservation>(QtWorkstationReservation.class);
         util.exportExcel(response, list, "工位预约记录数据");
     }
 
     /**
-     * 获取工位预约记录详细信息
+     * 获取工位预约记录详细信息。登录即可，非管理员只能看自己的。
      */
-    // @PreAuthorize("@ss.hasPermi('system:reservation:query')")
     @GetMapping(value = "/{reservationId}")
     public AjaxResult getInfo(@PathVariable("reservationId") Long reservationId)
     {
-        return success(qtWorkstationReservationService.selectQtWorkstationReservationByReservationId(reservationId));
+        QtWorkstationReservation reservation = qtWorkstationReservationService.selectQtWorkstationReservationByReservationId(reservationId);
+        if (reservation != null)
+        {
+            QtAuthUtils.assertOwnerOrAdmin(reservation.getUserId(), QtAuthUtils.PERM_RESERVATION_LIST);
+        }
+        return success(reservation);
     }
 
     /**
@@ -89,7 +96,7 @@ public class QtWorkstationReservationController extends BaseController
     @Log(title = "工位预约记录", businessType = BusinessType.INSERT)
     @RepeatSubmit
     @PostMapping
-    public AjaxResult add(@RequestBody QtWorkstationReservation qtWorkstationReservation)
+    public AjaxResult add(@Validated(Create.class) @RequestBody QtWorkstationReservation qtWorkstationReservation)
     {
         if (qtWorkstationReservation.getUserId() == null || !QtAuthUtils.hasAdminList(QtAuthUtils.PERM_RESERVATION_LIST))
         {
@@ -101,7 +108,7 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 修改工位预约记录
      */
-    @PreAuthorize("@ss.hasPermi('system:reservation:edit')")
+    @PreAuthorize("@ss.hasPermi('qt:reservation:edit')")
     @Log(title = "工位预约记录", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtWorkstationReservation qtWorkstationReservation)
@@ -112,7 +119,7 @@ public class QtWorkstationReservationController extends BaseController
     /**
      * 删除工位预约记录
      */
-    @PreAuthorize("@ss.hasPermi('system:reservation:remove')")
+    @PreAuthorize("@ss.hasPermi('qt:reservation:remove')")
     @Log(title = "工位预约记录", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{reservationIds}")
     public AjaxResult remove(@PathVariable Long[] reservationIds)

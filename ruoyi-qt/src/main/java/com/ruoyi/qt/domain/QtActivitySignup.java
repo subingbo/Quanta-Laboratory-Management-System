@@ -6,6 +6,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
+import jakarta.validation.constraints.NotNull;
+import com.ruoyi.qt.validation.Create;
 
 /**
  * 活动报名对象 qt_activity_signup
@@ -21,6 +23,7 @@ public class QtActivitySignup extends BaseEntity
     private Long signupId;
 
     /** 活动ID */
+    @NotNull(groups = Create.class, message = "活动ID不能为空")
     @Excel(name = "活动ID")
     private Long activityId;
 

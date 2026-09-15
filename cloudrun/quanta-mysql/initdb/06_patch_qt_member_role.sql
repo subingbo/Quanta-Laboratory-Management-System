@@ -25,9 +25,9 @@ WHERE NOT EXISTS (SELECT 1 FROM sys_role WHERE role_key = 'qt_member');
 --    4004 控制台统计             -> qt:dashboard:stats        (/dashboard)
 --    4003 学习资料               -> qt:material:list          (/learning-materials)
 --    4033 资料下载               -> qt:material:download
---    4016 借阅记录               -> system:borrow:list        (/book-borrows)
---    4017 预约记录               -> system:reservation:list   (/workstations)
---    4014 塔服订单               -> system:order:list        (/clothing-orders)
+--    4016 借阅记录               -> qt:borrow:list        (/book-borrows)
+--    4017 预约记录               -> qt:reservation:list   (/workstations)
+--    4014 塔服订单               -> qt:order:list        (/clothing-orders)
 INSERT IGNORE INTO sys_role_menu (role_id, menu_id)
 SELECT 6, menu_id FROM sys_menu WHERE menu_id IN (4000, 4003, 4004, 4014, 4016, 4017, 4033);
 

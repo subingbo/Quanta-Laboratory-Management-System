@@ -44,7 +44,7 @@ export const mapClothingItem = (row: ClothingItemDto): ShirtProduct => {
 }
 
 export const getShirtProduct = async () => {
-  const response = await request<TableResponse<ClothingItemDto>>({ url: '/system/item/list', data: { status: '0', pageNum: 1, pageSize: 100 } })
+  const response = await request<TableResponse<ClothingItemDto>>({ url: '/qt/item/list', data: { status: '0', pageNum: 1, pageSize: 100 } })
   const item = (response.rows || []).find((row) => row.status === '0')
   if (!item) throw new Error('暂无上架塔服')
   return mapClothingItem(item)
@@ -53,7 +53,7 @@ export const getShirtProduct = async () => {
 export const createDraftShirtOrder = async (product: ShirtProduct, selection: ShirtSelection) => {
   const orderNo = `QT${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
   await request({
-    url: '/system/order',
+    url: '/qt/order',
     method: 'POST',
     data: {
       orderNo,

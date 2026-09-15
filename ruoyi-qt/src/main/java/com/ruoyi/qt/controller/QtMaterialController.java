@@ -29,6 +29,9 @@ import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.qt.domain.QtMaterial;
 import com.ruoyi.qt.service.IQtMaterialService;
 
+/**
+ * 学习资料。列表/详情/下载：登录即可（塔员均可）；增删改需要 qt:material:*。
+ */
 @RestController
 @RequestMapping("/qt/materials")
 public class QtMaterialController extends BaseController
@@ -36,6 +39,7 @@ public class QtMaterialController extends BaseController
     @Autowired
     private IQtMaterialService qtMaterialService;
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public TableDataInfo list(QtMaterial query)
     {
@@ -45,6 +49,7 @@ public class QtMaterialController extends BaseController
         return getDataTable(list);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{materialId:\\d+}")
     public AjaxResult getInfo(@PathVariable Long materialId)
     {
@@ -112,6 +117,7 @@ public class QtMaterialController extends BaseController
         return toAjax(rows);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{materialId}/download")
     public void download(@PathVariable Long materialId, HttpServletResponse response) throws Exception
     {

@@ -31,7 +31,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  * @date 2026-04-24
  */
 @RestController
-@RequestMapping("/system/workstation")
+@RequestMapping("/qt/workstation")
 public class QtWorkstationController extends BaseController
 {
     @Autowired
@@ -43,7 +43,7 @@ public class QtWorkstationController extends BaseController
     /**
      * 查询实验室工位列表
      */
-    // @PreAuthorize("@ss.hasPermi('system:workstation:list')")
+    // @PreAuthorize("@ss.hasPermi('qt:workstation:list')")
     @GetMapping("/list")
     public TableDataInfo list(QtWorkstation qtWorkstation)
     {
@@ -58,7 +58,7 @@ public class QtWorkstationController extends BaseController
     /**
      * 导出实验室工位列表
      */
-    @PreAuthorize("@ss.hasPermi('system:workstation:export')")
+    @PreAuthorize("@ss.hasPermi('qt:workstation:export')")
     @Log(title = "实验室工位", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtWorkstation qtWorkstation)
@@ -71,7 +71,7 @@ public class QtWorkstationController extends BaseController
     /**
      * 获取实验室工位详细信息
      */
-    // @PreAuthorize("@ss.hasPermi('system:workstation:query')")
+    // @PreAuthorize("@ss.hasPermi('qt:workstation:query')")
     @GetMapping(value = "/{workstationId}")
     public AjaxResult getInfo(@PathVariable("workstationId") Long workstationId)
     {
@@ -81,7 +81,7 @@ public class QtWorkstationController extends BaseController
     /**
      * 新增实验室工位
      */
-    @PreAuthorize("@ss.hasPermi('system:workstation:add')")
+    @PreAuthorize("@ss.hasPermi('qt:workstation:add')")
     @Log(title = "实验室工位", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody QtWorkstation qtWorkstation)
@@ -92,7 +92,7 @@ public class QtWorkstationController extends BaseController
     /**
      * 修改实验室工位
      */
-    @PreAuthorize("@ss.hasPermi('system:workstation:edit')")
+    @PreAuthorize("@ss.hasPermi('qt:workstation:edit')")
     @Log(title = "实验室工位", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtWorkstation qtWorkstation)
@@ -103,7 +103,7 @@ public class QtWorkstationController extends BaseController
     /**
      * 删除实验室工位
      */
-    @PreAuthorize("@ss.hasPermi('system:workstation:remove')")
+    @PreAuthorize("@ss.hasPermi('qt:workstation:remove')")
     @Log(title = "实验室工位", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{workstationIds}")
     public AjaxResult remove(@PathVariable Long[] workstationIds)

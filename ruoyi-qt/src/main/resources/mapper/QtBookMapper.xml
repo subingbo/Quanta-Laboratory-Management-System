@@ -47,6 +47,22 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where book_id = #{bookId}
     </select>
 
+    <select id="selectQtBookByBookIdForUpdate" parameterType="Long" resultMap="QtBookResult">
+        <include refid="selectQtBookVo"/>
+        where book_id = #{bookId}
+        for update
+    </select>
+
+    <update id="decrementAvailableCount">
+        update qt_book set available_count = available_count - 1
+        where book_id = #{bookId} and available_count &gt; 0
+    </update>
+
+    <update id="incrementAvailableCount">
+        update qt_book set available_count = available_count + 1
+        where book_id = #{bookId} and available_count &lt; total_count
+    </update>
+
     <insert id="insertQtBook" parameterType="QtBook" useGeneratedKeys="true" keyProperty="bookId">
         insert into qt_book
         <trim prefix="(" suffix=")" suffixOverrides=",">

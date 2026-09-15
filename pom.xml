@@ -28,7 +28,7 @@
         <commons.io.version>2.22.0</commons.io.version>
         <poi.version>4.1.2</poi.version>
         <velocity.version>2.3</velocity.version>
-        <jwt.version>0.9.1</jwt.version>
+        <jwt.version>0.12.6</jwt.version>
         <jaxb-api.version>2.3.1</jaxb-api.version>
         <springdoc.version>3.0.3</springdoc.version>
     </properties>
@@ -124,7 +124,17 @@
             <!-- Token生成与解析-->
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt</artifactId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-orgjson</artifactId>
                 <version>${jwt.version}</version>
             </dependency>
 

@@ -19,6 +19,12 @@ public interface QtBookMapper
      */
     public QtBook selectQtBookByBookId(Long bookId);
 
+    public QtBook selectQtBookByBookIdForUpdate(Long bookId);
+
+    public int decrementAvailableCount(Long bookId);
+
+    public int incrementAvailableCount(Long bookId);
+
     /**
      * 查询实验室图书列表
      * 

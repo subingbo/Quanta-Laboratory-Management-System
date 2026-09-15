@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import com.ruoyi.qt.validation.Create;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.annotation.RepeatSubmit;
 import com.ruoyi.common.core.controller.BaseController;
@@ -30,7 +32,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  * @date 2026-04-24
  */
 @RestController
-@RequestMapping("/system/borrow")
+@RequestMapping("/qt/borrow")
 public class QtBookBorrowController extends BaseController
 {
     @Autowired
@@ -63,24 +65,29 @@ public class QtBookBorrowController extends BaseController
     /**
      * 导出图书借阅记录列表
      */
-    @PreAuthorize("@ss.hasPermi('system:borrow:export')")
+    @PreAuthorize("@ss.hasPermi('qt:borrow:export')")
     @Log(title = "图书借阅记录", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtBookBorrow qtBookBorrow)
     {
+        QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_BORROW_LIST, qtBookBorrow::setUserId);
         List<QtBookBorrow> list = qtBookBorrowService.selectQtBookBorrowList(qtBookBorrow);
         ExcelUtil<QtBookBorrow> util = new ExcelUtil<QtBookBorrow>(QtBookBorrow.class);
         util.exportExcel(response, list, "图书借阅记录数据");
     }
 
     /**
-     * 获取图书借阅记录详细信息
+     * 获取图书借阅记录详细信息。登录即可，非管理员只能看自己的。
      */
-    // @PreAuthorize("@ss.hasPermi('system:borrow:query')")
     @GetMapping(value = "/{borrowId}")
     public AjaxResult getInfo(@PathVariable("borrowId") Long borrowId)
     {
-        return success(qtBookBorrowService.selectQtBookBorrowByBorrowId(borrowId));
+        QtBookBorrow borrow = qtBookBorrowService.selectQtBookBorrowByBorrowId(borrowId);
+        if (borrow != null)
+        {
+            QtAuthUtils.assertOwnerOrAdmin(borrow.getUserId(), QtAuthUtils.PERM_BORROW_LIST);
+        }
+        return success(borrow);
     }
 
     /**
@@ -89,7 +96,7 @@ public class QtBookBorrowController extends BaseController
     @Log(title = "图书借阅记录", businessType = BusinessType.INSERT)
     @RepeatSubmit
     @PostMapping
-    public AjaxResult add(@RequestBody QtBookBorrow qtBookBorrow)
+    public AjaxResult add(@Validated(Create.class) @RequestBody QtBookBorrow qtBookBorrow)
     {
         if (qtBookBorrow.getUserId() == null || !QtAuthUtils.hasAdminList(QtAuthUtils.PERM_BORROW_LIST))
         {
@@ -101,7 +108,7 @@ public class QtBookBorrowController extends BaseController
     /**
      * 修改图书借阅记录
      */
-    @PreAuthorize("@ss.hasPermi('system:borrow:edit')")
+    @PreAuthorize("@ss.hasPermi('qt:borrow:edit')")
     @Log(title = "图书借阅记录", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody QtBookBorrow qtBookBorrow)
@@ -112,7 +119,7 @@ public class QtBookBorrowController extends BaseController
     /**
      * 删除图书借阅记录
      */
-    @PreAuthorize("@ss.hasPermi('system:borrow:remove')")
+    @PreAuthorize("@ss.hasPermi('qt:borrow:remove')")
     @Log(title = "图书借阅记录", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{borrowIds}")
     public AjaxResult remove(@PathVariable Long[] borrowIds)

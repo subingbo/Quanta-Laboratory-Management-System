@@ -49,6 +49,7 @@ describe('route transformer', () => {
     expect(isKnownComponent('book-borrows/index')).toBe(true)
     expect(isKnownComponent('learning-materials/index')).toBe(true)
     expect(isKnownComponent('clothing-orders/index')).toBe(true)
+    expect(isKnownComponent('metrics/index')).toBe(true)
   })
 
   it('uses the local Web route catalog when backend menus contain no supported page', () => {
@@ -69,7 +70,7 @@ describe('route transformer', () => {
   })
 
   it('filters the local Web route catalog with real backend permissions', () => {
-    const routes = selectWebRoutes([], ['qt:dashboard:stats', 'system:borrow:list'])
+    const routes = selectWebRoutes([], ['qt:dashboard:stats', 'qt:borrow:list'])
 
     expect(routes.map((route) => route.name)).toEqual(['Dashboard', 'BookBorrows'])
   })

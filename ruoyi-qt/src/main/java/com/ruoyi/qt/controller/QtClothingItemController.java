@@ -36,7 +36,7 @@ import com.ruoyi.framework.config.ServerConfig;
  * @date 2026-04-24
  */
 @RestController
-@RequestMapping("/system/item")
+@RequestMapping("/qt/item")
 public class QtClothingItemController extends BaseController
 {
     @Autowired
@@ -47,7 +47,7 @@ public class QtClothingItemController extends BaseController
     /**
      * 查询服装配置列表
      */
-    // @PreAuthorize("@ss.hasPermi('system:item:list')")
+    // @PreAuthorize("@ss.hasPermi('qt:item:list')")
     @GetMapping("/list")
     public TableDataInfo list(QtClothingItem qtClothingItem)
     {
@@ -60,7 +60,7 @@ public class QtClothingItemController extends BaseController
     /**
      * 导出服装配置列表
      */
-    @PreAuthorize("@ss.hasPermi('system:item:export')")
+    @PreAuthorize("@ss.hasPermi('qt:item:export')")
     @Log(title = "服装配置", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, QtClothingItem qtClothingItem)
@@ -73,7 +73,7 @@ public class QtClothingItemController extends BaseController
     /**
      * 获取服装配置详细信息
      */
-    // @PreAuthorize("@ss.hasPermi('system:item:query')")
+    // @PreAuthorize("@ss.hasPermi('qt:item:query')")
     @GetMapping(value = "/{itemId}")
     public AjaxResult getInfo(@PathVariable("itemId") Long itemId)
     {
@@ -85,7 +85,7 @@ public class QtClothingItemController extends BaseController
     /**
      * 新增服装配置
      */
-    @PreAuthorize("@ss.hasPermi('system:item:add')")
+    @PreAuthorize("@ss.hasPermi('qt:item:add')")
     @Log(title = "服装配置", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(QtClothingItem qtClothingItem,
@@ -108,7 +108,7 @@ public class QtClothingItemController extends BaseController
     /**
      * 修改服装配置
      */
-    @PreAuthorize("@ss.hasPermi('system:item:edit')")
+    @PreAuthorize("@ss.hasPermi('qt:item:edit')")
     @Log(title = "服装配置", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(QtClothingItem qtClothingItem,
@@ -133,7 +133,7 @@ public class QtClothingItemController extends BaseController
     /**
      * 删除服装配置
      */
-    @PreAuthorize("@ss.hasPermi('system:item:remove')")
+    @PreAuthorize("@ss.hasPermi('qt:item:remove')")
     @Log(title = "服装配置", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{itemIds}")
     public AjaxResult remove(@PathVariable Long[] itemIds)
@@ -144,7 +144,7 @@ public class QtClothingItemController extends BaseController
     /**
      * 清空服装效果图（逻辑删除）
      */
-    @PreAuthorize("@ss.hasPermi('system:item:edit')")
+    @PreAuthorize("@ss.hasPermi('qt:item:edit')")
     @Log(title = "服装配置", businessType = BusinessType.UPDATE)
     @DeleteMapping("/image/{itemId}")
     public AjaxResult removeImage(@PathVariable Long itemId)

@@ -6,6 +6,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
+import jakarta.validation.constraints.NotNull;
+import com.ruoyi.qt.validation.Create;
 
 /**
  * 工位预约记录对象 qt_workstation_reservation
@@ -21,6 +23,7 @@ public class QtWorkstationReservation extends BaseEntity
     private Long reservationId;
 
     /** 工位ID */
+    @NotNull(groups = Create.class, message = "工位ID不能为空")
     @Excel(name = "工位ID")
     private Long workstationId;
 
@@ -29,11 +32,13 @@ public class QtWorkstationReservation extends BaseEntity
     private Long userId;
 
     /** 预约开始时间 */
+    @NotNull(groups = Create.class, message = "预约开始时间不能为空")
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Excel(name = "预约开始时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date reserveStart;
 
     /** 预约结束时间 */
+    @NotNull(groups = Create.class, message = "预约结束时间不能为空")
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Excel(name = "预约结束时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date reserveEnd;

@@ -9,6 +9,7 @@ import { lectureSignupHandlers } from './handlers/lecture-signups'
 import { bookBorrowHandlers } from './handlers/book-borrows'
 import { materialHandlers } from './handlers/materials'
 import { clothingOrderHandlers } from './handlers/clothing-orders'
+import { metricsHandlers } from './handlers/metrics'
 
 const handlers = [
   ...authHandlers,
@@ -21,6 +22,7 @@ const handlers = [
   ...bookBorrowHandlers,
   ...materialHandlers,
   ...clothingOrderHandlers,
+  ...metricsHandlers,
 ]
 
 function waitForMockLatency() {
