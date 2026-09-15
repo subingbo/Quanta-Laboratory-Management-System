@@ -22,6 +22,24 @@
 - 保留现有管理后台视觉与功能，所有阶段都必须通过管理端回归测试和生产构建。
 - 不提交用户已有的 `Quanta-uniapp/src/manifest.json` 改动、`.local/` 或 `.superpowers/` 临时文件。
 
+## 审查修订（2026-09-15，优先于下方原任务描述）
+
+实现前的并行审查发现了动态路由、服务端身份和最新后端字段契约问题。以下修订为强制要求；与后续任务文字冲突时以本节为准。
+
+1. **远端基线已完成。** 已从 `origin/lxz/add-web-and-miniapp` 获取并合并后端提交 `ea9244fd`、`499cff1d`，合并提交为 `b3103ef0`，备份分支为 `backup/pre-backend-sync-20260915`。无需重复 pull。
+2. **管理动态路由必须完整迁到 `/admin/*`。** Task 1 扩大到 `src/stores/permission.js`、对应 store 测试、`AppSidebar.vue` 和路由测试。安装到 `AdminRoot` 的顶层动态路由与 redirect 必须统一规范化为 `/admin/...`，侧栏 index 也必须使用该路径。必须覆盖侧栏点击、登录后跳转、刷新和“已有 Token 冷启动直开 `/admin/dashboard`”。catch-all 404 不得作为匿名公开白名单提前放行。
+3. **服务端身份是授权依据。** `localStorage` audience 只记录用户选择和 401 返回位置；新生/塔员身份必须使用 `/login` 顶层 `isQuantaMember` 和 `/getInfo.user.isQuantaMember` 校验。具有管理权限的塔员允许从 `/member/*` 进入 `/admin/*`。Task 2 同时修改现有 `src/views/login/index.vue` 和 redirect 工具：管理登录显式传 `audience='admin'`，无 redirect 时进入 `/admin/dashboard`，只接受安全站内 redirect。
+4. **补齐页面路由。** Task 1 新增 `/freshman/security`、`/member/materials`、`/member/security`；Task 5 创建共享 `src/views/portal-account/index.vue` 并接入新生安全页；Task 6 创建塔员学习资料页并复用账户安全页。通知明确合并到塔员首页的通知面板，不另建独立路由。
+5. **Axios GET 一律使用 `params`。** 不得照搬 uniapp 的 `data` 写法。`POST /system/notice/markRead` 使用 `params: { noticeId }`；API 测试必须同时断言 method、params/data、日期格式和 FormData 键。
+6. **招新草稿必须做页面生命周期测试。** `submitApplication` resolve 后才清草稿；reject 时保留草稿；请求期间按钮禁用。后端仍接受 `ANDROID`，Web 只允许 `PRODUCT`、`DESIGN`、`FRONTEND`、`BACKEND`。
+7. **先补后端塔员身份防线。** 在 Task 7 之前增加 Task 6A：为 `QtAuthUtils` 增加基于 `SysUser.isQuantaMember == '1'` 的 `requireQuantaMember()`，并在成员目录、学习资料、图书/借阅、工位/预约、塔服商品/订单、支付配置的普通用户入口调用；补单元测试证明新生被拒绝、塔员和管理员保留原数据范围。前端守卫不能代替该服务端校验。
+8. **工位真实接口先修正时间契约。** Task 6A 同时把 `QtWorkstationReservation.reserveStart/reserveEnd` 的 JSON 格式从 `yyyy-MM-dd` 修正为 `yyyy-MM-dd HH:mm:ss`，并补同日早/中/晚时段的服务测试。完成后 Task 7/8 继续接真实 `/qt/reservation`，不使用工位 Mock。
+9. **图书借阅到期日格式为 `yyyy-MM-dd`。** Task 7 不得发送 datetime；普通塔员没有真实归还接口，页面只读展示借阅状态。
+10. **塔服是草稿流程。** 商品没有价格字段；不得硬编码 45 元，也不得显示“已订购”。Web 只保存 `DRAFT` 并显示“订购草稿已保存，价格及后续提交以通知为准”。付款截图与正式提交在后端补齐价格和服务端金额计算前不伪造闭环。
+11. **真实后端遗留风险进入验收报告。** 活动报名服务端尚未完整校验报名时间窗和容量；塔服金额仍信任客户端；后端数据库字典仍存在 ANDROID。Task 10 把这些列为上线阻断项或后端待加固项，不以 Web 校验宣称安全闭环。
+12. **部署修改实际 Nginx 文件。** Task 10 不修改 `deploy/aliyun/run.sh`；改 `deploy/aliyun/nginx/quanta-http.conf`、`quanta-https.conf`、`quanta-ip.conf` 及其测试/校验脚本。API location 必须先于 SPA fallback，覆盖 `/login`、`/logout`、`/captchaImage`、`/getInfo`、`/getRouters`、`/dashboard/`、`/qt/`、`/system/`、`/common/`、`/profile/`。
+13. **浏览器冒烟必须覆盖真实身份矩阵。** 自动验证 `qt_fresh/admin123`、`qt_member/admin123`、`admin/admin123` 登录目标页、反向越权拒绝、三个路由域深链刷新、管理关键页面以及 console/network 静态资源 404；不只检查公开链接。
+
 ---
 
 ### Task 1: 建立根路径部署与三身份路由骨架
@@ -487,6 +505,92 @@ git commit -m "feat: migrate member profile and content portal"
 
 ---
 
+### Task 6A: 加固塔员接口身份并修正工位时间契约
+
+**Files:**
+- Modify: `ruoyi-qt/src/main/java/com/ruoyi/qt/util/QtAuthUtils.java`
+- Modify: `ruoyi-qt/src/test/java/com/ruoyi/qt/util/QtAuthUtilsTest.java`
+- Modify: `ruoyi-qt/src/main/java/com/ruoyi/qt/domain/QtWorkstationReservation.java`
+- Modify: `ruoyi-qt/src/test/java/com/ruoyi/qt/service/impl/QtWorkstationReservationServiceImplTest.java`
+- Modify: `ruoyi-qt/src/main/java/com/ruoyi/qt/controller/QtLabMemberController.java`
+- Modify: `ruoyi-qt/src/main/java/com/ruoyi/qt/controller/QtMaterialController.java`
+- Modify: `ruoyi-qt/src/main/java/com/ruoyi/qt/controller/QtBookController.java`
+- Modify: `ruoyi-qt/src/main/java/com/ruoyi/qt/controller/QtBookBorrowController.java`
+- Modify: `ruoyi-qt/src/main/java/com/ruoyi/qt/controller/QtWorkstationController.java`
+- Modify: `ruoyi-qt/src/main/java/com/ruoyi/qt/controller/QtWorkstationReservationController.java`
+- Modify: `ruoyi-qt/src/main/java/com/ruoyi/qt/controller/QtClothingItemController.java`
+- Modify: `ruoyi-qt/src/main/java/com/ruoyi/qt/controller/QtClothingOrderController.java`
+- Modify: `ruoyi-qt/src/main/java/com/ruoyi/qt/controller/QtPaymentConfigController.java`
+
+**Interfaces:**
+- Produces: `QtAuthUtils.isQuantaMember()` 与 `QtAuthUtils.requireQuantaMember()`。
+- Produces: 工位预约 JSON 时间格式 `yyyy-MM-dd HH:mm:ss`。
+- Preserves: 管理员权限与 owner scope；新生端活动和招新接口不受影响。
+
+- [ ] **Step 1: 写塔员身份与同日工位时段失败测试**
+
+```java
+@Test
+void requireQuantaMemberRejectsFreshman()
+{
+    LoginUser loginUser = loginUserWithMemberFlag("0");
+    SecurityContextHolder.getContext().setAuthentication(authentication(loginUser));
+    ServiceException error = assertThrows(ServiceException.class, QtAuthUtils::requireQuantaMember);
+    assertEquals("仅塔员可访问该功能", error.getMessage());
+}
+
+@Test
+void acceptsNonOverlappingSlotsOnTheSameDay()
+{
+    QtWorkstationReservation first = reservation("2026-09-16 07:00:00", "2026-09-16 12:00:00");
+    QtWorkstationReservation second = reservation("2026-09-16 12:00:00", "2026-09-16 17:00:00");
+    when(mapper.countOverlaps(any())).thenReturn(0L);
+    assertEquals(1, service.insertQtWorkstationReservation(first));
+    assertEquals(1, service.insertQtWorkstationReservation(second));
+}
+```
+
+- [ ] **Step 2: 运行后端测试并确认失败**
+
+Run: `mvn -pl ruoyi-qt -am test -DskipTests=false`
+
+Expected: FAIL，因为 `requireQuantaMember()` 尚不存在，当前 JSON 注解无法表达同日时段。
+
+- [ ] **Step 3: 实现服务端成员校验和时间格式**
+
+```java
+public static boolean isQuantaMember()
+{
+    SysUser user = SecurityUtils.getLoginUser().getUser();
+    return user != null && "1".equals(user.getIsQuantaMember());
+}
+
+public static void requireQuantaMember()
+{
+    if (!isQuantaMember())
+    {
+        throw new ServiceException("仅塔员可访问该功能");
+    }
+}
+```
+
+在上述九个塔员业务 Controller 的公开查询、详情和普通用户新增入口开头调用 `QtAuthUtils.requireQuantaMember()`；管理写接口保留现有 `@PreAuthorize`。把 `reserveStart`、`reserveEnd` 的 `@JsonFormat(pattern = "yyyy-MM-dd")` 改为 `@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")`，对应 Excel 格式同步更新。
+
+- [ ] **Step 4: 运行后端模块测试**
+
+Run: `mvn -pl ruoyi-framework,ruoyi-qt -am test -DskipTests=false`
+
+Expected: framework 与 qt 模块全部通过；新生身份测试被拒绝，塔员 owner scope 与管理权限测试保持通过，同日不重叠时段可保存。
+
+- [ ] **Step 5: 提交后端门户安全契约**
+
+```bash
+git add ruoyi-qt/src/main/java ruoyi-qt/src/test/java
+git commit -m "fix: enforce member portal backend boundaries"
+```
+
+---
+
 ### Task 7: 建立塔员图书、工位、塔服和服务记录 API
 
 **Files:**
@@ -535,7 +639,7 @@ Expected: FAIL，因为服务 API 尚不存在。
 
 - [ ] **Step 3: 移植并规范化服务接口**
 
-图书列表和借阅使用 `/qt/book/list`、`POST /qt/borrow`；工位使用 `/qt/workstation/list`、`POST /qt/reservation`；塔服使用 `/qt/item/list`、`POST /qt/order`；我的服务使用三个 `/detailList`。日期统一为后端 `yyyy-MM-dd HH:mm:ss`，金额由后端字段提供；缺少价格时显示“以实物通知为准”，不得硬编码 45 元。
+图书列表和借阅使用 `/qt/book/list`、`POST /qt/borrow`；工位使用 `/qt/workstation/list`、`POST /qt/reservation`；塔服使用 `/qt/item/list`、`POST /qt/order`；我的服务使用三个 `/detailList`。图书到期日使用后端 `yyyy-MM-dd`，工位预约时间使用 `yyyy-MM-dd HH:mm:ss`；金额只使用后端字段，缺少价格时显示“以实物通知为准”，不得硬编码 45 元。
 
 ```js
 export function createReservation({ workstationId, reserveStart, reserveEnd }) {
@@ -607,7 +711,7 @@ Expected: FAIL，因为服务页面尚不存在。
 
 - [ ] **Step 3: 实现四个桌面服务页面**
 
-我的服务使用三个标签页和状态标签。图书页提供关键词、类别、可借状态与分页，借阅前显示到期日期确认。工位页以日期切换、工位卡片和时间段选择组成，提交后重新获取当天数据。塔服页展示效果图、颜色、尺码和“以实物通知为准”，提交后进入服务记录。
+我的服务使用三个标签页和状态标签。图书页提供关键词、类别、可借状态与分页，借阅前显示到期日期确认。工位页以日期切换、工位卡片和时间段选择组成，提交后重新获取当天数据。塔服页展示效果图、颜色、尺码和“以实物通知为准”，按钮明确标注“保存订购草稿”，提交后以 `DRAFT` 状态进入服务记录，不宣称已完成订购。
 
 所有按钮使用 `submitting` 防重复请求；空状态显示下一步建议；窄屏下表格转换为卡片或安全横向滚动。
 
@@ -685,7 +789,9 @@ git commit -m "docs: record portal web integration boundaries"
 **Files:**
 - Create: `Quanta-admin-web/scripts/portal-smoke.ps1`
 - Create: `docs/Quanta门户Web端验收报告.md`
-- Modify: `deploy/aliyun/run.sh`
+- Modify: `deploy/aliyun/nginx/quanta-http.conf`
+- Modify: `deploy/aliyun/nginx/quanta-https.conf`
+- Modify: `deploy/aliyun/nginx/quanta-ip.conf`
 - Modify: `docs/云托管部署文档.md`
 
 **Interfaces:**
@@ -736,6 +842,6 @@ Expected: Web 全量测试、lint、构建和后端相关模块测试全部通�
 - [ ] **Step 5: 提交验收与上线配置**
 
 ```bash
-git add Quanta-admin-web/scripts/portal-smoke.ps1 docs/Quanta门户Web端验收报告.md docs/云托管部署文档.md deploy/aliyun/run.sh
+git add Quanta-admin-web/scripts/portal-smoke.ps1 docs/Quanta门户Web端验收报告.md docs/云托管部署文档.md deploy/aliyun/nginx/quanta-http.conf deploy/aliyun/nginx/quanta-https.conf deploy/aliyun/nginx/quanta-ip.conf
 git commit -m "test: verify unified Quanta web portals"
 ```
