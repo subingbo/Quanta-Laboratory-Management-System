@@ -2,12 +2,19 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import * as authApi from '@/api/auth'
 import { getToken, removeToken, setToken } from '@/utils/token'
+import {
+  clearAudience,
+  getAudience,
+  loginTypeFor,
+  setAudience,
+} from '@/utils/session-audience'
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(getToken())
   const user = ref(null)
   const roles = ref([])
   const permissions = ref([])
+  const audience = ref(getAudience())
 
   const isAuthenticated = computed(() => Boolean(token.value))
   const displayName = computed(() => user.value?.nickName || user.value?.userName || '未登录')
@@ -17,11 +24,37 @@ export const useUserStore = defineStore('user', () => {
   const departmentName = computed(
     () => user.value?.dept?.deptName || user.value?.memberDepartment || '',
   )
+  const serverAudience = computed(() => {
+    if (!user.value) return ''
+    const memberFlag = user.value.isQuantaMember
+    if (memberFlag !== undefined && memberFlag !== null && memberFlag !== '') {
+      return memberFlag === true || memberFlag === 1 || String(memberFlag) === '1'
+        ? 'member'
+        : 'freshman'
+    }
+    const managementRoles = new Set(['admin', 'ceo', 'qt_mgmt', 'qt_manager'])
+    return roles.value.some((role) => managementRoles.has(role)) || permissions.value.length > 0
+      ? 'member'
+      : 'freshman'
+  })
+  const canAccessAdmin = computed(() => {
+    if (serverAudience.value !== 'member') return false
+    const managementRoles = new Set(['admin', 'ceo', 'qt_mgmt', 'qt_manager'])
+    return (
+      roles.value.some((role) => managementRoles.has(role)) ||
+      permissions.value.includes('*:*:*')
+    )
+  })
 
-  async function login(credentials) {
-    const response = await authApi.login(credentials)
+  async function login(credentials, requestedAudience) {
+    const response = await authApi.login({
+      ...credentials,
+      loginType: loginTypeFor(requestedAudience),
+    })
     token.value = response.token
+    audience.value = requestedAudience
     setToken(response.token)
+    setAudience(requestedAudience)
     return response
   }
 
@@ -46,7 +79,9 @@ export const useUserStore = defineStore('user', () => {
     user.value = null
     roles.value = []
     permissions.value = []
+    audience.value = ''
     removeToken()
+    clearAudience()
   }
 
   return {
@@ -54,10 +89,13 @@ export const useUserStore = defineStore('user', () => {
     user,
     roles,
     permissions,
+    audience,
     isAuthenticated,
     displayName,
     departmentCode,
     departmentName,
+    serverAudience,
+    canAccessAdmin,
     login,
     fetchUserInfo,
     logout,

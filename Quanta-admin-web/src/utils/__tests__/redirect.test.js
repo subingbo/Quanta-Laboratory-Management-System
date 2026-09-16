@@ -9,5 +9,6 @@ describe('safeInternalRedirect', () => {
   it('rejects protocol-relative and external paths', () => {
     expect(safeInternalRedirect('//evil.example')).toBe('/admin/dashboard')
     expect(safeInternalRedirect('https://evil.example')).toBe('/admin/dashboard')
+    expect(safeInternalRedirect('/\\evil.example')).toBe('/admin/dashboard')
   })
 })

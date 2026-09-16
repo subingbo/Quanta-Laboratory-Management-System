@@ -62,7 +62,7 @@ async function submit() {
 
   loading.value = true
   try {
-    await userStore.login({ ...form })
+    await userStore.login({ ...form }, 'admin')
     ElMessage.success('登录成功')
     await router.replace(safeInternalRedirect(route.query.redirect))
   } catch (error) {

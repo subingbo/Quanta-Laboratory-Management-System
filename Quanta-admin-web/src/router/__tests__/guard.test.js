@@ -5,6 +5,8 @@ import { usePermissionStore } from '@/stores/permission'
 import { useUserStore } from '@/stores/user'
 import { staticRoutes } from '../routes'
 import { setupRouterGuard } from '../guard'
+import { setAudience } from '@/utils/session-audience'
+import { setToken } from '@/utils/token'
 
 function createTestRouter() {
   const routes = staticRoutes.map((route) => ({
@@ -38,9 +40,16 @@ describe('global route guard', () => {
     expect(router.currentRoute.value.query.redirect).toBe('/members')
   })
 
+  it('uses the target portal login for unauthenticated visitors', async () => {
+    const router = createTestRouter()
+    await router.push('/freshman/home')
+    expect(router.currentRoute.value.path).toBe('/login/freshman')
+    expect(router.currentRoute.value.query.redirect).toBe('/freshman/home')
+  })
+
   it('restores user info and installs prefixed dynamic routes on a cold deep link', async () => {
     const router = createTestRouter()
-    await userStore.login({ username: 'admin', password: 'quanta123' })
+    await userStore.login({ username: 'admin', password: 'quanta123' }, 'admin')
     await router.push('/admin/dashboard')
 
     expect(router.currentRoute.value.name).toBe('Dashboard')
@@ -58,9 +67,32 @@ describe('global route guard', () => {
       component: { template: '<div>admin only</div>' },
       meta: { permission: 'system:secret:manage' },
     })
-    await userStore.login({ username: 'viewer', password: 'quanta123' })
+    await userStore.login({ username: 'viewer', password: 'quanta123' }, 'admin')
     await router.push('/admin-only')
 
     expect(router.currentRoute.value.path).toBe('/403')
+  })
+
+  it('trusts server member identity rather than a tampered local audience', async () => {
+    const router = createTestRouter()
+    setAudience('member')
+    setToken('test-token')
+    userStore.token = 'test-token'
+    userStore.user = { userName: 'freshman', isQuantaMember: '0' }
+    await router.push('/member/home')
+    expect(router.currentRoute.value.path).toBe('/freshman/home')
+  })
+
+  it('allows a member with management permissions into admin routes', async () => {
+    const router = createTestRouter()
+    await userStore.login(
+      { username: 'product_interviewer', password: 'quanta123' },
+      'member',
+    )
+    userStore.user = { userName: 'manager', isQuantaMember: '1' }
+    userStore.roles = ['qt_manager']
+    userStore.permissions = ['qt:interview:admin:list']
+    await router.push('/admin/recruitment')
+    expect(router.currentRoute.value.path).toBe('/admin/recruitment')
   })
 })

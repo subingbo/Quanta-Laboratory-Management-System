@@ -12,11 +12,11 @@ async function mountLogin() {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/login', component: LoginView },
+      { path: '/admin/login', component: LoginView },
       { path: '/admin/dashboard', component: { template: '<div>dashboard</div>' } },
     ],
   })
-  await router.push('/login')
+  await router.push('/admin/login')
   await router.isReady()
   const wrapper = mount(LoginView, {
     global: { plugins: [pinia, router, ElementPlus] },
@@ -54,6 +54,7 @@ describe('login view', () => {
     await flushPromises()
 
     expect(userStore.login).toHaveBeenCalledOnce()
+    expect(userStore.login).toHaveBeenCalledWith(expect.objectContaining({ username: 'admin' }), 'admin')
     expect(router.currentRoute.value.path).toBe('/admin/dashboard')
   })
 })

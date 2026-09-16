@@ -14,13 +14,13 @@ export const staticRoutes = [
   {
     path: '/login/freshman',
     name: 'FreshmanLogin',
-    component: () => import('@/views/portal-placeholder/index.vue'),
+    component: () => import('@/views/portal-login/index.vue'),
     meta: { title: '新生登录', public: true, portalAudience: 'freshman' },
   },
   {
     path: '/login/member',
     name: 'MemberLogin',
-    component: () => import('@/views/portal-placeholder/index.vue'),
+    component: () => import('@/views/portal-login/index.vue'),
     meta: { title: '塔员登录', public: true, portalAudience: 'member' },
   },
   {

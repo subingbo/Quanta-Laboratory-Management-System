@@ -5,6 +5,12 @@ import { usePermissionStore } from '@/stores/permission'
 import { hasAnyPermission } from '@/composables/usePermission'
 import { setUnauthorizedHandler } from '@/utils/unauthorized'
 import { safeInternalRedirect } from '@/utils/redirect'
+import {
+  audienceForPath,
+  getAudience,
+  homePathFor,
+  loginPathFor,
+} from '@/utils/session-audience'
 
 const publicPaths = new Set([
   '/',
@@ -22,11 +28,13 @@ export function setupRouterGuard(router) {
     const userStore = useUserStore(pinia)
     const permissionStore = usePermissionStore(pinia)
     const redirect = router.currentRoute.value.fullPath
+    const targetAudience = audienceForPath(redirect) || getAudience() || 'admin'
     userStore.reset()
     permissionStore.resetRoutes()
-    if (router.currentRoute.value.path !== '/admin/login') {
+    const loginPath = loginPathFor(targetAudience)
+    if (router.currentRoute.value.path !== loginPath) {
       await router.replace({
-        path: '/admin/login',
+        path: loginPath,
         query: redirect === safeInternalRedirect(redirect, '') ? { redirect } : {},
       })
     }
@@ -37,16 +45,27 @@ export function setupRouterGuard(router) {
     const userStore = useUserStore(pinia)
     const permissionStore = usePermissionStore(pinia)
 
+    const targetAudience = audienceForPath(to.path)
+
     if (publicPaths.has(to.path)) {
-      if ((to.path === '/login' || to.path === '/admin/login') && userStore.token) {
-        return '/admin/dashboard'
+      if (targetAudience && userStore.token) {
+        try {
+          if (!userStore.user) await userStore.fetchUserInfo()
+          if (targetAudience === 'admin' && userStore.canAccessAdmin) {
+            return homePathFor('admin')
+          }
+          return homePathFor(userStore.serverAudience || 'admin')
+        } catch {
+          userStore.reset()
+          permissionStore.resetRoutes()
+        }
       }
       return true
     }
 
     if (!userStore.token) {
       return {
-        path: '/admin/login',
+        path: loginPathFor(targetAudience || 'admin'),
         query:
           to.fullPath === safeInternalRedirect(to.fullPath, '')
             ? { redirect: to.fullPath }
@@ -57,7 +76,17 @@ export function setupRouterGuard(router) {
     try {
       if (!userStore.user) await userStore.fetchUserInfo()
 
-      if (!permissionStore.initialized) {
+      if (targetAudience === 'freshman' && userStore.serverAudience !== 'freshman') {
+        return homePathFor(userStore.serverAudience || 'admin')
+      }
+      if (targetAudience === 'member' && userStore.serverAudience !== 'member') {
+        return homePathFor(userStore.serverAudience || 'admin')
+      }
+      if (targetAudience === 'admin' && !userStore.canAccessAdmin) {
+        return homePathFor(userStore.serverAudience || 'admin')
+      }
+
+      if (targetAudience === 'admin' && !permissionStore.initialized) {
         await permissionStore.generateRoutes(userStore.permissions)
         permissionStore.installRoutes(router)
         return { path: to.fullPath, replace: true }
@@ -72,7 +101,7 @@ export function setupRouterGuard(router) {
       userStore.reset()
       permissionStore.resetRoutes()
       return {
-        path: '/admin/login',
+        path: loginPathFor(targetAudience || getAudience() || 'admin'),
         query:
           to.fullPath === safeInternalRedirect(to.fullPath, '')
             ? { redirect: to.fullPath }
