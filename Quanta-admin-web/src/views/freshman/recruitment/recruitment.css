@@ -94,8 +94,7 @@
 
 .application-form input:not([type='radio']):not([type='file']),
 .application-form select,
-.application-form textarea,
-.application-form input[type='file'] {
+.application-form textarea {
   width: 100%;
   border: 1px solid var(--portal-line);
   border-radius: 13px;
@@ -135,12 +134,29 @@
   margin: 8px 24px 0 0;
 }
 
-.application-form__photo {
-  width: 112px;
-  aspect-ratio: 3 / 4;
-  border-radius: 12px;
-  object-fit: cover;
-}
+.application-form__photo-field { display: grid; gap: 10px; }
+.application-form__field-label { color: var(--portal-ink); font-weight: 700; }
+.application-form__field-label em { margin-left: 6px; color: var(--portal-orange); font-size: 11px; font-style: normal; font-weight: 800; }
+.application-form__photo-card { display: grid; padding: 22px; border: 1px solid var(--portal-line); border-radius: 20px; background: linear-gradient(135deg, #fff 0%, #fffaf6 100%); box-shadow: 0 14px 36px rgb(32 33 36 / 6%); grid-template-columns: 152px minmax(0, 1fr); gap: 26px; align-items: stretch; }
+.application-form__photo-preview { display: grid; overflow: hidden; min-height: 202px; border: 1px dashed #ffc59d; border-radius: 16px; background: #fff4ea; aspect-ratio: 3 / 4; place-items: center; }
+.application-form__photo-preview.has-photo { border-style: solid; background: #f3f4f6; }
+.application-form__photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+.application-form__photo-placeholder { display: grid; color: var(--portal-orange-strong); text-align: center; place-items: center; }
+.application-form__photo-placeholder svg { width: 52px; height: 52px; margin-bottom: 10px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; opacity: .75; }
+.application-form__photo-placeholder strong { font-size: 15px; letter-spacing: .08em; }
+.application-form__photo-placeholder span { margin-top: 4px; color: var(--portal-muted); font-size: 11px; font-weight: 600; }
+.application-form__photo-copy { display: flex; min-width: 0; flex-direction: column; justify-content: center; align-items: flex-start; }
+.application-form__photo-kicker { margin: 0 0 7px; color: var(--portal-orange); font-size: 10px; font-weight: 850; letter-spacing: .18em; }
+.application-form__photo-copy h3 { margin: 0; color: var(--portal-ink); font-size: 20px; }
+.application-form__photo-copy > div:first-child > p:last-child { margin: 8px 0 0; color: var(--portal-muted); font-size: 13px; font-weight: 400; line-height: 1.65; }
+.application-form__photo-rules { display: flex; flex-wrap: wrap; margin-top: 16px; gap: 8px; }
+.application-form__photo-rules span { padding: 6px 10px; border-radius: 999px; background: var(--portal-orange-soft); color: var(--portal-orange-strong); font-size: 11px; font-weight: 750; }
+.application-form__photo-name { display: flex; max-width: 100%; margin: 16px 0 0; color: var(--portal-ink-soft); font-size: 12px; font-weight: 650; align-items: center; gap: 8px; overflow-wrap: anywhere; }
+.application-form__photo-name i { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; background: #b7bac1; }
+.application-form__photo-error { margin: 9px 0 0; color: #b63a2b; font-size: 12px; font-weight: 650; }
+.application-form__photo-button { display: inline-flex; min-height: 42px; margin-top: 18px; padding: 0 17px; border: 1px solid var(--portal-orange); border-radius: 12px; background: var(--portal-orange); color: #fff; cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; align-items: center; gap: 6px; box-shadow: 0 9px 22px rgb(255 103 0 / 20%); transition: transform .18s ease, box-shadow .18s ease; }
+.application-form__photo-button:hover { box-shadow: 0 12px 26px rgb(255 103 0 / 28%); transform: translateY(-1px); }
+.application-form__photo-button:focus-visible { outline: 3px solid rgb(255 103 0 / 22%); outline-offset: 3px; }
 
 .application-form__actions {
   display: flex;
@@ -324,4 +340,14 @@
     align-items: stretch;
     flex-direction: column-reverse;
   }
+
+  .application-form__photo-card { grid-template-columns: 116px minmax(0, 1fr); gap: 18px; }
+  .application-form__photo-preview { min-height: 154px; }
+}
+
+@media (max-width: 520px) {
+  .application-form__photo-card { padding: 16px; grid-template-columns: 1fr; }
+  .application-form__photo-preview { width: 132px; min-height: 176px; }
+  .application-form__photo-copy { align-items: stretch; }
+  .application-form__photo-button { justify-content: center; }
 }

@@ -58,6 +58,56 @@ describe('freshman recruitment components', () => {
     expect(wrapper.emitted('submit')[0][0].realName).toBe('新生小李')
   })
 
+  it('renders a branded photo picker and previews a valid image', async () => {
+    const createObjectURL = vi.fn(() => 'blob:photo-preview')
+    Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: createObjectURL })
+    const wrapper = mount(ApplicationForm, {
+      props: { initialValue: emptyApplication() },
+    })
+    const input = wrapper.get('input[name="photoFile"]')
+    const photo = new File(['photo'], 'quanta-photo.png', { type: 'image/png' })
+
+    expect(wrapper.get('[data-testid="photo-upload-card"]').text()).toContain('选择照片')
+    expect(input.classes()).toContain('sr-only')
+    Object.defineProperty(input.element, 'files', { configurable: true, value: [photo] })
+    await input.trigger('change')
+
+    expect(createObjectURL).toHaveBeenCalledWith(photo)
+    expect(wrapper.get('[data-testid="photo-file-name"]').text()).toBe('quanta-photo.png')
+    expect(wrapper.get('img[alt="证件照预览"]').attributes('src')).toBe('blob:photo-preview')
+  })
+
+  it('rejects unsupported and oversized photo files in place', async () => {
+    const wrapper = mount(ApplicationForm, {
+      props: { initialValue: emptyApplication() },
+    })
+    const input = wrapper.get('input[name="photoFile"]')
+    const unsupported = new File(['text'], 'notes.txt', { type: 'text/plain' })
+
+    Object.defineProperty(input.element, 'files', { configurable: true, value: [unsupported] })
+    await input.trigger('change')
+    expect(wrapper.get('[data-testid="photo-error"]').text()).toContain('JPG、PNG 或 WebP')
+
+    const oversized = new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'large.jpg', {
+      type: 'image/jpeg',
+    })
+    Object.defineProperty(input.element, 'files', { configurable: true, value: [oversized] })
+    await input.trigger('change')
+    expect(wrapper.get('[data-testid="photo-error"]').text()).toContain('不能超过 5 MB')
+  })
+
+  it('falls back to the clean placeholder when a stored photo cannot load', async () => {
+    const wrapper = mount(ApplicationForm, {
+      props: { initialValue: { ...emptyApplication(), photoUrl: '/expired-photo.jpg' } },
+    })
+
+    await wrapper.get('img[alt="证件照预览"]').trigger('error')
+
+    expect(wrapper.find('img[alt="证件照预览"]').exists()).toBe(false)
+    expect(wrapper.get('[data-testid="photo-file-name"]').text()).toContain('暂时无法预览')
+    expect(wrapper.get('[data-testid="photo-upload-card"]').text()).toContain('证件照预览')
+  })
+
   it('renders interview invitations as read-only status', () => {
     const wrapper = mount(InterviewTimeline, {
       props: {
