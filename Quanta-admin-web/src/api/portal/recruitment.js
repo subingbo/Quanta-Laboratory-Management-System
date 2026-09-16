@@ -1,0 +1,173 @@
+import { request } from '@/utils/request'
+
+export const recruitmentDepartments = Object.freeze([
+  { value: 'PRODUCT', label: '产品' },
+  { value: 'DESIGN', label: '设计' },
+  { value: 'FRONTEND', label: '全栈（前端）' },
+  { value: 'BACKEND', label: '全栈（后端）' },
+])
+
+const departmentLabels = Object.fromEntries(
+  recruitmentDepartments.map(({ value, label }) => [value, label]),
+)
+const departmentCodes = new Map(
+  recruitmentDepartments.flatMap(({ value, label }) => [
+    [value, value],
+    [label, value],
+    [label.replaceAll('（', '(').replaceAll('）', ')'), value],
+  ]),
+)
+const genderCodes = new Map([
+  ['0', '0'],
+  ['1', '1'],
+  ['2', '2'],
+  ['男', '0'],
+  ['女', '1'],
+  ['未知', '2'],
+])
+const genderLabels = { 0: '男', 1: '女', 2: '未知' }
+
+function requireDepartment(value) {
+  const code = departmentCodes.get(value)
+  if (!code) throw new Error('无效的志愿部门')
+  return code
+}
+
+function requireGender(value) {
+  const code = genderCodes.get(String(value ?? ''))
+  if (!code) throw new Error('无效的性别')
+  return code
+}
+
+export function mapApplication(data) {
+  const application = data?.application
+  if (!application) return null
+  const profile = data.profile || {}
+  return {
+    applicationId: Number(application.applicationId),
+    realName: application.realName || '',
+    gender: genderLabels[application.gender] || '未知',
+    className: application.className || '',
+    firstChoice: application.firstChoice || '',
+    firstChoiceLabel: departmentLabels[application.firstChoice] || application.firstChoice || '',
+    secondChoice: application.secondChoice || '',
+    secondChoiceLabel: departmentLabels[application.secondChoice] || application.secondChoice || '',
+    photoUrl: application.photoAccessUrl || application.photoUrl || '',
+    storedPhotoUrl: application.photoUrl || '',
+    applyStatus: application.applyStatus || '',
+    offeredDepartment: application.offeredDepartment || '',
+    joinStatus: application.joinStatus || '',
+    selfIntro: profile.selfIntro || '',
+    codingExperience: profile.codingExperience || '0',
+    codingExperienceDesc: profile.codingExperienceDesc || '',
+    quantaUnderstanding: profile.quantaUnderstanding || '',
+  }
+}
+
+function resultStageStatus(result, round, unlocked) {
+  if (!result) return unlocked ? 'pending' : 'locked'
+  if (result.resultStatus === 'FAIL') return 'rejected'
+  if (result.resultStatus === 'PASS') return 'passed'
+  if (result.resultStatus === 'WAITING') {
+    if (round === 2) return 'invited'
+    return result.interviewTime ? 'scheduled' : 'pending'
+  }
+  return 'pending'
+}
+
+function mapResultStage(key, title, status, result) {
+  return {
+    key,
+    title,
+    status,
+    interviewTime: result?.interviewTime || '',
+    feedback: result?.feedback || '',
+  }
+}
+
+export function mapInterviewProcess(application, results = []) {
+  if (!application) return []
+  const choices = [...new Set([application.firstChoice, application.secondChoice])].filter(
+    (code) => departmentLabels[code],
+  )
+
+  return choices.map((departmentCode) => {
+    const first = results.find(
+      (item) => item.department === departmentCode && Number(item.roundId) === 1,
+    )
+    const second = results.find(
+      (item) => item.department === departmentCode && Number(item.roundId) === 2,
+    )
+    const firstStatus = resultStageStatus(first, 1, true)
+    const secondStatus = resultStageStatus(second, 2, firstStatus === 'passed')
+    const finalStatus =
+      application.applyStatus === 'OFFERED' &&
+      (!application.offeredDepartment || application.offeredDepartment === departmentCode)
+        ? 'offered'
+        : application.applyStatus === 'REJECTED'
+          ? 'rejected'
+          : secondStatus === 'passed'
+            ? 'pending'
+            : 'locked'
+
+    return {
+      departmentCode,
+      departmentName: departmentLabels[departmentCode],
+      stages: [
+        mapResultStage('first', '一面', firstStatus, first),
+        mapResultStage('second', '二面', secondStatus, second),
+        mapResultStage('offer', '录用', finalStatus),
+      ],
+    }
+  })
+}
+
+async function getMyApplicationBundle() {
+  const response = await request({ url: '/qt/interview/my', method: 'get' })
+  return response.data || { application: null, profile: null }
+}
+
+export async function getMyApplication() {
+  return mapApplication(await getMyApplicationBundle())
+}
+
+export async function getMyInterviewProcess() {
+  const [bundle, resultResponse] = await Promise.all([
+    getMyApplicationBundle(),
+    request({ url: '/qt/interview/myResults', method: 'get' }),
+  ])
+  return mapInterviewProcess(bundle.application, resultResponse.data || [])
+}
+
+export function toApplicationPayload(form) {
+  const firstChoice = requireDepartment(form.firstChoice)
+  const secondChoice = requireDepartment(form.secondChoice)
+  if (firstChoice === secondChoice) throw new Error('两个志愿不能相同')
+
+  return {
+    realName: form.realName || '',
+    gender: requireGender(form.gender),
+    className: form.className || '',
+    firstChoice,
+    secondChoice,
+    selfIntro: form.selfIntro || '',
+    codingExperience:
+      form.codingExperience || (String(form.codingExperienceDesc || '').trim() ? '1' : '0'),
+    codingExperienceDesc: form.codingExperienceDesc || '',
+    quantaUnderstanding: form.quantaUnderstanding || '',
+    ...(form.storedPhotoUrl || form.photoUrl
+      ? { photoUrl: form.storedPhotoUrl || form.photoUrl }
+      : {}),
+  }
+}
+
+export async function submitApplication(form) {
+  const data = new FormData()
+  Object.entries(toApplicationPayload(form)).forEach(([key, value]) => {
+    data.append(key, value ?? '')
+  })
+  if (typeof File !== 'undefined' && form.photoFile instanceof File) {
+    data.append('photoFile', form.photoFile)
+  }
+  return request({ url: '/qt/interview/apply', method: 'post', data })
+}

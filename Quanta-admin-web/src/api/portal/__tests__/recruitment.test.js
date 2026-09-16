@@ -1,0 +1,144 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { request } from '@/utils/request'
+import {
+  getMyApplication,
+  getMyInterviewProcess,
+  mapInterviewProcess,
+  recruitmentDepartments,
+  submitApplication,
+} from '../recruitment'
+
+vi.mock('@/utils/request', () => ({ request: vi.fn() }))
+
+const application = {
+  applicationId: 1,
+  realName: '新生小李',
+  gender: '1',
+  className: '软工2402',
+  firstChoice: 'FRONTEND',
+  secondChoice: 'BACKEND',
+  photoUrl: '/profile/a.jpg',
+  photoAccessUrl: 'https://www.quantacenter.com/profile/a.jpg?token=x',
+  applyStatus: 'PROCESSING',
+}
+
+describe('freshman recruitment API', () => {
+  beforeEach(() => request.mockReset())
+
+  it('exposes only the four active departments', () => {
+    expect(recruitmentDepartments.map(({ value }) => value)).toEqual([
+      'PRODUCT',
+      'DESIGN',
+      'FRONTEND',
+      'BACKEND',
+    ])
+    expect(JSON.stringify(recruitmentDepartments)).not.toContain('ANDROID')
+    expect(JSON.stringify(recruitmentDepartments)).not.toContain('安卓')
+  })
+
+  it('loads and maps the current application from the real endpoint', async () => {
+    request.mockResolvedValue({
+      data: {
+        application,
+        profile: { selfIntro: '你好', codingExperience: '1' },
+      },
+    })
+
+    await expect(getMyApplication()).resolves.toEqual(
+      expect.objectContaining({
+        applicationId: 1,
+        realName: '新生小李',
+        gender: '女',
+        firstChoice: 'FRONTEND',
+        firstChoiceLabel: '全栈（前端）',
+        photoUrl: 'https://www.quantacenter.com/profile/a.jpg?token=x',
+        selfIntro: '你好',
+      }),
+    )
+    expect(request).toHaveBeenCalledWith({ url: '/qt/interview/my', method: 'get' })
+  })
+
+  it('loads interview results as read-only process data', async () => {
+    request
+      .mockResolvedValueOnce({ data: { application, profile: {} } })
+      .mockResolvedValueOnce({
+        data: [
+          { roundId: 1, department: 'FRONTEND', resultStatus: 'PASS' },
+          {
+            roundId: 2,
+            department: 'FRONTEND',
+            resultStatus: 'WAITING',
+            interviewTime: '2026-09-20 10:00:00',
+          },
+        ],
+      })
+
+    const processes = await getMyInterviewProcess()
+
+    expect(request.mock.calls.map(([config]) => config)).toEqual([
+      { url: '/qt/interview/my', method: 'get' },
+      { url: '/qt/interview/myResults', method: 'get' },
+    ])
+    expect(processes[0]).toEqual(
+      expect.objectContaining({
+        departmentCode: 'FRONTEND',
+        stages: expect.arrayContaining([
+          expect.objectContaining({ key: 'second', status: 'invited' }),
+        ]),
+      }),
+    )
+    expect(JSON.stringify(processes)).not.toMatch(/accept|rejectAction/i)
+  })
+
+  it('submits the browser form and photo as FormData', async () => {
+    request.mockResolvedValue({ code: 200 })
+    const photoFile = new File(['photo'], 'photo.jpg', { type: 'image/jpeg' })
+
+    await submitApplication({
+      realName: '新生小李',
+      gender: '女',
+      className: '软工2402',
+      firstChoice: 'FRONTEND',
+      secondChoice: 'BACKEND',
+      selfIntro: '你好',
+      codingExperience: '1',
+      codingExperienceDesc: 'Vue',
+      quantaUnderstanding: '开放与创造',
+      photoFile,
+    })
+
+    const config = request.mock.calls[0][0]
+    expect(config).toMatchObject({ url: '/qt/interview/apply', method: 'post' })
+    expect(config.data).toBeInstanceOf(FormData)
+    expect(config.data.get('firstChoice')).toBe('FRONTEND')
+    expect(config.data.get('secondChoice')).toBe('BACKEND')
+    expect(config.data.get('gender')).toBe('1')
+    expect(config.data.get('photoFile')).toBe(photoFile)
+  })
+
+  it('rejects a removed or unknown department before making a request', async () => {
+    await expect(
+      submitApplication({
+        realName: '新生小李',
+        gender: '女',
+        className: '软工2402',
+        firstChoice: 'ANDROID',
+        secondChoice: 'BACKEND',
+      }),
+    ).rejects.toThrow('无效的志愿部门')
+    expect(request).not.toHaveBeenCalled()
+  })
+})
+
+describe('interview status mapping', () => {
+  it('keeps invitations read-only and maps final offers', () => {
+    const processes = mapInterviewProcess(
+      { ...application, applyStatus: 'OFFERED', offeredDepartment: 'BACKEND' },
+      [{ roundId: 1, department: 'BACKEND', resultStatus: 'PASS' }],
+    )
+
+    expect(processes.find(({ departmentCode }) => departmentCode === 'BACKEND').stages[2].status).toBe(
+      'offered',
+    )
+  })
+})
