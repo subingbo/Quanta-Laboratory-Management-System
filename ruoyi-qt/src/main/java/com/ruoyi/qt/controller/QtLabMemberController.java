@@ -29,6 +29,7 @@ public class QtLabMemberController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(QtLabMember query)
     {
+        QtAuthUtils.requireQuantaMember();
         startPage();
         List<QtLabMember> list;
         if (QtAuthUtils.hasAdminList(QtAuthUtils.PERM_MEMBER_LIST))

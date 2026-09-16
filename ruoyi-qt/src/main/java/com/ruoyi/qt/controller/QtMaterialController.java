@@ -28,6 +28,7 @@ import com.ruoyi.common.utils.file.FileValidator;
 import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.qt.domain.QtMaterial;
 import com.ruoyi.qt.service.IQtMaterialService;
+import com.ruoyi.qt.util.QtAuthUtils;
 
 /**
  * 学习资料。列表/详情/下载：登录即可（塔员均可）；增删改需要 qt:material:*。
@@ -43,6 +44,7 @@ public class QtMaterialController extends BaseController
     @GetMapping
     public TableDataInfo list(QtMaterial query)
     {
+        QtAuthUtils.requireQuantaMember();
         startPage();
         List<QtMaterial> list = qtMaterialService.selectMaterialList(query);
         fillDownloadUrl(list);
@@ -53,6 +55,7 @@ public class QtMaterialController extends BaseController
     @GetMapping("/{materialId:\\d+}")
     public AjaxResult getInfo(@PathVariable Long materialId)
     {
+        QtAuthUtils.requireQuantaMember();
         QtMaterial material = qtMaterialService.selectMaterialById(materialId);
         if (material == null)
         {
@@ -121,6 +124,7 @@ public class QtMaterialController extends BaseController
     @GetMapping("/{materialId}/download")
     public void download(@PathVariable Long materialId, HttpServletResponse response) throws Exception
     {
+        QtAuthUtils.requireQuantaMember();
         QtMaterial material = qtMaterialService.selectMaterialById(materialId);
         if (material == null)
         {

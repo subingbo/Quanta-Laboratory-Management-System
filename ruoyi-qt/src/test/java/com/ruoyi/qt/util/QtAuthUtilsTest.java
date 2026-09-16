@@ -12,7 +12,26 @@ import com.ruoyi.common.core.domain.entity.SysRole;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.qt.controller.QtBookBorrowController;
+import com.ruoyi.qt.controller.QtBookController;
+import com.ruoyi.qt.controller.QtClothingItemController;
+import com.ruoyi.qt.controller.QtClothingOrderController;
+import com.ruoyi.qt.controller.QtLabMemberController;
+import com.ruoyi.qt.controller.QtMaterialController;
+import com.ruoyi.qt.controller.QtPaymentConfigController;
+import com.ruoyi.qt.controller.QtWorkstationController;
+import com.ruoyi.qt.controller.QtWorkstationReservationController;
+import com.ruoyi.qt.domain.QtBook;
+import com.ruoyi.qt.domain.QtBookBorrow;
+import com.ruoyi.qt.domain.QtClothingItem;
+import com.ruoyi.qt.domain.QtClothingOrder;
+import com.ruoyi.qt.domain.QtLabMember;
+import com.ruoyi.qt.domain.QtMaterial;
+import com.ruoyi.qt.domain.QtPaymentConfig;
+import com.ruoyi.qt.domain.QtWorkstation;
+import com.ruoyi.qt.domain.QtWorkstationReservation;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -49,16 +68,78 @@ class QtAuthUtilsTest
     @Test
     void restrictToSelfSetsUserIdForMember()
     {
-        login(8L, Set.of("qt:other:list"));
+        login(8L, "1", Set.of("qt:other:list"));
         Long[] holder = new Long[1];
         QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_BORROW_LIST, id -> holder[0] = id);
         org.junit.jupiter.api.Assertions.assertEquals(8L, holder[0]);
     }
 
+    @Test
+    void requireQuantaMemberRejectsFreshman()
+    {
+        login(8L, "0", Set.of());
+        ServiceException error = assertThrows(ServiceException.class, QtAuthUtils::requireQuantaMember);
+        assertEquals("仅塔员可访问该功能", error.getMessage());
+    }
+
+    @Test
+    void requireQuantaMemberAllowsMemberAndMemberAdmin()
+    {
+        login(8L, "1", Set.of());
+        assertDoesNotThrow(QtAuthUtils::requireQuantaMember);
+        login(1L, "1", Set.of("*:*:*"));
+        assertDoesNotThrow(QtAuthUtils::requireQuantaMember);
+    }
+
+    @Test
+    void memberPortalControllerEntriesRejectFreshmanBeforeQuerying()
+    {
+        login(8L, "0", Set.of());
+        assertThrows(ServiceException.class, () -> new QtLabMemberController().list(new QtLabMember()));
+        assertThrows(ServiceException.class, () -> new QtMaterialController().list(new QtMaterial()));
+        assertThrows(ServiceException.class, () -> new QtBookController().list(new QtBook()));
+        assertThrows(ServiceException.class, () -> new QtBookBorrowController().list(new QtBookBorrow()));
+        assertThrows(ServiceException.class, () -> new QtWorkstationController().list(new QtWorkstation()));
+        assertThrows(ServiceException.class,
+                () -> new QtWorkstationReservationController().list(new QtWorkstationReservation()));
+        assertThrows(ServiceException.class, () -> new QtClothingItemController().list(new QtClothingItem()));
+        assertThrows(ServiceException.class, () -> new QtClothingOrderController().list(new QtClothingOrder()));
+        assertThrows(ServiceException.class, () -> new QtPaymentConfigController().list(new QtPaymentConfig()));
+    }
+
+    @Test
+    void memberPortalDetailAndCreateEntriesRejectFreshmanBeforeUsingServices()
+    {
+        login(8L, "0", Set.of());
+        assertThrows(ServiceException.class, () -> new QtMaterialController().getInfo(1L));
+        assertThrows(ServiceException.class, () -> new QtMaterialController().download(1L, null));
+        assertThrows(ServiceException.class, () -> new QtBookController().getInfo(1L));
+        assertThrows(ServiceException.class, () -> new QtBookBorrowController().detailList(new QtBookBorrow()));
+        assertThrows(ServiceException.class, () -> new QtBookBorrowController().getInfo(1L));
+        assertThrows(ServiceException.class, () -> new QtBookBorrowController().add(new QtBookBorrow()));
+        assertThrows(ServiceException.class, () -> new QtWorkstationController().getInfo(1L));
+        assertThrows(ServiceException.class,
+                () -> new QtWorkstationReservationController().detailList(new QtWorkstationReservation()));
+        assertThrows(ServiceException.class, () -> new QtWorkstationReservationController().getInfo(1L));
+        assertThrows(ServiceException.class,
+                () -> new QtWorkstationReservationController().add(new QtWorkstationReservation()));
+        assertThrows(ServiceException.class, () -> new QtClothingItemController().getInfo(1L));
+        assertThrows(ServiceException.class, () -> new QtClothingOrderController().detailList(new QtClothingOrder()));
+        assertThrows(ServiceException.class, () -> new QtClothingOrderController().getInfo(1L));
+        assertThrows(ServiceException.class, () -> new QtClothingOrderController().add(new QtClothingOrder()));
+        assertThrows(ServiceException.class, () -> new QtPaymentConfigController().getInfo(1L));
+    }
+
     private void login(Long userId, Set<String> permissions)
+    {
+        login(userId, "1", permissions);
+    }
+
+    private void login(Long userId, String memberFlag, Set<String> permissions)
     {
         SysUser user = new SysUser();
         user.setUserId(userId);
+        user.setIsQuantaMember(memberFlag);
         SysRole role = new SysRole();
         role.setRoleKey("qt_member");
         user.setRoles(List.of(role));

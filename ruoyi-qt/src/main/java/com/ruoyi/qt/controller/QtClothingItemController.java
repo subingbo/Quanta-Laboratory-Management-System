@@ -25,6 +25,7 @@ import com.ruoyi.common.utils.file.FileValidator;
 import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.qt.domain.QtClothingItem;
 import com.ruoyi.qt.service.IQtClothingItemService;
+import com.ruoyi.qt.util.QtAuthUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.framework.config.ServerConfig;
@@ -51,6 +52,7 @@ public class QtClothingItemController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(QtClothingItem qtClothingItem)
     {
+        QtAuthUtils.requireQuantaMember();
         startPage();
         List<QtClothingItem> list = qtClothingItemService.selectQtClothingItemList(qtClothingItem);
         fillImageUrl(list);
@@ -77,6 +79,7 @@ public class QtClothingItemController extends BaseController
     @GetMapping(value = "/{itemId}")
     public AjaxResult getInfo(@PathVariable("itemId") Long itemId)
     {
+        QtAuthUtils.requireQuantaMember();
         QtClothingItem item = qtClothingItemService.selectQtClothingItemByItemId(itemId);
         fillImageUrl(item);
         return success(item);

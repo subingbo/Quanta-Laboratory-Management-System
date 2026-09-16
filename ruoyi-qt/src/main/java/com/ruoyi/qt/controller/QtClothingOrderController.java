@@ -47,6 +47,7 @@ public class QtClothingOrderController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(QtClothingOrder qtClothingOrder)
     {
+        QtAuthUtils.requireQuantaMember();
         QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_ORDER_LIST, qtClothingOrder::setUserId);
         startPage();
         List<QtClothingOrder> list = qtClothingOrderService.selectQtClothingOrderList(qtClothingOrder);
@@ -57,6 +58,7 @@ public class QtClothingOrderController extends BaseController
     @GetMapping("/detailList")
     public TableDataInfo detailList(QtClothingOrder qtClothingOrder)
     {
+        QtAuthUtils.requireQuantaMember();
         QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_ORDER_LIST, qtClothingOrder::setUserId);
         startPage();
         List<QtClothingOrder> list = qtClothingOrderService.selectQtClothingOrderDetailList(qtClothingOrder);
@@ -78,6 +80,7 @@ public class QtClothingOrderController extends BaseController
     @GetMapping(value = "/{orderId}")
     public AjaxResult getInfo(@PathVariable("orderId") Long orderId)
     {
+        QtAuthUtils.requireQuantaMember();
         QtClothingOrder order = qtClothingOrderService.selectQtClothingOrderByOrderId(orderId);
         if (order != null)
         {
@@ -92,6 +95,7 @@ public class QtClothingOrderController extends BaseController
     @PostMapping
     public AjaxResult add(@Validated(Create.class) @RequestBody QtClothingOrder qtClothingOrder)
     {
+        QtAuthUtils.requireQuantaMember();
         if (qtClothingOrder.getUserId() == null || !QtAuthUtils.hasAdminList(QtAuthUtils.PERM_ORDER_LIST))
         {
             qtClothingOrder.setUserId(getUserId());

@@ -36,6 +36,20 @@ public final class QtAuthUtils
         return SecurityUtils.isAdmin() || SecurityUtils.hasRole(ROLE_CEO);
     }
 
+    public static boolean isQuantaMember()
+    {
+        SysUser user = SecurityUtils.getLoginUser().getUser();
+        return user != null && "1".equals(user.getIsQuantaMember());
+    }
+
+    public static void requireQuantaMember()
+    {
+        if (!isQuantaMember())
+        {
+            throw new ServiceException("仅塔员可访问该功能");
+        }
+    }
+
     public static boolean hasPermi(String permission)
     {
         return SecurityUtils.hasPermi(permission);

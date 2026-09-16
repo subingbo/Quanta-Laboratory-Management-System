@@ -21,6 +21,7 @@ import com.ruoyi.qt.cache.QtCacheKeys;
 import com.ruoyi.qt.cache.QtQueryCache;
 import com.ruoyi.qt.domain.QtBook;
 import com.ruoyi.qt.service.IQtBookService;
+import com.ruoyi.qt.util.QtAuthUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 
@@ -47,6 +48,7 @@ public class QtBookController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(QtBook qtBook)
     {
+        QtAuthUtils.requireQuantaMember();
         // 小程序图书页一次拉全表本地分页，是站内最热的读；缓存整份已组装好的响应以保住 total
         return qtQueryCache.loadPage(CacheConstants.CACHE_QT_BOOK_LIST, QtCacheKeys.list(qtBook),
                 CacheConstants.TTL_QT_BOOK_LIST, QtBook.class, () -> {
@@ -76,6 +78,7 @@ public class QtBookController extends BaseController
     @GetMapping(value = "/{bookId}")
     public AjaxResult getInfo(@PathVariable("bookId") Long bookId)
     {
+        QtAuthUtils.requireQuantaMember();
         return success(qtBookService.selectQtBookByBookId(bookId));
     }
 

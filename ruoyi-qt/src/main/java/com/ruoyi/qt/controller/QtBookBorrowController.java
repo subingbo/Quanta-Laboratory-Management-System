@@ -44,6 +44,7 @@ public class QtBookBorrowController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(QtBookBorrow qtBookBorrow)
     {
+        QtAuthUtils.requireQuantaMember();
         QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_BORROW_LIST, qtBookBorrow::setUserId);
         startPage();
         List<QtBookBorrow> list = qtBookBorrowService.selectQtBookBorrowList(qtBookBorrow);
@@ -56,6 +57,7 @@ public class QtBookBorrowController extends BaseController
     @GetMapping("/detailList")
     public TableDataInfo detailList(QtBookBorrow qtBookBorrow)
     {
+        QtAuthUtils.requireQuantaMember();
         QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_BORROW_LIST, qtBookBorrow::setUserId);
         startPage();
         List<QtBookBorrow> list = qtBookBorrowService.selectQtBookBorrowDetailList(qtBookBorrow);
@@ -82,6 +84,7 @@ public class QtBookBorrowController extends BaseController
     @GetMapping(value = "/{borrowId}")
     public AjaxResult getInfo(@PathVariable("borrowId") Long borrowId)
     {
+        QtAuthUtils.requireQuantaMember();
         QtBookBorrow borrow = qtBookBorrowService.selectQtBookBorrowByBorrowId(borrowId);
         if (borrow != null)
         {
@@ -98,6 +101,7 @@ public class QtBookBorrowController extends BaseController
     @PostMapping
     public AjaxResult add(@Validated(Create.class) @RequestBody QtBookBorrow qtBookBorrow)
     {
+        QtAuthUtils.requireQuantaMember();
         if (qtBookBorrow.getUserId() == null || !QtAuthUtils.hasAdminList(QtAuthUtils.PERM_BORROW_LIST))
         {
             qtBookBorrow.setUserId(getUserId());

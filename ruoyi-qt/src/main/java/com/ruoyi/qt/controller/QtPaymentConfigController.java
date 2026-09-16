@@ -25,6 +25,7 @@ import com.ruoyi.common.utils.file.FileValidator;
 import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.qt.domain.QtPaymentConfig;
 import com.ruoyi.qt.service.IQtPaymentConfigService;
+import com.ruoyi.qt.util.QtAuthUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.framework.config.ServerConfig;
@@ -51,6 +52,7 @@ public class QtPaymentConfigController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(QtPaymentConfig qtPaymentConfig)
     {
+        QtAuthUtils.requireQuantaMember();
         startPage();
         List<QtPaymentConfig> list = qtPaymentConfigService.selectQtPaymentConfigList(qtPaymentConfig);
         fillImageUrl(list);
@@ -77,6 +79,7 @@ public class QtPaymentConfigController extends BaseController
     @GetMapping(value = "/{configId}")
     public AjaxResult getInfo(@PathVariable("configId") Long configId)
     {
+        QtAuthUtils.requireQuantaMember();
         QtPaymentConfig config = qtPaymentConfigService.selectQtPaymentConfigByConfigId(configId);
         fillImageUrl(config);
         return success(config);

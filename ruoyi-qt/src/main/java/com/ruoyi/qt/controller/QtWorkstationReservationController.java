@@ -44,6 +44,7 @@ public class QtWorkstationReservationController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(QtWorkstationReservation qtWorkstationReservation)
     {
+        QtAuthUtils.requireQuantaMember();
         QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_RESERVATION_LIST, qtWorkstationReservation::setUserId);
         startPage();
         List<QtWorkstationReservation> list = qtWorkstationReservationService.selectQtWorkstationReservationList(qtWorkstationReservation);
@@ -56,6 +57,7 @@ public class QtWorkstationReservationController extends BaseController
     @GetMapping("/detailList")
     public TableDataInfo detailList(QtWorkstationReservation qtWorkstationReservation)
     {
+        QtAuthUtils.requireQuantaMember();
         QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_RESERVATION_LIST, qtWorkstationReservation::setUserId);
         startPage();
         List<QtWorkstationReservation> list = qtWorkstationReservationService.selectQtWorkstationReservationDetailList(qtWorkstationReservation);
@@ -82,6 +84,7 @@ public class QtWorkstationReservationController extends BaseController
     @GetMapping(value = "/{reservationId}")
     public AjaxResult getInfo(@PathVariable("reservationId") Long reservationId)
     {
+        QtAuthUtils.requireQuantaMember();
         QtWorkstationReservation reservation = qtWorkstationReservationService.selectQtWorkstationReservationByReservationId(reservationId);
         if (reservation != null)
         {
@@ -98,6 +101,7 @@ public class QtWorkstationReservationController extends BaseController
     @PostMapping
     public AjaxResult add(@Validated(Create.class) @RequestBody QtWorkstationReservation qtWorkstationReservation)
     {
+        QtAuthUtils.requireQuantaMember();
         if (qtWorkstationReservation.getUserId() == null || !QtAuthUtils.hasAdminList(QtAuthUtils.PERM_RESERVATION_LIST))
         {
             qtWorkstationReservation.setUserId(getUserId());

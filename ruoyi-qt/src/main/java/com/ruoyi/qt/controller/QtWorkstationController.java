@@ -21,6 +21,7 @@ import com.ruoyi.qt.cache.QtCacheKeys;
 import com.ruoyi.qt.cache.QtQueryCache;
 import com.ruoyi.qt.domain.QtWorkstation;
 import com.ruoyi.qt.service.IQtWorkstationService;
+import com.ruoyi.qt.util.QtAuthUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 
@@ -47,6 +48,7 @@ public class QtWorkstationController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(QtWorkstation qtWorkstation)
     {
+        QtAuthUtils.requireQuantaMember();
         return qtQueryCache.loadPage(CacheConstants.CACHE_QT_WORKSTATION_LIST, QtCacheKeys.list(qtWorkstation),
                 CacheConstants.TTL_QT_WORKSTATION_LIST, QtWorkstation.class, () -> {
                     startPage();
@@ -75,6 +77,7 @@ public class QtWorkstationController extends BaseController
     @GetMapping(value = "/{workstationId}")
     public AjaxResult getInfo(@PathVariable("workstationId") Long workstationId)
     {
+        QtAuthUtils.requireQuantaMember();
         return success(qtWorkstationService.selectQtWorkstationByWorkstationId(workstationId));
     }
 
