@@ -1,0 +1,124 @@
+.portal-security {
+  display: grid;
+  gap: 24px;
+}
+
+.portal-security > header p {
+  margin: 0 0 7px;
+  color: var(--portal-orange-strong);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: .15em;
+}
+
+.portal-security > header h1 {
+  margin: 0;
+  font-size: clamp(30px, 4vw, 44px);
+  letter-spacing: -.04em;
+}
+
+.portal-security > header span {
+  display: block;
+  margin-top: 9px;
+  color: var(--portal-muted);
+}
+
+.portal-security__card {
+  display: grid;
+  width: min(620px, 100%);
+  box-sizing: border-box;
+  padding: 30px;
+  gap: 18px;
+}
+
+.portal-security__intro {
+  display: flex;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--portal-line);
+  align-items: center;
+  gap: 14px;
+}
+
+.portal-security__intro > span {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+  background: var(--portal-orange-soft);
+  color: var(--portal-orange-strong);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  place-items: center;
+}
+
+.portal-security__intro h2,
+.portal-security__intro p {
+  margin: 0;
+}
+
+.portal-security__intro h2 {
+  font-size: 20px;
+}
+
+.portal-security__intro p {
+  margin-top: 5px;
+  color: var(--portal-muted);
+  font-size: 12px;
+}
+
+.portal-security__card label {
+  display: grid;
+  gap: 8px;
+  color: var(--portal-ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.portal-security__card input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 13px;
+  border: 1px solid var(--portal-line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--portal-ink);
+  font: inherit;
+}
+
+.portal-security__card input:focus {
+  border-color: var(--portal-orange);
+  outline: 3px solid rgb(255 103 0 / 12%);
+}
+
+.portal-security__error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 11px;
+  background: #fff0ee;
+  color: #b42318;
+  font-size: 13px;
+}
+
+.portal-security__submit {
+  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--portal-orange);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.portal-security__submit:disabled {
+  opacity: .58;
+  cursor: wait;
+}
+
+@media (max-width: 620px) {
+  .portal-security__card {
+    padding: 22px;
+  }
+}

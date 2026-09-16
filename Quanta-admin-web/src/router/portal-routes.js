@@ -1,5 +1,4 @@
 import PortalLayout from '@/layout/PortalLayout.vue'
-import PortalPlaceholder from '@/views/portal-placeholder/index.vue'
 
 export const portalRoutes = [
   {
@@ -29,7 +28,7 @@ export const portalRoutes = [
       {
         path: 'security',
         name: 'FreshmanSecurity',
-        component: PortalPlaceholder,
+        component: () => import('@/views/portal-security/index.vue'),
         meta: { title: '账号安全', portalAudience: 'freshman' },
       },
     ],
@@ -91,7 +90,7 @@ export const portalRoutes = [
       {
         path: 'security',
         name: 'MemberSecurity',
-        component: PortalPlaceholder,
+        component: () => import('@/views/portal-security/index.vue'),
         meta: { title: '账号安全', portalAudience: 'member' },
       },
     ],
