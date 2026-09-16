@@ -43,19 +43,19 @@ export const portalRoutes = [
       {
         path: 'home',
         name: 'MemberHome',
-        component: PortalPlaceholder,
+        component: () => import('@/views/member/home/index.vue'),
         meta: { title: '塔员首页', portalAudience: 'member' },
       },
       {
         path: 'directory',
         name: 'MemberDirectory',
-        component: PortalPlaceholder,
+        component: () => import('@/views/member/directory/index.vue'),
         meta: { title: '通讯录', portalAudience: 'member' },
       },
       {
         path: 'profile',
         name: 'MemberProfile',
-        component: PortalPlaceholder,
+        component: () => import('@/views/member/profile/index.vue'),
         meta: { title: '个人中心', portalAudience: 'member' },
       },
       {
@@ -85,7 +85,7 @@ export const portalRoutes = [
       {
         path: 'materials',
         name: 'MemberMaterials',
-        component: PortalPlaceholder,
+        component: () => import('@/views/member/materials/index.vue'),
         meta: { title: '学习资料', portalAudience: 'member' },
       },
       {
