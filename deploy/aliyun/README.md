@@ -92,9 +92,10 @@ curl -sS https://api.your-domain.com/captchaImage | head
 - **5.2 systemd**：`upload.py start` 里已把 `deploy/ruoyi.service` 拷去 `/etc/systemd/system/ruoyi.service` 并 `enable --now`；改配置后 `systemctl daemon-reload && restart ruoyi`。
 - **5.3 Nginx**：改好 `nginx/quanta-*.conf` 里的域名后 `python upload.py sync && python upload.py nginx`（内部执行 `apply-nginx.sh`：拷配置、按证书存在与否启用 HTTP 或 HTTPS 形态、`nginx -t` 后 reload）。备案「新增接入」生效后 `python upload.py cert` 或等 cron 自动签证书并切 HTTPS。
 - **5.4 前端构建/部署**：
-  - 管理后台 `Quanta-admin-web`：**注意 uniapp/admin-web 的接口约定不同**。
-    - `Quanta-uniapp/src/utils/request.ts` 用 `${baseUrl}${url}`（url 不带 `/prod-api` 前缀）→ context-path `/`，Nginx 直接反代根即可。
-    - `Quanta-admin-web/...` 若其 baseURL 带 `/prod-api`，则：要么把它 `.env.production VITE_API_BASE_URL` 改成 `https://api.your-domain.com/prod-api/` 并在 Nginx 加 `location /prod-api/ { proxy_pass http://quanta_backend/; }`（**注意末尾 `/`** 去前缀），要么把 admin-web 的 baseURL 也改成无 `/prod-api`。先对齐 baseURL 再配 Nginx。
+  - `Quanta-admin-web` 是统一 Web 门户，Vite `base` 固定为 `/`，构建产物整体同步到 `/opt/ruoyi/admin/`。
+  - `/`、`/freshman/*`、`/member/*`、`/admin/*` 都由同一个 `index.html` 接管；不可再把根路径重定向到 `/admin/`。
+  - Web 请求使用同源根路径。Nginx 已在 SPA fallback 前转发认证接口和 `/dashboard/`、`/qt/`、`/system/`、`/common/`、`/profile/`，不使用 `/prod-api` 前缀。
+  - 应用配置前先运行 `nginx -t`；本仓库只提供配置，不会自动上线。
 - **5.5 招新小程序**：`Quanta-uniapp/.env.production` 里 `VITE_API_BASE_URL` 改成 `https://api.your-domain.com`，重新 `build:mp-weixin`；到微信公众平台 →「开发-开发管理-服务器域名」把该域名加到 request / uploadFile / downloadFile 合法域名（**必须 HTTPS + 已备案**）。这一步和云托管时一样，只是换成你自己的域名。
 - **5.6 CloudBase → ECS 迁移数据（如果云托管上已有真实业务数据要搬）**：见 §7（当前场景通常不需要，因为方案 A 里云托管数据无真实业务数据）。
 

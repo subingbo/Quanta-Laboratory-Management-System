@@ -39,7 +39,7 @@ const entries = [
     <section class="entry-page__content portal-container">
       <div class="entry-page__hero">
         <p class="entry-page__eyebrow"><i></i> QUANTA DIGITAL CLUB</p>
-        <h1>让每一种身份，<br /><em>都找到自己的入口。</em></h1>
+        <h1><span>让每一种身份，</span><br /><em>都找到自己的<br />入口。</em></h1>
         <p class="entry-page__intro">连接招新、成员服务与社团管理，在同一个 Quanta 门户自然协作。</p>
       </div>
       <div class="entry-page__grid" aria-label="选择登录身份">
@@ -128,11 +128,12 @@ const entries = [
 .entry-page h1 {
   margin: 0;
   max-width: 650px;
-  font-size: clamp(42px, 5.4vw, 74px);
+  font-size: clamp(40px, 4.6vw, 64px);
   line-height: 1.08;
   letter-spacing: -.055em;
 }
 .entry-page h1 em { color: var(--portal-orange); font-style: normal; }
+.entry-page h1 > span { display: inline-block; white-space: nowrap; }
 
 .entry-page__intro {
   max-width: 560px;
