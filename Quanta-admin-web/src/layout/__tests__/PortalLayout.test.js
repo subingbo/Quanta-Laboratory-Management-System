@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { mount } from '@vue/test-utils'
@@ -27,6 +27,15 @@ async function mountLayout(audience = 'freshman') {
 
 describe('PortalLayout', () => {
   beforeEach(() => localStorage.clear())
+  afterEach(() => document.body.classList.remove('portal-scroll-active'))
+
+  it('enables document scrolling only while the portal layout is mounted', async () => {
+    const { wrapper } = await mountLayout('freshman')
+
+    expect(document.body.classList.contains('portal-scroll-active')).toBe(true)
+    wrapper.unmount()
+    expect(document.body.classList.contains('portal-scroll-active')).toBe(false)
+  })
 
   it('renders a branded desktop header and the freshman navigation', async () => {
     const { wrapper } = await mountLayout('freshman')

@@ -16,6 +16,11 @@
   box-shadow: var(--portal-shadow-sm);
 }
 
+body.portal-scroll-active {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 .portal-layout {
   min-height: 100vh;
   background:
