@@ -10,6 +10,8 @@ import { registerDirectives } from './directives'
 import './styles/reset.css'
 import './styles/variables.css'
 import './styles/global.css'
+import './styles/portal-variables.css'
+import './styles/portal.css'
 
 const app = createApp(App)
 
