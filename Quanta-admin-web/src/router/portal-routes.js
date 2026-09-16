@@ -11,19 +11,19 @@ export const portalRoutes = [
       {
         path: 'home',
         name: 'FreshmanHome',
-        component: PortalPlaceholder,
+        component: () => import('@/views/freshman/home/index.vue'),
         meta: { title: '新生首页', portalAudience: 'freshman' },
       },
       {
         path: 'recruitment',
         name: 'FreshmanRecruitment',
-        component: PortalPlaceholder,
+        component: () => import('@/views/freshman/recruitment/index.vue'),
         meta: { title: '加入我们', portalAudience: 'freshman' },
       },
       {
         path: 'events',
         name: 'FreshmanEvents',
-        component: PortalPlaceholder,
+        component: () => import('@/views/freshman/events/index.vue'),
         meta: { title: 'Quanta 活动', portalAudience: 'freshman' },
       },
       {
