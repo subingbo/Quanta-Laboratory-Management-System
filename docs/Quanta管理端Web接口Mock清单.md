@@ -1,6 +1,6 @@
 # Quanta 管理端 Web 接口 Mock 清单
 
-更新日期：2026-09-14
+更新日期：2026-09-16
 适用项目：`Quanta-admin-web`
 
 ## 使用规则
@@ -36,11 +36,13 @@
 - `GET /qt/activity/lecture/registrations`
 - `GET /qt/activity/sharing/registrations`
 - `GET /qt/materials`
-- `GET /system/reservation/detailList`
-- `GET /system/borrow/detailList`
-- `GET /system/order/detailList`
+- `GET /qt/reservation/detailList`
+- `GET /qt/borrow/detailList`
+- `GET /qt/order/detailList`
 
-2026-09-14 根据更新后的后端再次复核：上述读取接口仍可正常返回；`/getRouters` 与 `/qt/member/cohorts` 的数据问题仍存在，因此继续保留上表中的两项局部兜底，其余接口不回退 Mock。代码中的接口 Mock 白名单仅包含 `/qt/member/cohorts`；`/getRouters` 始终调用真实后端。
+2026-09-16 根据最新分支再次复核并统一业务前缀为 `/qt`。`/getRouters` 与 `/qt/member/cohorts` 的数据问题继续按上表显式处理，其余接口不回退 Mock。代码中的接口 Mock 白名单仅包含 `/qt/member/cohorts`；`/getRouters` 始终先调用真实后端。
+
+新生与塔员门户的本地数据边界单独记录在 `docs/Quanta门户Web端接口Mock清单.md`，不得与管理端局部兜底混用。
 
 ## 待复测但暂不使用 Mock
 
