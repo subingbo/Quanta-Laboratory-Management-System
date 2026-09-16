@@ -61,25 +61,25 @@ export const portalRoutes = [
       {
         path: 'services',
         name: 'MemberServices',
-        component: PortalPlaceholder,
+        component: () => import('@/views/member/services/index.vue'),
         meta: { title: '我的服务', portalAudience: 'member' },
       },
       {
         path: 'library',
         name: 'MemberLibrary',
-        component: PortalPlaceholder,
+        component: () => import('@/views/member/library/index.vue'),
         meta: { title: '图书借阅', portalAudience: 'member' },
       },
       {
         path: 'workstations',
         name: 'MemberWorkstations',
-        component: PortalPlaceholder,
+        component: () => import('@/views/member/workstations/index.vue'),
         meta: { title: '工位预约', portalAudience: 'member' },
       },
       {
         path: 'clothing',
         name: 'MemberClothing',
-        component: PortalPlaceholder,
+        component: () => import('@/views/member/clothing/index.vue'),
         meta: { title: '塔服订购', portalAudience: 'member' },
       },
       {
