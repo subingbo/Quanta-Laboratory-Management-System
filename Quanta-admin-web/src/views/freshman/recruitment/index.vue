@@ -9,10 +9,13 @@ import {
 import {
   clearRecruitmentDraft,
   clearRecruitmentPhotoDraft,
+  clearRecruitmentResumeDraft,
   loadRecruitmentDraft,
   loadRecruitmentPhotoDraft,
+  loadRecruitmentResumeDraft,
   saveRecruitmentDraft,
   saveRecruitmentPhotoDraft,
+  saveRecruitmentResumeDraft,
 } from '@/utils/recruitment-draft'
 import ApplicationForm, { emptyApplication } from './components/ApplicationForm.vue'
 import InterviewTimeline from './components/InterviewTimeline.vue'
@@ -43,24 +46,30 @@ async function loadRecruitment() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const [serverApplication, interviewProcesses, draftPhoto] = await Promise.all([
+    const [serverApplication, interviewProcesses, draftPhoto, draftResume] = await Promise.all([
       getMyApplication(),
       getMyInterviewProcess(),
       loadRecruitmentPhotoDraft().catch(() => null),
+      loadRecruitmentResumeDraft().catch(() => null),
     ])
     application.value = {
       ...emptyApplication(),
       ...(serverApplication || {}),
       ...(loadRecruitmentDraft() || {}),
       ...(draftPhoto ? { photoFile: draftPhoto, photoUrl: '' } : {}),
+      ...(draftResume ? { resumeFile: draftResume, resumeFileName: draftResume.name } : {}),
     }
     processes.value = interviewProcesses
   } catch {
-    const draftPhoto = await loadRecruitmentPhotoDraft().catch(() => null)
+    const [draftPhoto, draftResume] = await Promise.all([
+      loadRecruitmentPhotoDraft().catch(() => null),
+      loadRecruitmentResumeDraft().catch(() => null),
+    ])
     application.value = {
       ...emptyApplication(),
       ...(loadRecruitmentDraft() || {}),
       ...(draftPhoto ? { photoFile: draftPhoto, photoUrl: '' } : {}),
+      ...(draftResume ? { resumeFile: draftResume, resumeFileName: draftResume.name } : {}),
     }
     errorMessage.value = '招新信息加载失败，请刷新页面重试'
   } finally {
@@ -73,10 +82,12 @@ async function saveDraft(form) {
     saveRecruitmentDraft(form)
     if (form.photoFile) await saveRecruitmentPhotoDraft(form.photoFile)
     else await clearRecruitmentPhotoDraft()
+    if (form.resumeFile) await saveRecruitmentResumeDraft(form.resumeFile)
+    else await clearRecruitmentResumeDraft()
     application.value = { ...form }
     notice.value = ''
     errorMessage.value = ''
-    await showResult('草稿已保存', '报名信息和证件照已保存在当前浏览器。')
+    await showResult('草稿已保存', '报名信息、证件照和 PDF 简历已保存在当前浏览器。')
   } catch {
     await showResult('保存失败', '草稿保存失败，请检查浏览器存储权限后重试。', 'error')
   }
@@ -90,7 +101,10 @@ async function submit(form) {
   try {
     await submitApplication(form)
     clearRecruitmentDraft()
-    await clearRecruitmentPhotoDraft().catch(() => {})
+    await Promise.all([
+      clearRecruitmentPhotoDraft().catch(() => {}),
+      clearRecruitmentResumeDraft().catch(() => {}),
+    ])
     notice.value = ''
     application.value = { ...form }
     try {
@@ -103,6 +117,7 @@ async function submit(form) {
   } catch (error) {
     saveRecruitmentDraft(form)
     if (form.photoFile) await saveRecruitmentPhotoDraft(form.photoFile).catch(() => {})
+    if (form.resumeFile) await saveRecruitmentResumeDraft(form.resumeFile).catch(() => {})
     application.value = { ...form }
     errorMessage.value = ''
     await showResult('提交失败', friendlySubmissionError(error), 'error')

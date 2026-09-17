@@ -17,6 +17,14 @@ function choice(order) {
 function display(value) {
   return value || '暂无'
 }
+
+const resumeFileName = computed(() => {
+  if (props.application?.resumeFileName) return props.application.resumeFileName
+  const identity = [props.application?.realName || props.application?.name, props.application?.studentNo]
+    .filter(Boolean)
+    .join('-')
+  return `${identity || '候选人'}-简历.pdf`
+})
 </script>
 
 <template>
@@ -34,6 +42,29 @@ function display(value) {
       <section><span>个人简介</span><p>{{ application?.selfIntro || '无' }}</p></section>
       <section><span>编程经历</span><p>{{ application?.codingExperienceDesc || '无' }}</p></section>
       <section><span>对 Quanta 的认识</span><p>{{ application?.quantaUnderstanding || '无' }}</p></section>
+      <section class="resume-dialog__pdf">
+        <span>PDF 简历</span>
+        <div v-if="application?.resumeUrl" class="resume-dialog__pdf-card">
+          <div>
+            <strong>{{ resumeFileName }}</strong>
+            <small>PDF 文件</small>
+          </div>
+          <div class="resume-dialog__pdf-actions">
+            <a
+              :href="application.resumeUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="resume-preview"
+            >在线预览</a>
+            <a
+              :href="application.resumeUrl"
+              :download="resumeFileName"
+              data-testid="resume-download"
+            >下载 PDF</a>
+          </div>
+        </div>
+        <p v-else class="resume-dialog__pdf-empty">暂无 PDF 简历</p>
+      </section>
     </div>
   </ElDialog>
 </template>

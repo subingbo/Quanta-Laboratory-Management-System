@@ -16,8 +16,9 @@ describe('recruitment draft storage', () => {
 
   it('does not try to persist a browser File', () => {
     const photoFile = new File(['photo'], 'photo.jpg', { type: 'image/jpeg' })
+    const resumeFile = new File(['resume'], 'resume.pdf', { type: 'application/pdf' })
 
-    saveRecruitmentDraft({ realName: '小李', photoFile, photoUrl: '/profile/a.jpg' })
+    saveRecruitmentDraft({ realName: '小李', photoFile, resumeFile, photoUrl: '/profile/a.jpg' })
 
     expect(loadRecruitmentDraft()).toEqual({ realName: '小李', photoUrl: '/profile/a.jpg' })
   })

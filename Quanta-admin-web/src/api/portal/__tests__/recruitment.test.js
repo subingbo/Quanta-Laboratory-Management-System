@@ -19,6 +19,9 @@ const application = {
   secondChoice: 'BACKEND',
   photoUrl: '/profile/a.jpg',
   photoAccessUrl: 'https://www.quantacenter.com/profile/a.jpg?token=x',
+  resumeUrl: '/profile/resume.pdf',
+  resumeAccessUrl: 'https://www.quantacenter.com/profile/resume.pdf?token=x',
+  resumeFileName: '新生小李-简历.pdf',
   applyStatus: 'PROCESSING',
 }
 
@@ -52,6 +55,9 @@ describe('freshman recruitment API', () => {
         firstChoice: 'FRONTEND',
         firstChoiceLabel: '全栈（前端）',
         photoUrl: 'https://www.quantacenter.com/profile/a.jpg?token=x',
+        resumeUrl: 'https://www.quantacenter.com/profile/resume.pdf?token=x',
+        storedResumeUrl: '/profile/resume.pdf',
+        resumeFileName: '新生小李-简历.pdf',
         selfIntro: '你好',
       }),
     )
@@ -93,6 +99,7 @@ describe('freshman recruitment API', () => {
   it('submits the browser form and photo as FormData', async () => {
     request.mockResolvedValue({ code: 200 })
     const photoFile = new File(['photo'], 'photo.jpg', { type: 'image/jpeg' })
+    const resumeFile = new File(['resume'], 'resume.pdf', { type: 'application/pdf' })
 
     await submitApplication({
       realName: '新生小李',
@@ -105,6 +112,7 @@ describe('freshman recruitment API', () => {
       codingExperienceDesc: 'Vue',
       quantaUnderstanding: '开放与创造',
       photoFile,
+      resumeFile,
     })
 
     const config = request.mock.calls[0][0]
@@ -114,6 +122,7 @@ describe('freshman recruitment API', () => {
     expect(config.data.get('secondChoice')).toBe('BACKEND')
     expect(config.data.get('gender')).toBe('1')
     expect(config.data.get('photoFile')).toBe(photoFile)
+    expect(config.data.get('resumeFile')).toBe(resumeFile)
   })
 
   it('rejects a removed or unknown department before making a request', async () => {

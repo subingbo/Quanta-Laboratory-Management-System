@@ -39,6 +39,9 @@ vi.mock('@/utils/recruitment-draft', () => ({
   loadRecruitmentPhotoDraft: vi.fn(),
   saveRecruitmentPhotoDraft: vi.fn(),
   clearRecruitmentPhotoDraft: vi.fn(),
+  loadRecruitmentResumeDraft: vi.fn(),
+  saveRecruitmentResumeDraft: vi.fn(),
+  clearRecruitmentResumeDraft: vi.fn(),
 }))
 
 describe('freshman recruitment components', () => {
@@ -49,8 +52,11 @@ describe('freshman recruitment components', () => {
     recruitmentApi.submitApplication.mockResolvedValue({ code: 200 })
     draftStorage.loadRecruitmentDraft.mockReturnValue(null)
     draftStorage.loadRecruitmentPhotoDraft.mockResolvedValue(null)
+    draftStorage.loadRecruitmentResumeDraft.mockResolvedValue(null)
     draftStorage.saveRecruitmentPhotoDraft.mockResolvedValue(undefined)
+    draftStorage.saveRecruitmentResumeDraft.mockResolvedValue(undefined)
     draftStorage.clearRecruitmentPhotoDraft.mockResolvedValue(undefined)
+    draftStorage.clearRecruitmentResumeDraft.mockResolvedValue(undefined)
     elementMocks.alert.mockResolvedValue('confirm')
   })
 
@@ -113,6 +119,35 @@ describe('freshman recruitment components', () => {
     expect(wrapper.get('[data-testid="photo-error"]').text()).toContain('不能超过 5 MB')
   })
 
+  it('accepts only PDF resumes up to 10 MB and includes the file in the form snapshot', async () => {
+    const wrapper = mount(ApplicationForm, {
+      props: { initialValue: emptyApplication() },
+    })
+    const input = wrapper.get('input[name="resumeFile"]')
+    const resume = new File(['resume'], 'quanta-resume.pdf', { type: 'application/pdf' })
+
+    Object.defineProperty(input.element, 'files', { configurable: true, value: [resume] })
+    await input.trigger('change')
+    expect(wrapper.get('[data-testid="resume-file-name"]').text()).toContain('quanta-resume.pdf')
+
+    await wrapper.find('form').trigger('submit')
+    expect(wrapper.emitted('submit').at(-1)[0].resumeFile).toBe(resume)
+
+    const unsupported = new File(['word'], 'resume.docx', {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    })
+    Object.defineProperty(input.element, 'files', { configurable: true, value: [unsupported] })
+    await input.trigger('change')
+    expect(wrapper.get('[data-testid="resume-error"]').text()).toContain('PDF')
+
+    const oversized = new File([new Uint8Array(10 * 1024 * 1024 + 1)], 'large.pdf', {
+      type: 'application/pdf',
+    })
+    Object.defineProperty(input.element, 'files', { configurable: true, value: [oversized] })
+    await input.trigger('change')
+    expect(wrapper.get('[data-testid="resume-error"]').text()).toContain('不能超过 10 MB')
+  })
+
   it('falls back to the clean placeholder when a stored photo cannot load', async () => {
     const wrapper = mount(ApplicationForm, {
       props: { initialValue: { ...emptyApplication(), photoUrl: '/expired-photo.jpg' } },
@@ -159,6 +194,7 @@ describe('freshman recruitment components', () => {
     expect(recruitmentApi.submitApplication).toHaveBeenCalledWith(payload)
     expect(draftStorage.clearRecruitmentDraft).toHaveBeenCalledOnce()
     expect(draftStorage.clearRecruitmentPhotoDraft).toHaveBeenCalledOnce()
+    expect(draftStorage.clearRecruitmentResumeDraft).toHaveBeenCalledOnce()
     expect(elementMocks.alert).toHaveBeenCalledWith('报名已成功提交，可在“查看进度”中查看后续安排。', '提交成功', expect.any(Object))
     expect(wrapper.get('.freshman-tabs button.active').text()).toBe('查看进度')
   })
@@ -223,7 +259,24 @@ describe('freshman recruitment components', () => {
 
     expect(draftStorage.saveRecruitmentDraft).toHaveBeenCalledWith(payload)
     expect(draftStorage.saveRecruitmentPhotoDraft).toHaveBeenCalledWith(photo)
-    expect(elementMocks.alert).toHaveBeenCalledWith('报名信息和证件照已保存在当前浏览器。', '草稿已保存', expect.any(Object))
+    expect(elementMocks.alert).toHaveBeenCalledWith('报名信息、证件照和 PDF 简历已保存在当前浏览器。', '草稿已保存', expect.any(Object))
+  })
+
+  it('saves the selected PDF resume with the browser draft', async () => {
+    const wrapper = mount(RecruitmentPage)
+    await flushPromises()
+    const resume = new File(['resume'], 'resume.pdf', { type: 'application/pdf' })
+    const payload = { ...emptyApplication(), realName: '新生小李', resumeFile: resume }
+
+    wrapper.findComponent(ApplicationForm).vm.$emit('save-draft', payload)
+    await flushPromises()
+
+    expect(draftStorage.saveRecruitmentResumeDraft).toHaveBeenCalledWith(resume)
+    expect(elementMocks.alert).toHaveBeenCalledWith(
+      '报名信息、证件照和 PDF 简历已保存在当前浏览器。',
+      '草稿已保存',
+      expect.any(Object),
+    )
   })
 })
 

@@ -312,6 +312,59 @@
   line-height: 1.5;
 }
 
+.resume-dialog__pdf-card {
+  display: flex;
+  padding: 14px 16px;
+  background: #fff9ef;
+  border: 1px solid #f5d39d;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.resume-dialog__pdf-card > div:first-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.resume-dialog__pdf-card strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resume-dialog__pdf-card small {
+  color: #959dad;
+}
+
+.resume-dialog__pdf-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.resume-dialog__pdf-actions a {
+  padding: 7px 12px;
+  color: #d97716;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid #f2c984;
+  border-radius: 7px;
+}
+
+.resume-dialog__pdf-actions a:last-child {
+  color: #fff;
+  background: #fdaf32;
+  border-color: #fdaf32;
+}
+
+.resume-dialog__pdf-empty {
+  color: #959dad;
+}
+
 .feedback-dialog .el-textarea__inner {
   min-height: 210px !important;
   padding: 16px;

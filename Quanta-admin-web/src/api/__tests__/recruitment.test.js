@@ -50,12 +50,16 @@ describe('recruitment api', () => {
       secondChoice: 'PRODUCT',
       firstChoiceStatus: 'PASS',
       secondChoiceStatus: 'OUT',
+      resumeAccessUrl: 'https://example.com/resume.pdf?token=x',
+      resumeFileName: '吴晓萌-简历.pdf',
       createTime: '2026-08-30 10:00:00',
     })
 
     expect(result.choices.map((item) => item.department)).toEqual(['DESIGN', 'PRODUCT'])
     expect(result.choices[1].rounds[1].status).toBe('FAIL')
     expect(result.appliedAt).toBe('2026-08-30 10:00:00')
+    expect(result.resumeUrl).toBe('https://example.com/resume.pdf?token=x')
+    expect(result.resumeFileName).toBe('吴晓萌-简历.pdf')
   })
 
   it('merges detail sections and translates the offer contract', () => {

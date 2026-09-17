@@ -158,6 +158,19 @@
 .application-form__photo-button:hover { box-shadow: 0 12px 26px rgb(255 103 0 / 28%); transform: translateY(-1px); }
 .application-form__photo-button:focus-visible { outline: 3px solid rgb(255 103 0 / 22%); outline-offset: 3px; }
 
+.application-form__resume-field { display: grid; gap: 10px; }
+.application-form__field-label small { margin-left: 6px; color: var(--portal-muted); font-size: 11px; font-weight: 600; }
+.application-form__resume-card { display: grid; padding: 22px; border: 1px solid var(--portal-line); border-radius: 20px; background: linear-gradient(135deg, #fff 0%, #fffaf6 100%); grid-template-columns: 116px minmax(0, 1fr); gap: 24px; align-items: center; }
+.application-form__resume-icon { display: grid; min-height: 132px; color: var(--portal-orange-strong); border: 1px dashed #ffc59d; border-radius: 16px; background: #fff4ea; place-items: center; align-content: center; gap: 5px; }
+.application-form__resume-icon svg { width: 48px; height: 48px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+.application-form__resume-icon strong { font-size: 12px; letter-spacing: .12em; }
+.application-form__resume-copy { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; }
+.application-form__resume-copy h3 { margin: 0; color: var(--portal-ink); font-size: 18px; }
+.application-form__resume-copy > div:first-child p { margin: 7px 0 0; color: var(--portal-muted); font-size: 13px; font-weight: 400; }
+.application-form__resume-button { display: inline-flex; min-height: 40px; margin-top: 16px; padding: 0 16px; color: var(--portal-orange-strong); cursor: pointer; background: #fff; border: 1px solid var(--portal-orange); border-radius: 12px; font: inherit; font-size: 13px; font-weight: 800; align-items: center; }
+.application-form__resume-button:hover { color: #fff; background: var(--portal-orange); }
+.application-form__resume-button:focus-visible { outline: 3px solid rgb(255 103 0 / 22%); outline-offset: 3px; }
+
 .application-form__actions {
   display: flex;
   justify-content: flex-end;
@@ -343,6 +356,7 @@
 
   .application-form__photo-card { grid-template-columns: 116px minmax(0, 1fr); gap: 18px; }
   .application-form__photo-preview { min-height: 154px; }
+  .application-form__resume-card { grid-template-columns: 96px minmax(0, 1fr); gap: 18px; }
 }
 
 @media (max-width: 520px) {
@@ -350,4 +364,8 @@
   .application-form__photo-preview { width: 132px; min-height: 176px; }
   .application-form__photo-copy { align-items: stretch; }
   .application-form__photo-button { justify-content: center; }
+  .application-form__resume-card { padding: 16px; grid-template-columns: 1fr; }
+  .application-form__resume-icon { width: 120px; min-height: 112px; }
+  .application-form__resume-copy { align-items: stretch; }
+  .application-form__resume-button { justify-content: center; }
 }

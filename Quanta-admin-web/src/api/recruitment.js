@@ -71,6 +71,8 @@ export function mapApplication(application = {}) {
     id: application.applicationId,
     name: application.realName || '-',
     phone: application.phonenumber || application.phone || '-',
+    resumeUrl: application.resumeAccessUrl || application.resumeUrl || '',
+    resumeFileName: application.resumeFileName || '',
     appliedAt: application.createTime || application.appliedAt || '-',
     applicationStatus: application.applyStatus || application.applicationStatus,
     choices,

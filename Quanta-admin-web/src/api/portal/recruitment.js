@@ -52,6 +52,9 @@ export function mapApplication(data) {
     secondChoiceLabel: departmentLabels[application.secondChoice] || application.secondChoice || '',
     photoUrl: application.photoAccessUrl || application.photoUrl || '',
     storedPhotoUrl: application.photoUrl || '',
+    resumeUrl: application.resumeAccessUrl || application.resumeUrl || '',
+    storedResumeUrl: application.resumeUrl || '',
+    resumeFileName: application.resumeFileName || '',
     applyStatus: application.applyStatus || '',
     offeredDepartment: application.offeredDepartment || '',
     joinStatus: application.joinStatus || '',
@@ -161,6 +164,9 @@ export function toApplicationPayload(form) {
     ...(form.storedPhotoUrl || form.photoUrl
       ? { photoUrl: form.storedPhotoUrl || form.photoUrl }
       : {}),
+    ...(form.storedResumeUrl || form.resumeUrl
+      ? { resumeUrl: form.storedResumeUrl || form.resumeUrl }
+      : {}),
   }
 }
 
@@ -171,6 +177,9 @@ export async function submitApplication(form) {
   })
   if (typeof File !== 'undefined' && form.photoFile instanceof File) {
     data.append('photoFile', form.photoFile)
+  }
+  if (typeof File !== 'undefined' && form.resumeFile instanceof File) {
+    data.append('resumeFile', form.resumeFile)
   }
   return request({ url: '/qt/interview/apply', method: 'post', data })
 }
