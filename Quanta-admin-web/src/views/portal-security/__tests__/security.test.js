@@ -1,17 +1,35 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { createMemoryHistory, createRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { changePassword } from '@/api/portal/account'
+import { changePassword, updateFreshmanEmail } from '@/api/portal/account'
 import PortalSecurity from '../index.vue'
+import { useUserStore } from '@/stores/user'
 
-vi.mock('@/api/portal/account', () => ({ changePassword: vi.fn() }))
+vi.mock('@/api/portal/account', () => ({ changePassword: vi.fn(), updateFreshmanEmail: vi.fn() }))
 vi.mock('element-plus', () => ({ ElMessage: { success: vi.fn(), error: vi.fn() } }))
+
+async function mountSecurity(audience = 'freshman') {
+  const pinia = createPinia()
+  setActivePinia(pinia)
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [{ path: '/security', component: PortalSecurity, meta: { portalAudience: audience } }],
+  })
+  await router.push('/security')
+  await router.isReady()
+  const store = useUserStore()
+  store.user = { email: 'old@example.com', isQuantaMember: audience === 'freshman' ? '0' : '1' }
+  const wrapper = mount(PortalSecurity, { global: { plugins: [pinia, router] } })
+  return { wrapper, store }
+}
 
 describe('portal account security', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('validates confirmation before calling the backend', async () => {
-    const wrapper = mount(PortalSecurity)
+    const { wrapper } = await mountSecurity()
     await wrapper.get('input[name="oldPassword"]').setValue('old-secret')
     await wrapper.get('input[name="newPassword"]').setValue('new-secret')
     await wrapper.get('input[name="confirmPassword"]').setValue('different')
@@ -23,7 +41,7 @@ describe('portal account security', () => {
 
   it('reports success only after the real request succeeds', async () => {
     changePassword.mockResolvedValue({ code: 200 })
-    const wrapper = mount(PortalSecurity)
+    const { wrapper } = await mountSecurity()
     await wrapper.get('input[name="oldPassword"]').setValue('old-secret')
     await wrapper.get('input[name="newPassword"]').setValue('new-secret')
     await wrapper.get('input[name="confirmPassword"]').setValue('new-secret')
@@ -37,7 +55,7 @@ describe('portal account security', () => {
 
   it('keeps failure visible and never reports success', async () => {
     changePassword.mockRejectedValue(new Error('当前密码错误'))
-    const wrapper = mount(PortalSecurity)
+    const { wrapper } = await mountSecurity()
     await wrapper.get('input[name="oldPassword"]').setValue('wrong-old')
     await wrapper.get('input[name="newPassword"]').setValue('new-secret')
     await wrapper.get('input[name="confirmPassword"]').setValue('new-secret')
@@ -46,5 +64,27 @@ describe('portal account security', () => {
 
     expect(wrapper.text()).toContain('当前密码错误')
     expect(ElMessage.success).not.toHaveBeenCalled()
+  })
+
+  it('shows email management only to freshmen', async () => {
+    const freshman = await mountSecurity('freshman')
+    expect(freshman.wrapper.find('[data-testid="email-card"]').exists()).toBe(true)
+    expect(freshman.wrapper.get('input[name="email"]').element.value).toBe('old@example.com')
+
+    const member = await mountSecurity('member')
+    expect(member.wrapper.find('[data-testid="email-card"]').exists()).toBe(false)
+  })
+
+  it('updates a valid freshman email through the real API adapter', async () => {
+    updateFreshmanEmail.mockResolvedValue({ code: 200 })
+    const { wrapper, store } = await mountSecurity('freshman')
+    vi.spyOn(store, 'fetchUserInfo').mockResolvedValue({})
+    await wrapper.get('input[name="email"]').setValue('new@example.com')
+    await wrapper.get('[data-testid="email-card"]').trigger('submit')
+    await flushPromises()
+
+    expect(updateFreshmanEmail).toHaveBeenCalledWith('new@example.com')
+    expect(store.fetchUserInfo).toHaveBeenCalledOnce()
+    expect(ElMessage.success).toHaveBeenCalledWith('邮箱修改成功')
   })
 })

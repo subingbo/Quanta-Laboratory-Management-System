@@ -44,6 +44,7 @@ describe('request and mock adapter', () => {
   it('never enables partial mock routing for authentication endpoints', () => {
     const routes = [{ method: 'post', path: '/login' }]
     expect(shouldUseMock({ url: '/login', method: 'post' }, false, routes)).toBe(false)
+    expect(shouldUseMock({ url: '/register', method: 'post' }, false, routes)).toBe(false)
     expect(shouldUseMock({ url: '/getInfo', method: 'get' }, false, routes)).toBe(false)
   })
 

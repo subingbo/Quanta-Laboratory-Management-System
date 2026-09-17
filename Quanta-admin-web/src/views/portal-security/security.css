@@ -23,12 +23,47 @@
   color: var(--portal-muted);
 }
 
+.portal-security__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 620px);
+  gap: 24px;
+  align-items: start;
+}
+
+.portal-security__grid.has-email-card {
+  grid-template-columns: repeat(2, minmax(0, 560px));
+}
+
 .portal-security__card {
   display: grid;
   width: min(620px, 100%);
   box-sizing: border-box;
   padding: 30px;
   gap: 18px;
+}
+
+.portal-security__intro--email > span {
+  font-size: 24px;
+  letter-spacing: 0;
+}
+
+.portal-security__current-email {
+  display: grid;
+  padding: 13px 15px;
+  border-radius: 12px;
+  background: var(--portal-canvas);
+  gap: 4px;
+}
+
+.portal-security__current-email span {
+  color: var(--portal-muted);
+  font-size: 11px;
+}
+
+.portal-security__current-email strong {
+  color: var(--portal-ink);
+  font-size: 13px;
+  overflow-wrap: anywhere;
 }
 
 .portal-security__intro {
@@ -120,5 +155,11 @@
 @media (max-width: 620px) {
   .portal-security__card {
     padding: 22px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .portal-security__grid.has-email-card {
+    grid-template-columns: minmax(0, 620px);
   }
 }

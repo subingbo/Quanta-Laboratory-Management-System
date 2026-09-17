@@ -7,3 +7,11 @@ export function changePassword({ oldPassword, newPassword }) {
     data: { oldPassword, newPassword },
   })
 }
+
+export function updateFreshmanEmail(email) {
+  return request({
+    url: '/system/user/profile/updateEmail',
+    method: 'put',
+    data: { email },
+  })
+}

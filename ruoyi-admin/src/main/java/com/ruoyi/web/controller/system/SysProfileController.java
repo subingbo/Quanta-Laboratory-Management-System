@@ -1,6 +1,7 @@
 package com.ruoyi.web.controller.system;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +37,9 @@ import com.ruoyi.system.service.ISysUserService;
 @RequestMapping("/system/user/profile")
 public class SysProfileController extends BaseController
 {
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+
     @Autowired
     private ISysUserService userService;
 
@@ -117,6 +121,43 @@ public class SysProfileController extends BaseController
             return success();
         }
         return error("修改密码异常，请联系管理员");
+    }
+
+    /**
+     * 新生修改邮箱。塔员和管理员邮箱仍由管理流程维护。
+     */
+    @Log(title = "新生邮箱", businessType = BusinessType.UPDATE)
+    @PutMapping("/updateEmail")
+    public AjaxResult updateEmail(@RequestBody Map<String, String> params)
+    {
+        LoginUser loginUser = getLoginUser();
+        SysUser currentUser = loginUser.getUser();
+        if (currentUser == null || !"0".equals(currentUser.getIsQuantaMember()))
+        {
+            return error("仅新生可通过该入口修改邮箱");
+        }
+
+        String email = StringUtils.trim(params.get("email"));
+        if (StringUtils.isEmpty(email))
+        {
+            return error("邮箱不能为空");
+        }
+        if (email.length() > 50 || !EMAIL_PATTERN.matcher(email).matches())
+        {
+            return error("邮箱格式不正确");
+        }
+
+        currentUser.setEmail(email);
+        if (!userService.checkEmailUnique(currentUser))
+        {
+            return error("邮箱账号已存在");
+        }
+        if (userService.updateUserProfile(currentUser) > 0)
+        {
+            tokenService.setLoginUser(loginUser);
+            return success();
+        }
+        return error("修改邮箱异常，请联系管理员");
     }
 
     /**

@@ -1,4 +1,4 @@
-const REAL_AUTH_PATHS = new Set(['/login', '/getInfo', '/getRouters', '/logout'])
+const REAL_AUTH_PATHS = new Set(['/login', '/register', '/captchaImage', '/getInfo', '/getRouters', '/logout'])
 
 // 只登记已经过真实后端联调、确认暂不可用的接口。
 // 每一项都必须同步记录到 docs/Quanta管理端Web接口Mock清单.md。
