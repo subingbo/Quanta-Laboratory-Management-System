@@ -171,3 +171,11 @@ export async function submitApplication(form) {
   }
   return request({ url: '/qt/interview/apply', method: 'post', data })
 }
+
+/**
+ * 塔员只读查看全部新生报名信息（仅基本信息，已剥离电话/照片等敏感字段）
+ */
+export async function getMemberApplications(params) {
+  const response = await request({ url: '/qt/interview/member/applications', method: 'get', params })
+  return response.data || []
+}

@@ -27,6 +27,7 @@ const navigation = computed(() => props.audience === 'freshman'
       { label: '工位预约', to: '/member/workstations' },
       { label: '塔服订购', to: '/member/clothing' },
       { label: '学习资料', to: '/member/materials' },
+      { label: '招新报名', to: '/member/recruitment' },
     ])
 
 watch(() => route.fullPath, () => {

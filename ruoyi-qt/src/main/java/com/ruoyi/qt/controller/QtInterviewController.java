@@ -24,6 +24,7 @@ import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.qt.domain.QtInterviewApplication;
 import com.ruoyi.qt.domain.QtInterviewProfile;
 import com.ruoyi.qt.domain.QtInterviewResult;
+import com.ruoyi.qt.service.IQtInterviewAdminService;
 import com.ruoyi.qt.service.IQtInterviewService;
 import com.ruoyi.framework.config.ServerConfig;
 import com.ruoyi.framework.security.ProfileAccessSigner;
@@ -34,6 +35,9 @@ public class QtInterviewController extends BaseController
 {
     @Autowired
     private IQtInterviewService qtInterviewService;
+
+    @Autowired
+    private IQtInterviewAdminService qtInterviewAdminService;
 
     @Autowired
     private ServerConfig serverConfig;
@@ -113,6 +117,23 @@ public class QtInterviewController extends BaseController
     public AjaxResult myResults()
     {
         List<QtInterviewResult> list = qtInterviewService.selectMyResultList(getUserId());
+        return success(list);
+    }
+
+    /**
+     * 塔员只读查看全部新生报名信息（仅基本信息，剥离电话/照片等敏感字段）
+     */
+    @GetMapping("/member/applications")
+    public AjaxResult memberApplications(QtInterviewApplication query)
+    {
+        com.ruoyi.qt.util.QtAuthUtils.requireQuantaMember();
+        List<QtInterviewApplication> list = qtInterviewAdminService.selectMemberList(query);
+        for (QtInterviewApplication app : list)
+        {
+            app.setPhonenumber(null);
+            app.setPhotoUrl(null);
+            app.setPhotoAccessUrl(null);
+        }
         return success(list);
     }
 

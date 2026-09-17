@@ -14,15 +14,22 @@ function config(token, extra = {}) {
 describe('member high-risk permissions', () => {
   it('treats the RuoYi administrator as CEO', () => {
     const response = handler('put', '/system/user/resetPwd').handle(
-      config('mock-token-admin', { data: { userId: 2101 } }),
+      config('mock-token-admin', { data: { userId: 2101, password: '123456' } }),
     )
     expect(response.code).toBe(200)
   })
 
   it('allows the CEO to reset a member password', () => {
     const response = handler('put', '/system/user/resetPwd').handle(
-      config('mock-token-ceo', { data: { userId: 2101 } }),
+      config('mock-token-ceo', { data: { userId: 2101, password: '123456' } }),
     )
     expect(response.code).toBe(200)
+  })
+
+  it('rejects a password reset without a new password', () => {
+    const response = handler('put', '/system/user/resetPwd').handle(
+      config('mock-token-ceo', { data: { userId: 2101 } }),
+    )
+    expect(response.code).toBe(400)
   })
 })

@@ -31,7 +31,7 @@ describe('member API adapter', () => {
       id: 7,
       name: '测试成员',
       department: '研发部',
-      roleCode: 'manager',
+      roleCode: 'MANAGER',
       roleLabel: '经理层',
       cohort: '21',
       status: 'active',
@@ -44,12 +44,12 @@ describe('member API adapter', () => {
       pageSize: 20,
       memberCohort: '21',
       memberDepartment: '研发部',
-      roleCategory: 'manager',
+      roleCategory: 'MANAGER',
       nickName: '赵',
     })
 
     expect(result.total).toBe(1)
-    expect(result.rows[0]).toMatchObject({ name: '赵明', roleCode: 'manager' })
+    expect(result.rows[0]).toMatchObject({ name: '赵明', roleCode: 'MANAGER' })
   })
 
   it('retains a member and synchronizes them idempotently to the next cohort', async () => {

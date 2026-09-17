@@ -37,11 +37,19 @@ public interface ISysUserService
 
     /**
      * 通过用户名查询用户
-     * 
+    * 
      * @param userName 用户名
      * @return 用户对象信息
      */
     public SysUser selectUserByUserName(String userName);
+
+    /**
+     * 通过学号查询用户信息（登录学号回退解析用）
+     *
+     * @param studentNo 学号
+     * @return 用户对象信息
+     */
+    public SysUser selectUserByStudentNo(String studentNo);
 
     /**
      * 通过用户ID查询用户

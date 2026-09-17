@@ -13,6 +13,11 @@ public interface IQtInterviewAdminService
 {
     List<QtInterviewApplication> selectAdminList(QtInterviewApplication query);
 
+    /**
+     * 塔员只读查看全部报名信息（不做部门范围过滤）
+     */
+    List<QtInterviewApplication> selectMemberList(QtInterviewApplication query);
+
     QtInterviewApplication selectApplication(Long applicationId);
 
     QtInterviewProfile selectProfile(Long applicationId);

@@ -43,6 +43,16 @@ public class CacheConstants
     public static final String PWD_ERR_CNT_KEY = "pwd_err_cnt:";
 
     /**
+     * 新生注册邮箱验证码 redis key
+     */
+    public static final String REGISTER_EMAIL_CODE_KEY = "register_email_codes:";
+
+    /**
+     * 找回密码邮箱验证码 redis key
+     */
+    public static final String RESET_EMAIL_CODE_KEY = "reset_email_codes:";
+
+    /**
      * 业务缓存统一键前缀（与若依自身手写缓存的裸键区隔开）
      */
     public static final String CACHE_KEY_PREFIX = "cache:";

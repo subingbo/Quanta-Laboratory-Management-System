@@ -2,7 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getCaptcha, registerFreshman } from '@/api/auth'
+import { getCaptcha, registerFreshman, sendRegisterEmailCode } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
 import { homePathFor } from '@/utils/session-audience'
 import { safeInternalRedirect } from '@/utils/redirect'
@@ -33,7 +33,7 @@ const hasSentEmailCode = ref(false)
 let emailCodeTimer
 
 const rules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  username: [{ required: true, message: '请输入学号或用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
   code: [{
     validator: (_, value, callback) => {
@@ -106,26 +106,39 @@ async function switchMode(nextMode) {
   registerFormRef.value?.clearValidate()
 }
 
-function sendEmailCode() {
+async function sendEmailCode() {
   if (emailCodeCooldown.value > 0) return
+  if (!/^20\d{9}$/.test(registerForm.studentNo)) {
+    registrationErrors.studentNo = '请输入11位学号，例如 20241003193'
+    return
+  }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)) {
     registrationErrors.email = '请输入正确的邮箱'
     return
   }
+  registrationErrors.studentNo = ''
   registrationErrors.email = ''
-  hasSentEmailCode.value = true
-  emailCodeCooldown.value = 60
-  ElMessage.success('验证码已发送，5 分钟内有效')
-  clearInterval(emailCodeTimer)
-  emailCodeTimer = setInterval(() => {
-    if (emailCodeCooldown.value <= 1) {
-      emailCodeCooldown.value = 0
-      clearInterval(emailCodeTimer)
-      emailCodeTimer = undefined
-    } else {
-      emailCodeCooldown.value -= 1
-    }
-  }, 1000)
+  try {
+    await sendRegisterEmailCode({
+      email: registerForm.email,
+      studentNo: registerForm.studentNo,
+    })
+    hasSentEmailCode.value = true
+    emailCodeCooldown.value = 60
+    ElMessage.success('验证码已发送，5 分钟内有效')
+    clearInterval(emailCodeTimer)
+    emailCodeTimer = setInterval(() => {
+      if (emailCodeCooldown.value <= 1) {
+        emailCodeCooldown.value = 0
+        clearInterval(emailCodeTimer)
+        emailCodeTimer = undefined
+      } else {
+        emailCodeCooldown.value -= 1
+      }
+    }, 1000)
+  } catch (error) {
+    ElMessage.error(error.message || '验证码发送失败')
+  }
 }
 
 async function submit() {
@@ -230,8 +243,8 @@ onBeforeUnmount(() => clearInterval(emailCodeTimer))
           {{ isRegisterMode ? '使用学号创建你的 Quanta 新生账号' : '使用你的 Quanta 账号继续访问' }}
         </p>
         <ElForm v-if="!isRegisterMode" key="login" ref="formRef" :model="form" :rules="rules" size="large" @submit.prevent="submit">
-          <ElFormItem prop="username" :label="isFreshman ? '学号' : '用户名'">
-            <ElInput v-model.trim="form.username" autocomplete="username" :placeholder="isFreshman ? '请输入学号' : '请输入用户名'" />
+          <ElFormItem prop="username" :label="isFreshman ? '学号' : '学号/用户名'">
+            <ElInput v-model.trim="form.username" autocomplete="username" :placeholder="isFreshman ? '请输入学号' : '请输入学号或用户名'" />
           </ElFormItem>
           <ElFormItem prop="password" label="密码">
             <ElInput v-model="form.password" autocomplete="current-password" type="password" show-password placeholder="请输入密码" @keyup.enter="submit" />

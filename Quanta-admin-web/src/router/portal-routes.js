@@ -88,6 +88,12 @@ export const portalRoutes = [
         meta: { title: '学习资料', portalAudience: 'member' },
       },
       {
+        path: 'recruitment',
+        name: 'MemberRecruitment',
+        component: () => import('@/views/member/recruitment/index.vue'),
+        meta: { title: '招新报名', portalAudience: 'member' },
+      },
+      {
         path: 'security',
         name: 'MemberSecurity',
         component: () => import('@/views/portal-security/index.vue'),

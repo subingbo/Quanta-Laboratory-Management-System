@@ -43,6 +43,13 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
     }
 
     @Override
+    public List<QtInterviewApplication> selectMemberList(QtInterviewApplication query)
+    {
+        // 塔员可见全部部门，不做 scopedDepartment 过滤
+        return qtInterviewMapper.selectAdminApplicationList(query);
+    }
+
+    @Override
     public QtInterviewApplication selectApplication(Long applicationId)
     {
         QtInterviewApplication application = requireApplication(applicationId);

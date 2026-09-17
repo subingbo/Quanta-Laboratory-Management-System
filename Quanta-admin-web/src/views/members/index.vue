@@ -140,9 +140,25 @@ async function confirmRemove(member) {
 }
 
 async function resetPassword(member) {
+  let password
+  try {
+    const prompt = await ElMessageBox.prompt(`请输入 ${member.name} 的新密码`, '重置密码', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      inputType: 'password',
+      inputPlaceholder: '5–20 位新密码',
+      inputValidator: (value) => {
+        if (!value || value.length < 5 || value.length > 20) return '密码长度需为 5–20 位'
+        return true
+      },
+    })
+    password = prompt.value
+  } catch {
+    return
+  }
   pendingAction.value = `reset-${member.id}`
   try {
-    const response = await resetMemberPassword(member.id)
+    const response = await resetMemberPassword(member.id, password)
     ElMessage.success(response.msg || '密码重置成功')
   } catch (error) {
     ElMessage.error(error.message || '密码重置失败')

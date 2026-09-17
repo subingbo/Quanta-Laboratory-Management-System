@@ -7,8 +7,8 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 [[ -f "$HERE/.env" ]] && set -a && . "$HERE/.env" && set +a
-# Windows 编辑的 .env 会带 CR，否则会出现 druid,prod\r 这种非法 profile
-strip_cr() { printf '%s' "${1//$'\r'/}"; }
+# Windows 编辑的 .env 会带 CR，否则会出现 druid,prod\n 这种非法 profile
+strip_cr() { printf '%s' "${1//$'\n'/}"; }
 JAR="$(strip_cr "${JAR:-$HERE/ruoyi-admin.jar}")"
 MYSQL_HOST="$(strip_cr "${MYSQL_HOST:-127.0.0.1}")"
 MYSQL_PORT="$(strip_cr "${MYSQL_PORT:-3306}")"
@@ -23,6 +23,10 @@ TOKEN_SECRET="$(strip_cr "${TOKEN_SECRET:?set TOKEN_SECRET in .env (generate: op
 SPRING_PROFILES_ACTIVE="$(strip_cr "${SPRING_PROFILES_ACTIVE:-druid,prod}")"
 CORS_ALLOWED_ORIGINS="$(strip_cr "${CORS_ALLOWED_ORIGINS:-https://www.quantacenter.com}")"
 SPRING_ARGS="$(strip_cr "${SPRING_ARGS:---spring.data.redis.database=1}")"
+MAIL_HOST="$(strip_cr "${MAIL_HOST:-smtpdm.aliyun.com}")"
+MAIL_PORT="$(strip_cr "${MAIL_PORT:-465}")"
+MAIL_USERNAME="$(strip_cr "${MAIL_USERNAME:-}")"
+MAIL_PASSWORD="$(strip_cr "${MAIL_PASSWORD:-}")"
 
 mkdir -p "$UPLOAD_PATH" "$APP_HOME/logs"
 
@@ -31,6 +35,7 @@ JDBC_URL="jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/ry-vue?useUnicode=true&charac
 
 export MYSQL_HOST MYSQL_PORT MYSQL_USERNAME MYSQL_PASSWORD REDIS_HOST TOKEN_SECRET
 export SPRING_PROFILES_ACTIVE CORS_ALLOWED_ORIGINS
+export MAIL_HOST MAIL_PORT MAIL_USERNAME MAIL_PASSWORD
 
 # 2C2G 小机器内存预算：MySQL(容器,含128M缓冲池) ≈ 400M / Redis ≤128M / JVM 堆 512M+元空间 ≈ 750M
 # 若以后升回 4G，可把 -Xmx 调到 1024m
