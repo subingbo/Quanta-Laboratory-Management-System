@@ -81,7 +81,7 @@ describe('CandidateTable', () => {
 
     expect(wrapper.text()).toContain('阅览简历')
     expect(wrapper.text()).toContain('查看面评')
-    expect(wrapper.text()).not.toContain('编辑面评')
+    expect(wrapper.text()).toContain('编辑面评')
     expect(wrapper.text()).not.toContain('评定')
   })
 
@@ -92,7 +92,7 @@ describe('CandidateTable', () => {
     })
 
     expect(wrapper.text()).toContain('阅览简历')
-    expect(wrapper.text()).not.toContain('编辑面评')
+    expect(wrapper.text()).toContain('编辑面评')
     expect(wrapper.text()).not.toContain('已评')
     expect(wrapper.text()).not.toContain('查看面评')
     expect(wrapper.text()).not.toContain('是否录用')

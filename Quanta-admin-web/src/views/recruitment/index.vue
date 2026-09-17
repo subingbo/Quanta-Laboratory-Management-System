@@ -24,6 +24,7 @@ import FeedbackDialog from './components/FeedbackDialog.vue'
 import OfferConfirmDialog from './components/OfferConfirmDialog.vue'
 import OfferDialog from './components/OfferDialog.vue'
 import RecruitmentBoard from './components/RecruitmentBoard.vue'
+import RecruitmentFilters from './components/RecruitmentFilters.vue'
 import RecruitmentTabs from './components/RecruitmentTabs.vue'
 import ResumeDialog from './components/ResumeDialog.vue'
 import './recruitment.css'
@@ -38,6 +39,8 @@ const total = ref(0)
 const statistics = ref({})
 const loadFailed = ref(false)
 const pendingAction = ref('')
+const filterDraft = reactive({ department: '', keyword: '' })
+const filters = reactive({ department: '', keyword: '' })
 let requestSequence = 0
 
 const isCeo = computed(() => roles.value.some(isCeoRole))
@@ -45,6 +48,20 @@ const currentDepartment = computed(
   () => user.value?.deptCode || user.value?.dept?.deptCode || '',
 )
 const roundId = computed(() => Number(activeTab.value) || 1)
+const departmentOptions = computed(() =>
+  Object.entries(departmentLabels)
+    .filter(([value]) => value !== 'ANDROID')
+    .map(([value, label]) => ({ value, label })),
+)
+const filteredRows = computed(() => {
+  const keyword = filters.keyword.trim().toLocaleLowerCase()
+  return rows.value.filter((row) => {
+    const matchesDepartment = !filters.department
+      || row.choices?.some((choice) => choice.department === filters.department)
+    const searchable = `${row.studentNo || ''} ${row.name || row.realName || ''}`.toLocaleLowerCase()
+    return matchesDepartment && (!keyword || searchable.includes(keyword))
+  })
+})
 
 const resume = reactive({ visible: false, loading: false, application: null })
 const feedback = reactive({
@@ -125,6 +142,17 @@ async function loadList() {
 
 async function refreshAll() {
   await Promise.all([loadStatistics(), loadList()])
+}
+
+function applyFilters() {
+  filters.department = filterDraft.department
+  filters.keyword = filterDraft.keyword
+}
+
+function resetFilters() {
+  filterDraft.department = ''
+  filterDraft.keyword = ''
+  applyFilters()
 }
 
 async function openResume(row) {
@@ -355,17 +383,27 @@ onMounted(refreshAll)
         <ElButton type="primary" link @click="loadList">重新加载</ElButton>
       </div>
 
-      <CandidateTable
-        v-else
-        :rows="rows"
-        :loading="loading"
-        :round-id="roundId"
-        :pending-action="pendingAction"
-        @resume="openResume"
-        @view-feedback="openViewFeedback"
-        @edit-feedback="openEditFeedback"
-        @offer="openOffer"
-      />
+      <template v-else>
+        <RecruitmentFilters
+          v-model:department="filterDraft.department"
+          v-model:keyword="filterDraft.keyword"
+          :departments="departmentOptions"
+          :visible-count="filteredRows.length"
+          :total-count="rows.length"
+          @search="applyFilters"
+          @reset="resetFilters"
+        />
+        <CandidateTable
+          :rows="filteredRows"
+          :loading="loading"
+          :round-id="roundId"
+          :pending-action="pendingAction"
+          @resume="openResume"
+          @view-feedback="openViewFeedback"
+          @edit-feedback="openEditFeedback"
+          @offer="openOffer"
+        />
+      </template>
     </section>
 
     <ResumeDialog v-model="resume.visible" :application="resume.application" :loading="resume.loading" />

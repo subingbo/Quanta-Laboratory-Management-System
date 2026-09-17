@@ -15,6 +15,7 @@ const formRef = ref()
 const registerFormRef = ref()
 const loading = ref(false)
 const registering = ref(false)
+let registrationAttemptLocked = false
 const mode = ref('login')
 const captchaEnabled = ref(false)
 const captchaImage = ref('')
@@ -151,27 +152,28 @@ async function submit() {
 }
 
 async function submitRegistration() {
-  if (registering.value) return
-  registrationErrors.studentNo = /^20\d{9}$/.test(registerForm.studentNo)
-    ? ''
-    : '请输入11位学号，例如 20241003193'
-  registrationErrors.email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)
-    ? ''
-    : '请输入正确的邮箱'
-  registrationErrors.emailCode = /^\d{6}$/.test(registerForm.emailCode)
-    ? ''
-    : '请输入6位邮箱验证码'
-  registrationErrors.password = registerForm.password.length >= 5 && registerForm.password.length <= 20
-    ? ''
-    : '密码长度需为 5–20 位'
-  registrationErrors.confirmPassword = registerForm.confirmPassword === registerForm.password
-    ? ''
-    : '两次输入的密码不一致'
-  if (Object.values(registrationErrors).some(Boolean)) return
-  const valid = await registerFormRef.value?.validate().catch(() => false)
-  if (valid !== true) return
-  registering.value = true
+  if (registrationAttemptLocked) return
+  registrationAttemptLocked = true
   try {
+    registrationErrors.studentNo = /^20\d{9}$/.test(registerForm.studentNo)
+      ? ''
+      : '请输入11位学号，例如 20241003193'
+    registrationErrors.email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)
+      ? ''
+      : '请输入正确的邮箱'
+    registrationErrors.emailCode = /^\d{6}$/.test(registerForm.emailCode)
+      ? ''
+      : '请输入6位邮箱验证码'
+    registrationErrors.password = registerForm.password.length >= 5 && registerForm.password.length <= 20
+      ? ''
+      : '密码长度需为 5–20 位'
+    registrationErrors.confirmPassword = registerForm.confirmPassword === registerForm.password
+      ? ''
+      : '两次输入的密码不一致'
+    if (Object.values(registrationErrors).some(Boolean)) return
+    const valid = await registerFormRef.value?.validate().catch(() => false)
+    if (valid !== true) return
+    registering.value = true
     await registerFreshman({
       studentNo: registerForm.studentNo,
       email: registerForm.email,
@@ -196,6 +198,7 @@ async function submitRegistration() {
     if (captchaEnabled.value) await loadCaptcha()
   } finally {
     registering.value = false
+    registrationAttemptLocked = false
   }
 }
 

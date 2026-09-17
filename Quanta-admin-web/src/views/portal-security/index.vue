@@ -2,6 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Hide, View } from '@element-plus/icons-vue'
 import { changePassword, updateFreshmanEmail } from '@/api/portal/account'
 import { useUserStore } from '@/stores/user'
 
@@ -9,6 +10,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const isFreshman = computed(() => route.meta.portalAudience === 'freshman')
 const form = reactive({ oldPassword: '', newPassword: '', confirmPassword: '' })
+const passwordVisible = reactive({ oldPassword: false, newPassword: false, confirmPassword: false })
 const emailForm = reactive({ email: '' })
 const submitting = ref(false)
 const emailSubmitting = ref(false)
@@ -83,9 +85,9 @@ async function submitEmail() {
           <div><h2>修改登录密码</h2><p>修改后，下次登录请使用新密码。</p></div>
         </div>
         <p v-if="errorMessage" class="portal-security__error" role="alert">{{ errorMessage }}</p>
-        <label>当前密码<input v-model="form.oldPassword" name="oldPassword" type="password" autocomplete="current-password" required /></label>
-        <label>新密码<input v-model="form.newPassword" name="newPassword" type="password" autocomplete="new-password" minlength="6" required /></label>
-        <label>确认新密码<input v-model="form.confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="6" required /></label>
+        <label>当前密码<span class="portal-security__password-field"><input v-model="form.oldPassword" name="oldPassword" :type="passwordVisible.oldPassword ? 'text' : 'password'" autocomplete="current-password" required /><button data-testid="toggle-old-password" type="button" :aria-label="passwordVisible.oldPassword ? '隐藏当前密码' : '显示当前密码'" @click="passwordVisible.oldPassword = !passwordVisible.oldPassword"><component :is="passwordVisible.oldPassword ? Hide : View" /></button></span></label>
+        <label>新密码<span class="portal-security__password-field"><input v-model="form.newPassword" name="newPassword" :type="passwordVisible.newPassword ? 'text' : 'password'" autocomplete="new-password" minlength="6" required /><button data-testid="toggle-new-password" type="button" :aria-label="passwordVisible.newPassword ? '隐藏新密码' : '显示新密码'" @click="passwordVisible.newPassword = !passwordVisible.newPassword"><component :is="passwordVisible.newPassword ? Hide : View" /></button></span></label>
+        <label>确认新密码<span class="portal-security__password-field"><input v-model="form.confirmPassword" name="confirmPassword" :type="passwordVisible.confirmPassword ? 'text' : 'password'" autocomplete="new-password" minlength="6" required /><button data-testid="toggle-confirm-password" type="button" :aria-label="passwordVisible.confirmPassword ? '隐藏确认密码' : '显示确认密码'" @click="passwordVisible.confirmPassword = !passwordVisible.confirmPassword"><component :is="passwordVisible.confirmPassword ? Hide : View" /></button></span></label>
         <button class="portal-security__submit" type="submit" :disabled="submitting">
           {{ submitting ? '提交中…' : '确认修改' }}
         </button>

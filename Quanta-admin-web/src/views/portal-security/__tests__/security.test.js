@@ -75,6 +75,20 @@ describe('portal account security', () => {
     expect(member.wrapper.find('[data-testid="email-card"]').exists()).toBe(false)
   })
 
+  it('toggles visibility for all three password fields', async () => {
+    const { wrapper } = await mountSecurity('freshman')
+    for (const [buttonId, inputName] of [
+      ['toggle-old-password', 'oldPassword'],
+      ['toggle-new-password', 'newPassword'],
+      ['toggle-confirm-password', 'confirmPassword'],
+    ]) {
+      const input = wrapper.get(`input[name="${inputName}"]`)
+      expect(input.attributes('type')).toBe('password')
+      await wrapper.get(`[data-testid="${buttonId}"]`).trigger('click')
+      expect(input.attributes('type')).toBe('text')
+    }
+  })
+
   it('updates a valid freshman email through the real API adapter', async () => {
     updateFreshmanEmail.mockResolvedValue({ code: 200 })
     const { wrapper, store } = await mountSecurity('freshman')

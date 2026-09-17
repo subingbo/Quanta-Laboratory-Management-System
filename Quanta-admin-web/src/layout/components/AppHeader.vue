@@ -1,11 +1,12 @@
 <script setup>
 import { computed, onBeforeUnmount, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { Fold, Expand } from '@element-plus/icons-vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ArrowLeft, Fold, Expand } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
 import { useAppStore } from '@/stores/app'
 
 const route = useRoute()
+const router = useRouter()
 const appStore = useAppStore()
 const { sidebarCollapsed } = storeToRefs(appStore)
 const pageTitle = computed(() => route.meta?.title || 'Quanta 后台管理系统')
@@ -32,7 +33,16 @@ onBeforeUnmount(() => window.clearInterval(timer))
       </button>
       <h1>{{ pageTitle }}</h1>
     </div>
-    <time>{{ currentTime }}</time>
+    <div class="app-header__actions">
+      <ElButton
+        class="app-header__identity-button"
+        :icon="ArrowLeft"
+        data-testid="back-to-identity"
+        @click="router.push('/')"
+      >
+        返回选择身份
+      </ElButton>
+      <time>{{ currentTime }}</time>
+    </div>
   </header>
 </template>
-

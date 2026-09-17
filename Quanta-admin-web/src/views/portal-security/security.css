@@ -163,3 +163,39 @@
     grid-template-columns: minmax(0, 620px);
   }
 }
+.portal-security__password-field {
+  position: relative;
+  display: block;
+}
+
+.portal-security__password-field input {
+  padding-right: 48px;
+}
+
+.portal-security__password-field button {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--portal-muted);
+  cursor: pointer;
+  font-size: 20px;
+  place-items: center;
+  transform: translateY(-50%);
+}
+
+.portal-security__password-field button:hover {
+  background: var(--portal-canvas);
+  color: var(--portal-orange);
+}
+
+.portal-security__password-field button svg {
+  width: 18px;
+  height: 18px;
+}

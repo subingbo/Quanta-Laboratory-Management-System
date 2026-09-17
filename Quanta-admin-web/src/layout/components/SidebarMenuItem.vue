@@ -26,8 +26,6 @@ function getIcon(name) {
     <ElIcon><component :is="getIcon(route.meta?.icon)" /></ElIcon>
     <template #title>
       <span>{{ route.meta?.title }}</span>
-      <span v-if="route.meta?.badge" class="menu-item__badge">{{ route.meta.badge }}</span>
     </template>
   </ElMenuItem>
 </template>
-

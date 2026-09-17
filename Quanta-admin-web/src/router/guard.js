@@ -54,7 +54,12 @@ export function setupRouterGuard(router) {
           if (targetAudience === 'admin' && userStore.canAccessAdmin) {
             return homePathFor('admin')
           }
-          return homePathFor(userStore.serverAudience || 'admin')
+          if (targetAudience === userStore.serverAudience) {
+            return homePathFor(targetAudience)
+          }
+          userStore.reset()
+          permissionStore.resetRoutes()
+          return true
         } catch {
           userStore.reset()
           permissionStore.resetRoutes()

@@ -35,7 +35,8 @@ const photoError = ref('')
 const photoPreviewFailed = ref(false)
 let localPhotoUrl = ''
 
-const allowedPhotoTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
+const allowedPhotoTypes = new Set(['image/jpeg', 'image/png'])
+const allowedPhotoExtensions = new Set(['jpg', 'jpeg', 'png'])
 const maxPhotoSize = 5 * 1024 * 1024
 const hasPhotoPreview = computed(() => Boolean(model.photoUrl) && !photoPreviewFailed.value)
 const photoFileName = computed(() => {
@@ -51,6 +52,7 @@ watch(
     Object.assign(model, emptyApplication(), value || {})
     photoError.value = ''
     photoPreviewFailed.value = false
+    if (model.photoFile instanceof Blob) setLocalPhotoPreview(model.photoFile)
   },
   { immediate: true, deep: true },
 )
@@ -58,8 +60,9 @@ watch(
 function selectPhoto(event) {
   const file = event.target.files?.[0]
   if (!file) return
-  if (!allowedPhotoTypes.has(file.type)) {
-    photoError.value = '请选择 JPG、PNG 或 WebP 格式的图片'
+  const extension = file.name.split('.').pop()?.toLowerCase() || ''
+  if (!allowedPhotoTypes.has(file.type) && !allowedPhotoExtensions.has(extension)) {
+    photoError.value = '请选择 JPG 或 PNG 格式的图片'
     event.target.value = ''
     return
   }
@@ -72,6 +75,10 @@ function selectPhoto(event) {
   photoError.value = ''
   photoPreviewFailed.value = false
   model.photoFile = file
+  setLocalPhotoPreview(file)
+}
+
+function setLocalPhotoPreview(file) {
   if (localPhotoUrl && typeof URL.revokeObjectURL === 'function') URL.revokeObjectURL(localPhotoUrl)
   if (typeof URL.createObjectURL === 'function') {
     localPhotoUrl = URL.createObjectURL(file)
@@ -108,7 +115,6 @@ function snapshot() {
         <option value="" disabled>请选择</option>
         <option value="男">男</option>
         <option value="女">女</option>
-        <option value="未知">不便透露</option>
       </select>
     </label>
     <label class="application-grid__wide">
@@ -159,7 +165,7 @@ function snapshot() {
             <p>照片仅用于本次招新资料与面试身份核对。</p>
           </div>
           <div class="application-form__photo-rules" aria-label="上传要求">
-            <span>JPG / PNG / WebP</span>
+            <span>JPG / PNG</span>
             <span>最大 5 MB</span>
           </div>
           <p class="application-form__photo-name" data-testid="photo-file-name">
@@ -173,7 +179,7 @@ function snapshot() {
             class="sr-only"
             name="photoFile"
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/jpeg,image/png,.jpg,.jpeg,.png"
             :required="!model.storedPhotoUrl && !model.photoUrl"
             @change="selectPhoto"
           />

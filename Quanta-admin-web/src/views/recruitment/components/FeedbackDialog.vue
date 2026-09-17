@@ -26,7 +26,7 @@ const visible = computed({ get: () => props.modelValue, set: (value) => emit('up
 
 <template>
   <ElDialog v-model="visible" width="640" class="quanta-dialog feedback-dialog" destroy-on-close>
-    <template #header><strong>{{ roundId === 1 ? '一面' : '二面' }}面评 - {{ candidateName }}</strong></template>
+    <template #header><strong>{{ mode === 'edit' ? '编辑面评' : `${roundId === 1 ? '一面' : '二面'}面评` }} - {{ candidateName }}</strong></template>
     <div v-loading="loading">
       <ElSelect
         :model-value="department"
@@ -73,8 +73,8 @@ const visible = computed({ get: () => props.modelValue, set: (value) => emit('up
         </ElButton>
       </template>
       <template v-else>
-        <ElButton size="small" @click="visible = false">取消</ElButton>
-        <ElButton type="success" size="small" :loading="submitting" @click="emit('submit')">提交</ElButton>
+        <ElButton class="feedback-dialog__cancel" size="small" @click="visible = false">取消</ElButton>
+        <ElButton class="feedback-dialog__submit" type="success" size="small" :loading="submitting" @click="emit('submit')">提交</ElButton>
       </template>
     </template>
   </ElDialog>

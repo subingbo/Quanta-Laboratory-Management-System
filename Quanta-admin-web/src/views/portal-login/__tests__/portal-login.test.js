@@ -130,6 +130,26 @@ describe('portal login', () => {
     expect(wrapper.text()).toContain('新生登录')
   })
 
+  it('prevents duplicate registration submissions', async () => {
+    let resolveRegistration
+    authApi.registerFreshman.mockReturnValue(new Promise((resolve) => { resolveRegistration = resolve }))
+    const { wrapper } = await mountLogin('freshman')
+    await wrapper.get('[data-testid="register-mode"]').trigger('click')
+    await wrapper.get('input[name="studentNo"]').setValue('20241003193')
+    await wrapper.get('input[name="email"]').setValue('freshman@example.com')
+    await wrapper.get('input[name="emailCode"]').setValue('123456')
+    await wrapper.get('input[name="registerPassword"]').setValue('secret123')
+    await wrapper.get('input[name="confirmPassword"]').setValue('secret123')
+
+    const button = wrapper.get('[data-testid="register-submit"]')
+    await Promise.all([button.trigger('click'), button.trigger('click')])
+    await flushPromises()
+    expect(authApi.registerFreshman).toHaveBeenCalledTimes(1)
+
+    resolveRegistration({ code: 200 })
+    await flushPromises()
+  })
+
   it('submits the audience selected by the route', async () => {
     const { wrapper, store } = await mountLogin('freshman')
     const login = vi.spyOn(store, 'login').mockResolvedValue({ token: 'token' })

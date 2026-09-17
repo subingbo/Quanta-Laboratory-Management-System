@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { ElMessageBox } from 'element-plus'
 import {
   getMyApplication,
   getMyInterviewProcess,
@@ -7,8 +8,11 @@ import {
 } from '@/api/portal/recruitment'
 import {
   clearRecruitmentDraft,
+  clearRecruitmentPhotoDraft,
   loadRecruitmentDraft,
+  loadRecruitmentPhotoDraft,
   saveRecruitmentDraft,
+  saveRecruitmentPhotoDraft,
 } from '@/utils/recruitment-draft'
 import ApplicationForm, { emptyApplication } from './components/ApplicationForm.vue'
 import InterviewTimeline from './components/InterviewTimeline.vue'
@@ -21,33 +25,61 @@ const processes = ref([])
 const notice = ref('')
 const errorMessage = ref('')
 
+function showResult(title, message, type = 'success') {
+  return ElMessageBox.alert(message, title, {
+    type,
+    confirmButtonText: '知道了',
+  }).catch(() => {})
+}
+
+function friendlySubmissionError(error) {
+  const message = String(error?.message || '')
+  if (message.includes('两个志愿不能相同')) return message
+  if (/网络|timeout|超时|Network/i.test(message)) return '网络连接异常，请稍后重试'
+  return '报名提交失败，请检查填写内容后重试'
+}
+
 async function loadRecruitment() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const [serverApplication, interviewProcesses] = await Promise.all([
+    const [serverApplication, interviewProcesses, draftPhoto] = await Promise.all([
       getMyApplication(),
       getMyInterviewProcess(),
+      loadRecruitmentPhotoDraft().catch(() => null),
     ])
     application.value = {
       ...emptyApplication(),
       ...(serverApplication || {}),
       ...(loadRecruitmentDraft() || {}),
+      ...(draftPhoto ? { photoFile: draftPhoto, photoUrl: '' } : {}),
     }
     processes.value = interviewProcesses
-  } catch (error) {
-    application.value = { ...emptyApplication(), ...(loadRecruitmentDraft() || {}) }
-    errorMessage.value = error.message || '招新信息加载失败'
+  } catch {
+    const draftPhoto = await loadRecruitmentPhotoDraft().catch(() => null)
+    application.value = {
+      ...emptyApplication(),
+      ...(loadRecruitmentDraft() || {}),
+      ...(draftPhoto ? { photoFile: draftPhoto, photoUrl: '' } : {}),
+    }
+    errorMessage.value = '招新信息加载失败，请刷新页面重试'
   } finally {
     loading.value = false
   }
 }
 
-function saveDraft(form) {
-  saveRecruitmentDraft(form)
-  application.value = { ...form }
-  notice.value = '草稿已保存在当前浏览器'
-  errorMessage.value = ''
+async function saveDraft(form) {
+  try {
+    saveRecruitmentDraft(form)
+    if (form.photoFile) await saveRecruitmentPhotoDraft(form.photoFile)
+    else await clearRecruitmentPhotoDraft()
+    application.value = { ...form }
+    notice.value = ''
+    errorMessage.value = ''
+    await showResult('草稿已保存', '报名信息和证件照已保存在当前浏览器。')
+  } catch {
+    await showResult('保存失败', '草稿保存失败，请检查浏览器存储权限后重试。', 'error')
+  }
 }
 
 async function submit(form) {
@@ -58,17 +90,22 @@ async function submit(form) {
   try {
     await submitApplication(form)
     clearRecruitmentDraft()
-    notice.value = '报名提交成功'
+    await clearRecruitmentPhotoDraft().catch(() => {})
+    notice.value = ''
     application.value = { ...form }
     try {
       processes.value = await getMyInterviewProcess()
     } catch {
       errorMessage.value = '报名已提交，但进度刷新失败，请稍后在“查看进度”中重试。'
     }
+    activeTab.value = 'process'
+    await showResult('提交成功', '报名已成功提交，可在“查看进度”中查看后续安排。')
   } catch (error) {
     saveRecruitmentDraft(form)
+    if (form.photoFile) await saveRecruitmentPhotoDraft(form.photoFile).catch(() => {})
     application.value = { ...form }
-    errorMessage.value = error.message || '报名提交失败'
+    errorMessage.value = ''
+    await showResult('提交失败', friendlySubmissionError(error), 'error')
   } finally {
     submitting.value = false
   }

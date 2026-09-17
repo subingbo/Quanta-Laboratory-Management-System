@@ -22,6 +22,12 @@ describe('recruitment draft storage', () => {
     expect(loadRecruitmentDraft()).toEqual({ realName: '小李', photoUrl: '/profile/a.jpg' })
   })
 
+  it('does not persist a temporary blob preview URL', () => {
+    saveRecruitmentDraft({ realName: '小李', photoUrl: 'blob:temporary-preview' })
+
+    expect(loadRecruitmentDraft()).toEqual({ realName: '小李', photoUrl: '' })
+  })
+
   it('discards malformed storage instead of breaking the form', () => {
     localStorage.setItem('quanta_recruitment_draft', '{broken')
 

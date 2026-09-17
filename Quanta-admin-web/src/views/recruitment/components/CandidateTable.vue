@@ -123,7 +123,7 @@ function hasOwnEvaluation(row) {
             查看面评
           </PermissionButton>
           <PermissionButton
-            v-if="roundId === 2 && isManager && availableTracks(row).length"
+            v-if="availableTracks(row).length"
             link
             class="recruitment-table__link is-primary is-underlined"
             :permissions="'qt:interview:admin:evaluate'"

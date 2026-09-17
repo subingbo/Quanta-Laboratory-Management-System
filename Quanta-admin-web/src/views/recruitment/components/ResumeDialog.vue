@@ -9,6 +9,14 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:modelValue'])
 const visible = computed({ get: () => props.modelValue, set: (value) => emit('update:modelValue', value) })
+
+function choice(order) {
+  return props.application?.choices?.find((item) => item.choiceOrder === order)
+}
+
+function display(value) {
+  return value || '暂无'
+}
 </script>
 
 <template>
@@ -16,12 +24,12 @@ const visible = computed({ get: () => props.modelValue, set: (value) => emit('up
     <template #header><strong>简历阅览 - {{ application?.name || application?.realName }}</strong></template>
     <div v-loading="loading" class="resume-dialog__body">
       <div class="resume-dialog__grid">
-        <div><span>姓名 / 学号</span><strong>{{ application?.realName }}（{{ application?.studentNo }}）</strong></div>
-        <div><span>专业 / 班级</span><strong>{{ application?.major }} - {{ application?.className }}</strong></div>
-        <div><span>第一志愿</span><strong>{{ departmentLabels[application?.tracks?.[0]?.department] || '-' }}</strong></div>
-        <div><span>第二志愿</span><strong>{{ departmentLabels[application?.tracks?.[1]?.department] || '-' }}</strong></div>
-        <div><span>邮箱</span><strong>{{ application?.email || '-' }}</strong></div>
-        <div><span>联系方式</span><strong>{{ application?.phone || '-' }}</strong></div>
+        <div><span>姓名 / 学号</span><strong>{{ display(application?.realName || application?.name) }}（{{ display(application?.studentNo) }}）</strong></div>
+        <div><span>专业 / 班级</span><strong>{{ display(application?.major) }} - {{ display(application?.className) }}</strong></div>
+        <div><span>第一志愿</span><strong>{{ departmentLabels[choice(1)?.department] || '暂无' }}</strong></div>
+        <div><span>第二志愿</span><strong>{{ departmentLabels[choice(2)?.department] || '暂无' }}</strong></div>
+        <div><span>邮箱</span><strong>{{ display(application?.email) }}</strong></div>
+        <div><span>联系方式</span><strong>{{ display(application?.phone || application?.phonenumber) }}</strong></div>
       </div>
       <section><span>个人简介</span><p>{{ application?.selfIntro || '无' }}</p></section>
       <section><span>编程经历</span><p>{{ application?.codingExperienceDesc || '无' }}</p></section>

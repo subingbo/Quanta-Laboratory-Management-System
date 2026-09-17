@@ -20,12 +20,10 @@ const departmentCodes = new Map(
 const genderCodes = new Map([
   ['0', '0'],
   ['1', '1'],
-  ['2', '2'],
   ['男', '0'],
   ['女', '1'],
-  ['未知', '2'],
 ])
-const genderLabels = { 0: '男', 1: '女', 2: '未知' }
+const genderLabels = { 0: '男', 1: '女' }
 
 function requireDepartment(value) {
   const code = departmentCodes.get(value)
@@ -46,7 +44,7 @@ export function mapApplication(data) {
   return {
     applicationId: Number(application.applicationId),
     realName: application.realName || '',
-    gender: genderLabels[application.gender] || '未知',
+    gender: genderLabels[application.gender] || '',
     className: application.className || '',
     firstChoice: application.firstChoice || '',
     firstChoiceLabel: departmentLabels[application.firstChoice] || application.firstChoice || '',

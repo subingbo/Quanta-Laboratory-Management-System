@@ -83,6 +83,20 @@ describe('global route guard', () => {
     expect(router.currentRoute.value.path).toBe('/freshman/home')
   })
 
+  it('clears a member session when opening the freshman login entry', async () => {
+    const router = createTestRouter()
+    setAudience('member')
+    setToken('test-token')
+    userStore.token = 'test-token'
+    userStore.user = { userName: 'member', isQuantaMember: '1' }
+
+    await router.push('/login/freshman')
+
+    expect(router.currentRoute.value.path).toBe('/login/freshman')
+    expect(userStore.token).toBe('')
+    expect(userStore.user).toBeNull()
+  })
+
   it('allows a member with management permissions into admin routes', async () => {
     const router = createTestRouter()
     await userStore.login(

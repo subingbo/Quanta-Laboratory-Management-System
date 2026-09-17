@@ -10,6 +10,10 @@ import InterviewTimeline from '@/views/freshman/recruitment/components/Interview
 import RecruitmentPage from '@/views/freshman/recruitment/index.vue'
 import EventsPage from '@/views/freshman/events/index.vue'
 
+const elementMocks = vi.hoisted(() => ({ alert: vi.fn().mockResolvedValue('confirm') }))
+
+vi.mock('element-plus', () => ({ ElMessageBox: { alert: elementMocks.alert } }))
+
 vi.mock('@/api/portal/recruitment', () => ({
   recruitmentDepartments: [
     { value: 'PRODUCT', label: '产品' },
@@ -32,6 +36,9 @@ vi.mock('@/utils/recruitment-draft', () => ({
   loadRecruitmentDraft: vi.fn(),
   saveRecruitmentDraft: vi.fn(),
   clearRecruitmentDraft: vi.fn(),
+  loadRecruitmentPhotoDraft: vi.fn(),
+  saveRecruitmentPhotoDraft: vi.fn(),
+  clearRecruitmentPhotoDraft: vi.fn(),
 }))
 
 describe('freshman recruitment components', () => {
@@ -41,6 +48,10 @@ describe('freshman recruitment components', () => {
     recruitmentApi.getMyInterviewProcess.mockResolvedValue([])
     recruitmentApi.submitApplication.mockResolvedValue({ code: 200 })
     draftStorage.loadRecruitmentDraft.mockReturnValue(null)
+    draftStorage.loadRecruitmentPhotoDraft.mockResolvedValue(null)
+    draftStorage.saveRecruitmentPhotoDraft.mockResolvedValue(undefined)
+    draftStorage.clearRecruitmentPhotoDraft.mockResolvedValue(undefined)
+    elementMocks.alert.mockResolvedValue('confirm')
   })
 
   it('offers only active departments and submits a browser form model', async () => {
@@ -50,6 +61,7 @@ describe('freshman recruitment components', () => {
 
     expect(wrapper.text()).toContain('全栈（后端）')
     expect(wrapper.text()).not.toContain('安卓')
+    expect(wrapper.findAll('select[name="gender"] option:not([disabled])')).toHaveLength(2)
     expect(wrapper.findAll('select[name$="Choice"] option:not([disabled])')).toHaveLength(8)
     await wrapper.find('input[name="realName"]').setValue('新生小李')
     await wrapper.find('form').trigger('submit')
@@ -86,7 +98,12 @@ describe('freshman recruitment components', () => {
 
     Object.defineProperty(input.element, 'files', { configurable: true, value: [unsupported] })
     await input.trigger('change')
-    expect(wrapper.get('[data-testid="photo-error"]').text()).toContain('JPG、PNG 或 WebP')
+    expect(wrapper.get('[data-testid="photo-error"]').text()).toContain('JPG 或 PNG')
+
+    const webp = new File(['photo'], 'photo.webp', { type: 'image/webp' })
+    Object.defineProperty(input.element, 'files', { configurable: true, value: [webp] })
+    await input.trigger('change')
+    expect(wrapper.get('[data-testid="photo-error"]').text()).toContain('JPG 或 PNG')
 
     const oversized = new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'large.jpg', {
       type: 'image/jpeg',
@@ -141,7 +158,9 @@ describe('freshman recruitment components', () => {
 
     expect(recruitmentApi.submitApplication).toHaveBeenCalledWith(payload)
     expect(draftStorage.clearRecruitmentDraft).toHaveBeenCalledOnce()
-    expect(wrapper.text()).toContain('报名提交成功')
+    expect(draftStorage.clearRecruitmentPhotoDraft).toHaveBeenCalledOnce()
+    expect(elementMocks.alert).toHaveBeenCalledWith('报名已成功提交，可在“查看进度”中查看后续安排。', '提交成功', expect.any(Object))
+    expect(wrapper.get('.freshman-tabs button.active').text()).toBe('查看进度')
   })
 
   it('retains the draft when application submission fails', async () => {
@@ -155,7 +174,7 @@ describe('freshman recruitment components', () => {
 
     expect(draftStorage.clearRecruitmentDraft).not.toHaveBeenCalled()
     expect(draftStorage.saveRecruitmentDraft).toHaveBeenCalledWith(payload)
-    expect(wrapper.text()).toContain('网络异常')
+    expect(elementMocks.alert).toHaveBeenCalledWith('网络连接异常，请稍后重试', '提交失败', expect.objectContaining({ type: 'error' }))
   })
 
   it('restores a newer local draft over the last server application', async () => {
@@ -190,7 +209,21 @@ describe('freshman recruitment components', () => {
 
     expect(draftStorage.clearRecruitmentDraft).toHaveBeenCalledOnce()
     expect(draftStorage.saveRecruitmentDraft).not.toHaveBeenCalled()
-    expect(wrapper.text()).toContain('报名提交成功')
+    expect(elementMocks.alert).toHaveBeenCalledWith('报名已成功提交，可在“查看进度”中查看后续安排。', '提交成功', expect.any(Object))
+  })
+
+  it('saves the selected photo with the browser draft', async () => {
+    const wrapper = mount(RecruitmentPage)
+    await flushPromises()
+    const photo = new File(['photo'], 'photo.png', { type: 'image/png' })
+    const payload = { ...emptyApplication(), realName: '新生小李', photoFile: photo }
+
+    wrapper.findComponent(ApplicationForm).vm.$emit('save-draft', payload)
+    await flushPromises()
+
+    expect(draftStorage.saveRecruitmentDraft).toHaveBeenCalledWith(payload)
+    expect(draftStorage.saveRecruitmentPhotoDraft).toHaveBeenCalledWith(photo)
+    expect(elementMocks.alert).toHaveBeenCalledWith('报名信息和证件照已保存在当前浏览器。', '草稿已保存', expect.any(Object))
   })
 })
 
