@@ -1,5 +1,6 @@
 package com.ruoyi.framework.web.service;
 
+import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.ruoyi.common.constant.CacheConstants;
@@ -27,6 +28,11 @@ import com.ruoyi.system.service.ISysUserService;
 @Component
 public class SysRegisterService
 {
+    private static final Pattern STUDENT_NO_PATTERN = Pattern.compile("^20\\d{9}$");
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+
     @Autowired
     private ISysUserService userService;
 
@@ -42,15 +48,16 @@ public class SysRegisterService
     public String register(RegisterBody registerBody)
     {
         String msg = "";
-        String username = registerBody.getUsername();
         String password = registerBody.getPassword();
         String loginType = registerBody.getLoginType();
         String studentNo = StringUtils.trim(registerBody.getStudentNo());
-        String className = StringUtils.trim(registerBody.getClassName());
+        String username = studentNo;
+        String email = StringUtils.trim(registerBody.getEmail());
         String nickName = StringUtils.trim(registerBody.getNickName());
 
         SysUser sysUser = new SysUser();
         sysUser.setUserName(username);
+        sysUser.setEmail(email);
 
         // 验证码开关
         boolean captchaEnabled = configService.selectCaptchaEnabled();
@@ -64,21 +71,25 @@ public class SysRegisterService
         {
             msg = "塔员账号需由管理员开通，不支持自助注册";
         }
-        else if (StringUtils.isEmpty(username))
-        {
-            msg = "用户名不能为空";
-        }
-        else if (StringUtils.isEmpty(password))
-        {
-            msg = "用户密码不能为空";
-        }
         else if (StringUtils.isEmpty(studentNo))
         {
             msg = "学号不能为空";
         }
-        else if (StringUtils.isEmpty(className))
+        else if (!STUDENT_NO_PATTERN.matcher(studentNo).matches())
         {
-            msg = "班级不能为空";
+            msg = "学号格式不正确，请输入11位学号";
+        }
+        else if (StringUtils.isEmpty(email))
+        {
+            msg = "邮箱不能为空";
+        }
+        else if (!EMAIL_PATTERN.matcher(email).matches())
+        {
+            msg = "邮箱格式不正确";
+        }
+        else if (StringUtils.isEmpty(password))
+        {
+            msg = "用户密码不能为空";
         }
         else if (username.length() < UserConstants.USERNAME_MIN_LENGTH
                 || username.length() > UserConstants.USERNAME_MAX_LENGTH)
@@ -98,11 +109,15 @@ public class SysRegisterService
         {
             msg = "学号已存在，请勿重复注册";
         }
+        else if (!userService.checkEmailUnique(sysUser))
+        {
+            msg = "邮箱账号已存在";
+        }
         else
         {
             sysUser.setNickName(StringUtils.isNotEmpty(nickName) ? nickName : username);
             sysUser.setStudentNo(studentNo);
-            sysUser.setClassName(className);
+            sysUser.setEmail(email);
             // 自助注册固定为新生
             sysUser.setIsQuantaMember("0");
             sysUser.setPwdUpdateDate(DateUtils.getNowDate());

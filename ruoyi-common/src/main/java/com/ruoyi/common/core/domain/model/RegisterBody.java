@@ -22,6 +22,11 @@ public class RegisterBody extends LoginBody
      */
     private String className;
 
+    /**
+     * 邮箱
+     */
+    private String email;
+
     public String getNickName()
     {
         return nickName;
@@ -50,5 +55,15 @@ public class RegisterBody extends LoginBody
     public void setClassName(String className)
     {
         this.className = className;
+    }
+
+    public String getEmail()
+    {
+        return email;
+    }
+
+    public void setEmail(String email)
+    {
+        this.email = email;
     }
 }
