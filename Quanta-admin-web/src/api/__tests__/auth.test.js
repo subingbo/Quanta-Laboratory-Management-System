@@ -11,6 +11,7 @@ describe('authentication API', () => {
     await registerFreshman({
       studentNo: '20241003193',
       email: 'freshman@example.com',
+      emailCode: '123456',
       password: 'secret123',
     })
 
@@ -21,6 +22,7 @@ describe('authentication API', () => {
         studentNo: '20241003193',
         username: '20241003193',
         email: 'freshman@example.com',
+        emailCode: '123456',
         password: 'secret123',
         loginType: '0',
       },

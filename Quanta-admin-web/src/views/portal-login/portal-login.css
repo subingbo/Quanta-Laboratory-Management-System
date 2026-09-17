@@ -101,3 +101,38 @@
   line-height: 1.35;
   margin-top: 4px;
 }
+
+.portal-login__field-help {
+  color: #8a8f98;
+  font-size: 12px;
+  line-height: 1.35;
+  margin-top: 4px;
+}
+
+.portal-login__email-code-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 146px;
+  gap: 10px;
+  width: 100%;
+}
+
+.portal-login__email-code-button {
+  width: 146px;
+}
+
+.portal-login__email-code-button.is-disabled {
+  color: #9a9da3;
+  background: #eff0f2;
+  border-color: #e1e3e7;
+}
+
+@media (max-width: 520px) {
+  .portal-login__email-code-row {
+    grid-template-columns: minmax(0, 1fr) 124px;
+  }
+
+  .portal-login__email-code-button {
+    width: 124px;
+    padding-inline: 8px;
+  }
+}

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getCaptcha, registerFreshman } from '@/api/auth'
@@ -26,8 +26,11 @@ const audienceCopy = computed(() => audience.value === 'freshman'
   ? '了解 Quanta，提交你的招新报名，随时查看面试进展。'
   : '连接成员与社团服务，让每一次协作都有清晰入口。')
 const form = reactive({ username: '', password: '', code: '', uuid: '' })
-const registerForm = reactive({ studentNo: '', email: '', password: '', confirmPassword: '', code: '', uuid: '' })
-const registrationErrors = reactive({ studentNo: '', email: '', password: '', confirmPassword: '' })
+const registerForm = reactive({ studentNo: '', email: '', emailCode: '', password: '', confirmPassword: '', code: '', uuid: '' })
+const registrationErrors = reactive({ studentNo: '', email: '', emailCode: '', password: '', confirmPassword: '' })
+const emailCodeCooldown = ref(0)
+const hasSentEmailCode = ref(false)
+let emailCodeTimer
 
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
@@ -55,6 +58,10 @@ const registerRules = {
   email: [
     { required: true, message: '请输入邮箱', trigger: 'blur' },
     { type: 'email', message: '请输入正确的邮箱', trigger: ['blur', 'change'] },
+  ],
+  emailCode: [
+    { required: true, message: '请输入邮箱验证码', trigger: 'blur' },
+    { pattern: /^\d{6}$/, message: '请输入6位邮箱验证码', trigger: ['blur', 'change'] },
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
@@ -99,6 +106,28 @@ async function switchMode(nextMode) {
   registerFormRef.value?.clearValidate()
 }
 
+function sendEmailCode() {
+  if (emailCodeCooldown.value > 0) return
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)) {
+    registrationErrors.email = '请输入正确的邮箱'
+    return
+  }
+  registrationErrors.email = ''
+  hasSentEmailCode.value = true
+  emailCodeCooldown.value = 60
+  ElMessage.success('验证码已发送，5 分钟内有效')
+  clearInterval(emailCodeTimer)
+  emailCodeTimer = setInterval(() => {
+    if (emailCodeCooldown.value <= 1) {
+      emailCodeCooldown.value = 0
+      clearInterval(emailCodeTimer)
+      emailCodeTimer = undefined
+    } else {
+      emailCodeCooldown.value -= 1
+    }
+  }, 1000)
+}
+
 async function submit() {
   if (loading.value) return
   const valid = await formRef.value?.validate().catch(() => false)
@@ -129,6 +158,9 @@ async function submitRegistration() {
   registrationErrors.email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)
     ? ''
     : '请输入正确的邮箱'
+  registrationErrors.emailCode = /^\d{6}$/.test(registerForm.emailCode)
+    ? ''
+    : '请输入6位邮箱验证码'
   registrationErrors.password = registerForm.password.length >= 5 && registerForm.password.length <= 20
     ? ''
     : '密码长度需为 5–20 位'
@@ -143,6 +175,7 @@ async function submitRegistration() {
     await registerFreshman({
       studentNo: registerForm.studentNo,
       email: registerForm.email,
+      emailCode: registerForm.emailCode,
       password: registerForm.password,
       code: registerForm.code,
       uuid: registerForm.uuid,
@@ -151,6 +184,7 @@ async function submitRegistration() {
     form.password = ''
     registerForm.password = ''
     registerForm.confirmPassword = ''
+    registerForm.emailCode = ''
     registerForm.code = ''
     await switchMode('login')
     ElMessage.success('注册成功，请使用学号登录')
@@ -166,6 +200,7 @@ async function submitRegistration() {
 }
 
 onMounted(loadCaptcha)
+onBeforeUnmount(() => clearInterval(emailCodeTimer))
 </script>
 
 <template>
@@ -222,6 +257,22 @@ onMounted(loadCaptcha)
           <ElFormItem prop="email" label="邮箱">
             <ElInput v-model.trim="registerForm.email" name="email" autocomplete="email" placeholder="请输入常用邮箱" />
             <span v-if="registrationErrors.email" class="portal-login__field-error">{{ registrationErrors.email }}</span>
+          </ElFormItem>
+          <ElFormItem prop="emailCode" label="邮箱验证码">
+            <div class="portal-login__email-code-row">
+              <ElInput v-model.trim="registerForm.emailCode" name="emailCode" inputmode="numeric" maxlength="6" placeholder="请输入 6 位验证码" />
+              <ElButton
+                data-testid="send-email-code"
+                class="portal-login__email-code-button"
+                native-type="button"
+                :disabled="emailCodeCooldown > 0"
+                @click="sendEmailCode"
+              >
+                {{ emailCodeCooldown > 0 ? `${emailCodeCooldown} 秒后重新发送` : (hasSentEmailCode ? '重新发送' : '发送验证码') }}
+              </ElButton>
+            </div>
+            <span v-if="registrationErrors.emailCode" class="portal-login__field-error">{{ registrationErrors.emailCode }}</span>
+            <span v-else class="portal-login__field-help">验证码 5 分钟内有效</span>
           </ElFormItem>
           <ElFormItem prop="password" label="密码">
             <ElInput v-model="registerForm.password" name="registerPassword" autocomplete="new-password" type="password" show-password placeholder="请输入 5–20 位密码" />

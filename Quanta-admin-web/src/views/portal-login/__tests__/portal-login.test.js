@@ -67,12 +67,54 @@ describe('portal login', () => {
     expect(wrapper.text()).toContain('两次输入的密码不一致')
   })
 
+  it('locks email code sending for 60 seconds after validating the email', async () => {
+    vi.useFakeTimers()
+    let wrapper
+    try {
+      ;({ wrapper } = await mountLogin('freshman'))
+      await wrapper.get('[data-testid="register-mode"]').trigger('click')
+      await wrapper.get('input[name="email"]').setValue('bad-email')
+      await wrapper.get('[data-testid="send-email-code"]').trigger('click')
+      expect(wrapper.get('[data-testid="send-email-code"]').attributes('disabled')).toBeUndefined()
+      expect(wrapper.text()).toContain('请输入正确的邮箱')
+
+      await wrapper.get('input[name="email"]').setValue('freshman@example.com')
+      await wrapper.get('[data-testid="send-email-code"]').trigger('click')
+      expect(wrapper.get('[data-testid="send-email-code"]').attributes('disabled')).toBeDefined()
+      expect(wrapper.get('[data-testid="send-email-code"]').text()).toContain('60 秒后重新发送')
+
+      vi.advanceTimersByTime(60_000)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.get('[data-testid="send-email-code"]').attributes('disabled')).toBeUndefined()
+      expect(wrapper.get('[data-testid="send-email-code"]').text()).toContain('重新发送')
+    } finally {
+      wrapper?.unmount()
+      vi.useRealTimers()
+    }
+  })
+
+  it('requires a six-digit email code before registration', async () => {
+    const { wrapper } = await mountLogin('freshman')
+    await wrapper.get('[data-testid="register-mode"]').trigger('click')
+    await wrapper.get('input[name="studentNo"]').setValue('20241003193')
+    await wrapper.get('input[name="email"]').setValue('freshman@example.com')
+    await wrapper.get('input[name="emailCode"]').setValue('12345')
+    await wrapper.get('input[name="registerPassword"]').setValue('secret123')
+    await wrapper.get('input[name="confirmPassword"]').setValue('secret123')
+    await wrapper.get('[data-testid="register-submit"]').trigger('click')
+    await flushPromises()
+
+    expect(authApi.registerFreshman).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('请输入6位邮箱验证码')
+  })
+
   it('registers a freshman then returns to login with the student number filled', async () => {
     authApi.registerFreshman.mockResolvedValue({ code: 200 })
     const { wrapper } = await mountLogin('freshman')
     await wrapper.get('[data-testid="register-mode"]').trigger('click')
     await wrapper.get('input[name="studentNo"]').setValue('20241003193')
     await wrapper.get('input[name="email"]').setValue('freshman@example.com')
+    await wrapper.get('input[name="emailCode"]').setValue('123456')
     await wrapper.get('input[name="registerPassword"]').setValue('secret123')
     await wrapper.get('input[name="confirmPassword"]').setValue('secret123')
     await wrapper.get('[data-testid="register-submit"]').trigger('click')
@@ -81,6 +123,7 @@ describe('portal login', () => {
     expect(authApi.registerFreshman).toHaveBeenCalledWith(expect.objectContaining({
       studentNo: '20241003193',
       email: 'freshman@example.com',
+      emailCode: '123456',
       password: 'secret123',
     }))
     expect(wrapper.get('input[autocomplete="username"]').element.value).toBe('20241003193')
