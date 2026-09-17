@@ -106,6 +106,15 @@ onMounted(loadCaptcha)
     </section>
 
     <section class="login-page__form-panel">
+      <button
+        class="login-page__back"
+        type="button"
+        data-testid="back-to-identity"
+        @click="router.push('/')"
+      >
+        <span aria-hidden="true">←</span>
+        返回选择身份
+      </button>
       <div class="login-card">
         <div class="login-card__mobile-brand">
           <div class="login-page__logo">

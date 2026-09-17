@@ -9,6 +9,28 @@ import {
   setAudience,
 } from '@/utils/session-audience'
 
+const departmentAliases = {
+  产品: 'PRODUCT',
+  产品部: 'PRODUCT',
+  设计: 'DESIGN',
+  设计部: 'DESIGN',
+  前端: 'FRONTEND',
+  前端部: 'FRONTEND',
+  '全栈（前端）': 'FRONTEND',
+  后端: 'BACKEND',
+  后端部: 'BACKEND',
+  研发部: 'BACKEND',
+  '全栈（后端）': 'BACKEND',
+}
+
+export function normalizeDepartmentCode(value) {
+  const text = String(value || '').trim()
+  if (!text) return ''
+  const code = text.toUpperCase()
+  if (['PRODUCT', 'DESIGN', 'FRONTEND', 'BACKEND', 'ANDROID'].includes(code)) return code
+  return departmentAliases[text] || ''
+}
+
 export const useUserStore = defineStore('user', () => {
   const token = ref(getToken())
   const user = ref(null)
@@ -18,8 +40,13 @@ export const useUserStore = defineStore('user', () => {
 
   const isAuthenticated = computed(() => Boolean(token.value))
   const displayName = computed(() => user.value?.nickName || user.value?.userName || '未登录')
-  const departmentCode = computed(
-    () => user.value?.deptCode || user.value?.dept?.deptCode || user.value?.memberDepartmentCode || '',
+  const departmentCode = computed(() =>
+    normalizeDepartmentCode(
+      user.value?.deptCode ||
+        user.value?.dept?.deptCode ||
+        user.value?.memberDepartmentCode ||
+        user.value?.memberDepartment,
+    ),
   )
   const departmentName = computed(
     () => user.value?.dept?.deptName || user.value?.memberDepartment || '',

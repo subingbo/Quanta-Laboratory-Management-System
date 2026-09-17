@@ -16,16 +16,12 @@ const props = defineProps({
 
 const emit = defineEmits(['resume', 'view-feedback', 'edit-feedback', 'offer'])
 const userStore = useUserStore()
-const { user, roles } = storeToRefs(userStore)
+const { user, roles, departmentCode } = storeToRefs(userStore)
 const isCeo = computed(() => roles.value.some(isCeoRole))
 const isManagement = computed(
   () => roles.value.includes('qt_mgmt') || roles.value.some(isCeoRole),
 )
 const isManager = computed(() => roles.value.includes('qt_manager'))
-const departmentCode = computed(
-  () => user.value?.deptCode || user.value?.dept?.deptCode || '',
-)
-
 function choice(row, order) {
   return row.choices?.find((item) => item.choiceOrder === order)
 }

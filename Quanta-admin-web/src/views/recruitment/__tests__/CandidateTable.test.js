@@ -32,11 +32,11 @@ const candidate = {
   ],
 }
 
-function mountTable({ roles, permissions, roundId = 1, rows = [candidate] }) {
+function mountTable({ roles, permissions, roundId = 1, rows = [candidate], user = { userId: 21, deptCode: 'PRODUCT' } }) {
   const pinia = createPinia()
   setActivePinia(pinia)
   const store = useUserStore()
-  store.user = { userId: 21, deptCode: 'PRODUCT' }
+  store.user = user
   store.roles = roles
   store.permissions = permissions
 
@@ -96,6 +96,16 @@ describe('CandidateTable', () => {
     expect(wrapper.text()).not.toContain('已评')
     expect(wrapper.text()).not.toContain('查看面评')
     expect(wrapper.text()).not.toContain('是否录用')
+  })
+
+  it('recognizes the real memberDepartment field when showing feedback actions', () => {
+    const wrapper = mountTable({
+      roles: ['qt_manager'],
+      permissions: ['qt:interview:admin:list', 'qt:interview:admin:evaluate'],
+      user: { userId: 21, memberDepartment: '产品部' },
+    })
+
+    expect(wrapper.text()).toContain('编辑面评')
   })
 
   it('renders the management second-round action only', () => {

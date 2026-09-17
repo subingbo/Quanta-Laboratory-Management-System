@@ -9,10 +9,7 @@ import ApplicationForm, {
 import InterviewTimeline from '@/views/freshman/recruitment/components/InterviewTimeline.vue'
 import RecruitmentPage from '@/views/freshman/recruitment/index.vue'
 import EventsPage from '@/views/freshman/events/index.vue'
-
-const elementMocks = vi.hoisted(() => ({ alert: vi.fn().mockResolvedValue('confirm') }))
-
-vi.mock('element-plus', () => ({ ElMessageBox: { alert: elementMocks.alert } }))
+import PortalNoticeDialog from '@/components/PortalNoticeDialog.vue'
 
 vi.mock('@/api/portal/recruitment', () => ({
   recruitmentDepartments: [
@@ -57,12 +54,25 @@ describe('freshman recruitment components', () => {
     draftStorage.saveRecruitmentResumeDraft.mockResolvedValue(undefined)
     draftStorage.clearRecruitmentPhotoDraft.mockResolvedValue(undefined)
     draftStorage.clearRecruitmentResumeDraft.mockResolvedValue(undefined)
-    elementMocks.alert.mockResolvedValue('confirm')
   })
 
   it('offers only active departments and submits a browser form model', async () => {
     const wrapper = mount(ApplicationForm, {
-      props: { initialValue: emptyApplication() },
+      props: {
+        initialValue: {
+          ...emptyApplication(),
+          realName: '新生小李',
+          gender: '男',
+          className: '软工2402',
+          firstChoice: 'FRONTEND',
+          secondChoice: 'BACKEND',
+          storedPhotoUrl: '/profile/photo.jpg',
+          storedResumeUrl: '/profile/resume.pdf',
+          selfIntro: '自我介绍',
+          codingExperience: '0',
+          quantaUnderstanding: '开放与创造',
+        },
+      },
     })
 
     expect(wrapper.text()).toContain('全栈（后端）')
@@ -74,6 +84,45 @@ describe('freshman recruitment components', () => {
 
     expect(wrapper.emitted('submit')).toHaveLength(1)
     expect(wrapper.emitted('submit')[0][0].realName).toBe('新生小李')
+  })
+
+  it('blocks incomplete applications and reports every missing required field', async () => {
+    const wrapper = mount(ApplicationForm, {
+      props: { initialValue: emptyApplication() },
+    })
+
+    await wrapper.find('form').trigger('submit')
+
+    expect(wrapper.emitted('submit')).toBeUndefined()
+    expect(wrapper.emitted('invalid')).toHaveLength(1)
+    expect(wrapper.emitted('invalid')[0][0]).toEqual(
+      expect.arrayContaining(['姓名', '性别', '班级', '第一志愿', '第二志愿', '证件照', 'PDF 简历', '自我介绍', '编程经验', '对 Quanta 的了解']),
+    )
+  })
+
+  it('requires a description only when programming experience is selected', async () => {
+    const wrapper = mount(ApplicationForm, {
+      props: {
+        initialValue: {
+          ...emptyApplication(),
+          realName: '新生小李',
+          gender: '男',
+          className: '软工2402',
+          firstChoice: 'FRONTEND',
+          secondChoice: 'BACKEND',
+          storedPhotoUrl: '/profile/photo.jpg',
+          storedResumeUrl: '/profile/resume.pdf',
+          selfIntro: '自我介绍',
+          codingExperience: '1',
+          quantaUnderstanding: '开放与创造',
+        },
+      },
+    })
+
+    await wrapper.find('form').trigger('submit')
+
+    expect(wrapper.emitted('submit')).toBeUndefined()
+    expect(wrapper.emitted('invalid')[0][0]).toContain('编程经历说明')
   })
 
   it('renders a branded photo picker and previews a valid image', async () => {
@@ -121,7 +170,20 @@ describe('freshman recruitment components', () => {
 
   it('accepts only PDF resumes up to 10 MB and includes the file in the form snapshot', async () => {
     const wrapper = mount(ApplicationForm, {
-      props: { initialValue: emptyApplication() },
+      props: {
+        initialValue: {
+          ...emptyApplication(),
+          realName: '新生小李',
+          gender: '男',
+          className: '软工2402',
+          firstChoice: 'FRONTEND',
+          secondChoice: 'BACKEND',
+          storedPhotoUrl: '/profile/photo.jpg',
+          selfIntro: '自我介绍',
+          codingExperience: '0',
+          quantaUnderstanding: '开放与创造',
+        },
+      },
     })
     const input = wrapper.get('input[name="resumeFile"]')
     const resume = new File(['resume'], 'quanta-resume.pdf', { type: 'application/pdf' })
@@ -195,7 +257,12 @@ describe('freshman recruitment components', () => {
     expect(draftStorage.clearRecruitmentDraft).toHaveBeenCalledOnce()
     expect(draftStorage.clearRecruitmentPhotoDraft).toHaveBeenCalledOnce()
     expect(draftStorage.clearRecruitmentResumeDraft).toHaveBeenCalledOnce()
-    expect(elementMocks.alert).toHaveBeenCalledWith('报名已成功提交，可在“查看进度”中查看后续安排。', '提交成功', expect.any(Object))
+    expect(wrapper.findComponent(PortalNoticeDialog).props()).toEqual(expect.objectContaining({
+      modelValue: true,
+      title: '提交成功',
+      message: '报名已成功提交，可在“查看进度”中查看后续安排。',
+      type: 'success',
+    }))
     expect(wrapper.get('.freshman-tabs button.active').text()).toBe('查看进度')
   })
 
@@ -210,7 +277,12 @@ describe('freshman recruitment components', () => {
 
     expect(draftStorage.clearRecruitmentDraft).not.toHaveBeenCalled()
     expect(draftStorage.saveRecruitmentDraft).toHaveBeenCalledWith(payload)
-    expect(elementMocks.alert).toHaveBeenCalledWith('网络连接异常，请稍后重试', '提交失败', expect.objectContaining({ type: 'error' }))
+    expect(wrapper.findComponent(PortalNoticeDialog).props()).toEqual(expect.objectContaining({
+      modelValue: true,
+      title: '提交失败',
+      message: '网络连接异常，请稍后重试',
+      type: 'error',
+    }))
   })
 
   it('restores a newer local draft over the last server application', async () => {
@@ -245,7 +317,7 @@ describe('freshman recruitment components', () => {
 
     expect(draftStorage.clearRecruitmentDraft).toHaveBeenCalledOnce()
     expect(draftStorage.saveRecruitmentDraft).not.toHaveBeenCalled()
-    expect(elementMocks.alert).toHaveBeenCalledWith('报名已成功提交，可在“查看进度”中查看后续安排。', '提交成功', expect.any(Object))
+    expect(wrapper.findComponent(PortalNoticeDialog).props('title')).toBe('提交成功')
   })
 
   it('saves the selected photo with the browser draft', async () => {
@@ -259,7 +331,11 @@ describe('freshman recruitment components', () => {
 
     expect(draftStorage.saveRecruitmentDraft).toHaveBeenCalledWith(payload)
     expect(draftStorage.saveRecruitmentPhotoDraft).toHaveBeenCalledWith(photo)
-    expect(elementMocks.alert).toHaveBeenCalledWith('报名信息、证件照和 PDF 简历已保存在当前浏览器。', '草稿已保存', expect.any(Object))
+    expect(wrapper.findComponent(PortalNoticeDialog).props()).toEqual(expect.objectContaining({
+      modelValue: true,
+      title: '草稿已保存',
+      message: '报名信息、证件照和 PDF 简历已保存在当前浏览器。',
+    }))
   })
 
   it('saves the selected PDF resume with the browser draft', async () => {
@@ -272,11 +348,11 @@ describe('freshman recruitment components', () => {
     await flushPromises()
 
     expect(draftStorage.saveRecruitmentResumeDraft).toHaveBeenCalledWith(resume)
-    expect(elementMocks.alert).toHaveBeenCalledWith(
-      '报名信息、证件照和 PDF 简历已保存在当前浏览器。',
-      '草稿已保存',
-      expect.any(Object),
-    )
+    expect(wrapper.findComponent(PortalNoticeDialog).props()).toEqual(expect.objectContaining({
+      modelValue: true,
+      title: '草稿已保存',
+      message: '报名信息、证件照和 PDF 简历已保存在当前浏览器。',
+    }))
   })
 })
 

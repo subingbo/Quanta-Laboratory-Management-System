@@ -30,7 +30,7 @@ import ResumeDialog from './components/ResumeDialog.vue'
 import './recruitment.css'
 
 const userStore = useUserStore()
-const { user, roles } = storeToRefs(userStore)
+const { user, roles, departmentCode } = storeToRefs(userStore)
 const activeTab = ref('board')
 const loading = ref(false)
 const statisticsLoading = ref(false)
@@ -44,9 +44,7 @@ const filters = reactive({ department: '', keyword: '' })
 let requestSequence = 0
 
 const isCeo = computed(() => roles.value.some(isCeoRole))
-const currentDepartment = computed(
-  () => user.value?.deptCode || user.value?.dept?.deptCode || '',
-)
+const currentDepartment = departmentCode
 const roundId = computed(() => Number(activeTab.value) || 1)
 const departmentOptions = computed(() =>
   Object.entries(departmentLabels)

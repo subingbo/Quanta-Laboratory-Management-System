@@ -137,6 +137,13 @@
 .application-form__photo-field { display: grid; gap: 10px; }
 .application-form__field-label { color: var(--portal-ink); font-weight: 700; }
 .application-form__field-label em { margin-left: 6px; color: var(--portal-orange); font-size: 11px; font-style: normal; font-weight: 800; }
+.application-form .is-invalid > input,
+.application-form .is-invalid > select,
+.application-form .is-invalid > textarea,
+.application-form fieldset.is-invalid,
+.application-form__photo-field.is-invalid .application-form__photo-card,
+.application-form__resume-field.is-invalid .application-form__resume-card { border-color: #dc4c4c; box-shadow: 0 0 0 3px rgb(220 76 76 / 9%); }
+.application-form__field-error { display: block; margin-top: 3px; color: #cf3f3f; font-size: 12px; font-weight: 600; }
 .application-form__photo-card { display: grid; padding: 22px; border: 1px solid var(--portal-line); border-radius: 20px; background: linear-gradient(135deg, #fff 0%, #fffaf6 100%); box-shadow: 0 14px 36px rgb(32 33 36 / 6%); grid-template-columns: 152px minmax(0, 1fr); gap: 26px; align-items: stretch; }
 .application-form__photo-preview { display: grid; overflow: hidden; min-height: 202px; border: 1px dashed #ffc59d; border-radius: 16px; background: #fff4ea; aspect-ratio: 3 / 4; place-items: center; }
 .application-form__photo-preview.has-photo { border-style: solid; background: #f3f4f6; }

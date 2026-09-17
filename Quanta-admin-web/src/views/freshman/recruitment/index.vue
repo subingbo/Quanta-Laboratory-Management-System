@@ -1,6 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import { ElMessageBox } from 'element-plus'
+import { onMounted, reactive, ref } from 'vue'
 import {
   getMyApplication,
   getMyInterviewProcess,
@@ -19,6 +18,7 @@ import {
 } from '@/utils/recruitment-draft'
 import ApplicationForm, { emptyApplication } from './components/ApplicationForm.vue'
 import InterviewTimeline from './components/InterviewTimeline.vue'
+import PortalNoticeDialog from '@/components/PortalNoticeDialog.vue'
 
 const activeTab = ref('application')
 const loading = ref(true)
@@ -27,12 +27,14 @@ const application = ref(emptyApplication())
 const processes = ref([])
 const notice = ref('')
 const errorMessage = ref('')
+const noticeDialog = reactive({ visible: false, title: '', message: '', type: 'success' })
 
 function showResult(title, message, type = 'success') {
-  return ElMessageBox.alert(message, title, {
-    type,
-    confirmButtonText: '知道了',
-  }).catch(() => {})
+  Object.assign(noticeDialog, { visible: true, title, message, type })
+}
+
+function showValidationErrors(fields) {
+  showResult('请完善报名信息', `请先填写：${fields.join('、')}`, 'error')
 }
 
 function friendlySubmissionError(error) {
@@ -169,6 +171,7 @@ onMounted(loadRecruitment)
         :submitting="submitting"
         @save-draft="saveDraft"
         @submit="submit"
+        @invalid="showValidationErrors"
       />
     </div>
 
@@ -176,6 +179,13 @@ onMounted(loadRecruitment)
       <div v-if="loading" class="freshman-loading portal-card">正在加载面试进度…</div>
       <InterviewTimeline v-else :processes="processes" />
     </div>
+
+    <PortalNoticeDialog
+      v-model="noticeDialog.visible"
+      :type="noticeDialog.type"
+      :title="noticeDialog.title"
+      :message="noticeDialog.message"
+    />
   </section>
 </template>
 

@@ -12,6 +12,7 @@ async function mountLogin() {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
+      { path: '/', component: { template: '<div>身份选择</div>' } },
       { path: '/admin/login', component: LoginView },
       { path: '/admin/dashboard', component: { template: '<div>dashboard</div>' } },
     ],
@@ -42,6 +43,15 @@ describe('login view', () => {
     await flushPromises()
 
     expect(loginSpy).not.toHaveBeenCalled()
+  })
+
+  it('returns to the identity selector from the admin login page', async () => {
+    const { wrapper, router } = await mountLogin()
+
+    await wrapper.get('[data-testid="back-to-identity"]').trigger('click')
+    await flushPromises()
+
+    expect(router.currentRoute.value.path).toBe('/')
   })
 
   it('logs in and enters the dashboard', async () => {

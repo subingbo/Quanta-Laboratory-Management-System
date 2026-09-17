@@ -7,7 +7,7 @@ export function emptyApplication() {
     firstChoice: '',
     secondChoice: '',
     selfIntro: '',
-    codingExperience: '0',
+    codingExperience: '',
     codingExperienceDesc: '',
     quantaUnderstanding: '',
     photoUrl: '',
@@ -32,8 +32,10 @@ const props = defineProps({
   },
   submitting: Boolean,
 })
-const emit = defineEmits(['submit', 'save-draft'])
+const emit = defineEmits(['submit', 'save-draft', 'invalid'])
 const model = reactive(emptyApplication())
+const formRef = ref(null)
+const fieldErrors = reactive({})
 const photoInput = ref(null)
 const resumeInput = ref(null)
 const photoError = ref('')
@@ -139,27 +141,75 @@ onBeforeUnmount(() => {
 function snapshot() {
   return { ...model }
 }
+
+function validateApplication() {
+  const errors = {}
+  const requiredText = [
+    ['realName', '姓名'],
+    ['gender', '性别'],
+    ['className', '班级'],
+    ['firstChoice', '第一志愿'],
+    ['secondChoice', '第二志愿'],
+    ['selfIntro', '自我介绍'],
+    ['codingExperience', '编程经验'],
+    ['quantaUnderstanding', '对 Quanta 的了解'],
+  ]
+  requiredText.forEach(([field, label]) => {
+    if (!String(model[field] || '').trim()) errors[field] = label
+  })
+  if (!model.photoFile && !model.photoUrl && !model.storedPhotoUrl) errors.photo = '证件照'
+  if (!model.resumeFile && !model.resumeUrl && !model.storedResumeUrl) errors.resume = 'PDF 简历'
+  if (model.firstChoice && model.firstChoice === model.secondChoice) {
+    errors.secondChoice = '第一、第二志愿不能相同'
+  }
+  if (model.codingExperience === '1' && !model.codingExperienceDesc.trim()) {
+    errors.codingExperienceDesc = '编程经历说明'
+  }
+  return errors
+}
+
+function handleSubmit() {
+  const errors = validateApplication()
+  Object.keys(fieldErrors).forEach((key) => delete fieldErrors[key])
+  Object.assign(fieldErrors, errors)
+  const missingFields = Object.values(errors)
+  if (missingFields.length) {
+    const firstField = Object.keys(errors)[0]
+    const selector = firstField === 'photo'
+      ? '[data-testid="photo-upload-card"]'
+      : firstField === 'resume'
+        ? '[data-testid="resume-upload-card"]'
+        : `[name="${firstField}"]`
+    formRef.value?.querySelector(selector)?.focus?.()
+    emit('invalid', missingFields)
+    return
+  }
+  emit('submit', snapshot())
+}
 </script>
 
 <template>
-  <form class="application-form application-grid" @submit.prevent="emit('submit', snapshot())">
-    <label>
+  <form ref="formRef" class="application-form application-grid" novalidate @submit.prevent="handleSubmit">
+    <label :class="{ 'is-invalid': fieldErrors.realName }">
       <span>姓名</span>
       <input v-model.trim="model.realName" name="realName" autocomplete="name" required />
+      <small v-if="fieldErrors.realName" class="application-form__field-error">请填写姓名</small>
     </label>
-    <label>
+    <label :class="{ 'is-invalid': fieldErrors.gender }">
       <span>性别</span>
       <select v-model="model.gender" name="gender" required>
         <option value="" disabled>请选择</option>
         <option value="男">男</option>
         <option value="女">女</option>
       </select>
+      <small v-if="fieldErrors.gender" class="application-form__field-error">请选择性别</small>
     </label>
-    <label class="application-grid__wide">
+    <label class="application-grid__wide" :class="{ 'is-invalid': fieldErrors.className }">
       <span>班级</span>
       <input v-model.trim="model.className" name="className" placeholder="例如：软工2402" required />
+      <small v-if="fieldErrors.className" class="application-form__field-error">请填写班级</small>
     </label>
-    <label>
+    <label :class="{ 'is-invalid': fieldErrors.firstChoice }">
       <span>第一志愿</span>
       <select v-model="model.firstChoice" name="firstChoice" required>
         <option value="" disabled>请选择</option>
@@ -167,8 +217,9 @@ function snapshot() {
           {{ department.label }}
         </option>
       </select>
+      <small v-if="fieldErrors.firstChoice" class="application-form__field-error">{{ fieldErrors.firstChoice }}</small>
     </label>
-    <label>
+    <label :class="{ 'is-invalid': fieldErrors.secondChoice }">
       <span>第二志愿</span>
       <select v-model="model.secondChoice" name="secondChoice" required>
         <option value="" disabled>请选择</option>
@@ -176,8 +227,9 @@ function snapshot() {
           {{ department.label }}
         </option>
       </select>
+      <small v-if="fieldErrors.secondChoice" class="application-form__field-error">{{ fieldErrors.secondChoice }}</small>
     </label>
-    <div class="application-grid__wide application-form__photo-field">
+    <div class="application-grid__wide application-form__photo-field" :class="{ 'is-invalid': fieldErrors.photo }">
       <span class="application-form__field-label">证件照 <em>必填</em></span>
       <div class="application-form__photo-card" data-testid="photo-upload-card">
         <div class="application-form__photo-preview" :class="{ 'has-photo': hasPhotoPreview }">
@@ -226,9 +278,10 @@ function snapshot() {
           </button>
         </div>
       </div>
+      <small v-if="fieldErrors.photo" class="application-form__field-error">请上传证件照</small>
     </div>
-    <div class="application-grid__wide application-form__resume-field">
-      <span class="application-form__field-label">PDF 简历 <small>选填</small></span>
+    <div class="application-grid__wide application-form__resume-field" :class="{ 'is-invalid': fieldErrors.resume }">
+      <span class="application-form__field-label">PDF 简历 <em>必填</em></span>
       <div class="application-form__resume-card" data-testid="resume-upload-card">
         <div class="application-form__resume-icon" aria-hidden="true">
           <svg viewBox="0 0 48 48">
@@ -265,23 +318,28 @@ function snapshot() {
           </button>
         </div>
       </div>
+      <small v-if="fieldErrors.resume" class="application-form__field-error">请上传 PDF 简历</small>
     </div>
-    <label class="application-grid__wide">
+    <label class="application-grid__wide" :class="{ 'is-invalid': fieldErrors.selfIntro }">
       <span>自我介绍</span>
       <textarea v-model.trim="model.selfIntro" name="selfIntro" rows="5" required></textarea>
+      <small v-if="fieldErrors.selfIntro" class="application-form__field-error">请填写自我介绍</small>
     </label>
-    <fieldset class="application-grid__wide">
+    <fieldset class="application-grid__wide" :class="{ 'is-invalid': fieldErrors.codingExperience }">
       <legend>是否有编程经验</legend>
       <label class="application-form__radio"><input v-model="model.codingExperience" type="radio" value="1" />有</label>
       <label class="application-form__radio"><input v-model="model.codingExperience" type="radio" value="0" />暂无</label>
+      <small v-if="fieldErrors.codingExperience" class="application-form__field-error">请选择是否有编程经验</small>
     </fieldset>
-    <label v-if="model.codingExperience === '1'" class="application-grid__wide">
+    <label v-if="model.codingExperience === '1'" class="application-grid__wide" :class="{ 'is-invalid': fieldErrors.codingExperienceDesc }">
       <span>编程经验</span>
       <textarea v-model.trim="model.codingExperienceDesc" name="codingExperienceDesc" rows="4"></textarea>
+      <small v-if="fieldErrors.codingExperienceDesc" class="application-form__field-error">请填写编程经历说明</small>
     </label>
-    <label class="application-grid__wide">
+    <label class="application-grid__wide" :class="{ 'is-invalid': fieldErrors.quantaUnderstanding }">
       <span>你对 Quanta 的了解</span>
       <textarea v-model.trim="model.quantaUnderstanding" name="quantaUnderstanding" rows="4" required></textarea>
+      <small v-if="fieldErrors.quantaUnderstanding" class="application-form__field-error">请填写对 Quanta 的了解</small>
     </label>
     <div class="application-form__actions application-grid__wide">
       <button type="button" class="portal-secondary-button" :disabled="submitting" @click="emit('save-draft', snapshot())">

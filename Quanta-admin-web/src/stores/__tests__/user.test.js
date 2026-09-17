@@ -82,4 +82,13 @@ describe('user store', () => {
     expect(store.serverAudience).toBe('member')
     expect(store.canAccessAdmin).toBe(false)
   })
+
+  it('normalizes the real memberDepartment field for recruitment scope', () => {
+    const store = useUserStore()
+    store.user = { memberDepartment: '产品部' }
+    expect(store.departmentCode).toBe('PRODUCT')
+
+    store.user = { memberDepartment: 'BACKEND' }
+    expect(store.departmentCode).toBe('BACKEND')
+  })
 })
