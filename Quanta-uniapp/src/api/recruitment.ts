@@ -45,9 +45,10 @@ interface InterviewProfileDto {
 
 export interface InterviewResultDto {
   roundId: number
+  roundNo?: number
   roundName?: string
   department: string
-  resultStatus: 'PENDING' | 'PASS' | 'FAIL' | 'WAITING'
+  resultStatus: 'PENDING' | 'PASS' | 'FAIL' | 'WAITING' | 'OUT'
   interviewTime?: string
   feedback?: string
 }
@@ -111,11 +112,13 @@ const scheduleDetail = (result?: InterviewResultDto) => result?.interviewTime
 
 const resultStatus = (result: InterviewResultDto | undefined, round: number, unlocked: boolean) => {
   if (!result) return unlocked ? 'pending' : 'locked'
-  if (result.resultStatus === 'FAIL') return 'rejected'
+  if (result.resultStatus === 'FAIL' || result.resultStatus === 'OUT') return 'rejected'
   if (result.resultStatus === 'PASS') return 'passed'
   if (result.resultStatus === 'WAITING') return round === 2 ? 'invited' : result.interviewTime ? 'scheduled' : 'pending'
   return 'pending'
 }
+
+const resultRoundNo = (result: InterviewResultDto) => Number(result.roundNo ?? result.roundId)
 
 export const mapInterviewProcess = (
   application: InterviewApplicationDto | null,
@@ -125,8 +128,8 @@ export const mapInterviewProcess = (
   const choices = [...new Set([application.firstChoice, application.secondChoice].filter(Boolean))]
   return choices.map((code) => {
     const department = normalizeDepartmentProcess(createDepartment(fromDepartmentCode(code)))
-    const first = results.find((item) => item.department === code && Number(item.roundId) === 1)
-    const second = results.find((item) => item.department === code && Number(item.roundId) === 2)
+    const first = results.find((item) => item.department === code && resultRoundNo(item) === 1)
+    const second = results.find((item) => item.department === code && resultRoundNo(item) === 2)
     const firstStatus = resultStatus(first, 1, true)
     const secondStatus = resultStatus(second, 2, firstStatus === 'passed')
     department.stages[0] = { ...department.stages[0], status: firstStatus, detail: scheduleDetail(first) }

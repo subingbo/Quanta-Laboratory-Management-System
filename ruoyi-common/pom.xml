@@ -105,6 +105,12 @@
             <artifactId>jaxb-api</artifactId>
         </dependency>
 
+        <!-- 邮件发送（阿里云 DirectMail 等 SMTP） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <!-- redis 缓存操作 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

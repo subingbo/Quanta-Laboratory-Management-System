@@ -78,6 +78,8 @@ function resetPassword(config) {
   if (!account) return unauthorized()
   if (!hasPermission(account, 'system:user:resetPwd') || !isCeo(account)) return forbidden()
   if (!findMockMember(config.data?.userId)) return { code: 404, msg: '成员不存在' }
+  const password = String(config.data?.password || '')
+  if (password.length < 5 || password.length > 20) return { code: 400, msg: '密码长度必须在5到20个字符之间' }
   return { code: 200, msg: '密码重置成功' }
 }
 

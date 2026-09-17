@@ -24,11 +24,13 @@ import com.ruoyi.common.core.domain.entity.SysRole;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.file.FileValidator;
 import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
+import com.ruoyi.qt.service.IQtLabMemberService;
 import com.ruoyi.qt.util.QtAuthUtils;
 import com.ruoyi.system.service.ISysDeptService;
 import com.ruoyi.system.service.ISysPostService;
@@ -55,6 +57,9 @@ public class SysUserController extends BaseController
 
     @Autowired
     private ISysPostService postService;
+
+    @Autowired
+    private IQtLabMemberService qtLabMemberService;
 
     /**
      * 获取用户列表
@@ -85,10 +90,7 @@ public class SysUserController extends BaseController
     {
         QtAuthUtils.requireCeo();
         FileValidator.validate(file, MimeTypeUtils.EXCEL_EXTENSION, FileValidator.SIZE_IMPORT);
-        ExcelUtil<SysUser> util = new ExcelUtil<SysUser>(SysUser.class);
-        List<SysUser> userList = util.importExcel(file.getInputStream());
-        String operName = getUsername();
-        String message = userService.importUser(userList, updateSupport, operName);
+        String message = qtLabMemberService.importLabMembers(file.getInputStream(), updateSupport, getUsername());
         return success(message);
     }
 
@@ -208,6 +210,12 @@ public class SysUserController extends BaseController
     @PutMapping("/resetPwd")
     public AjaxResult resetPwd(@RequestBody SysUser user)
     {
+        if (StringUtils.isEmpty(user.getPassword())
+                || user.getPassword().length() < UserConstants.PASSWORD_MIN_LENGTH
+                || user.getPassword().length() > UserConstants.PASSWORD_MAX_LENGTH)
+        {
+            return error("密码长度必须在5到20个字符之间");
+        }
         userService.checkUserAllowed(user);
         userService.checkUserDataScope(user.getUserId());
         SysUser target = userService.selectUserById(user.getUserId());

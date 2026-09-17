@@ -1,5 +1,6 @@
 package com.ruoyi.qt.service.impl;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -7,27 +8,41 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.ruoyi.common.constant.CacheConstants;
+import com.ruoyi.common.constant.UserConstants;
+import com.ruoyi.common.core.domain.entity.SysRole;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.qt.domain.QtCohort;
 import com.ruoyi.qt.domain.QtLabMember;
+import com.ruoyi.qt.domain.QtLabMemberImportRow;
 import com.ruoyi.qt.domain.QtMemberRecord;
 import com.ruoyi.qt.domain.QtMemberRetainBody;
 import com.ruoyi.qt.mapper.QtCohortMapper;
 import com.ruoyi.qt.mapper.QtLabMemberMapper;
 import com.ruoyi.qt.service.IQtLabMemberService;
+import com.ruoyi.qt.util.QtLabMemberImportParser;
+import com.ruoyi.system.service.ISysConfigService;
+import com.ruoyi.system.service.ISysRoleService;
 import com.ruoyi.system.service.ISysUserService;
 
 @Service
 public class QtLabMemberServiceImpl implements IQtLabMemberService
 {
+    private static final Logger log = LoggerFactory.getLogger(QtLabMemberServiceImpl.class);
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+
     @Autowired
     private QtLabMemberMapper qtLabMemberMapper;
 
@@ -36,6 +51,12 @@ public class QtLabMemberServiceImpl implements IQtLabMemberService
 
     @Autowired
     private ISysUserService userService;
+
+    @Autowired
+    private ISysRoleService roleService;
+
+    @Autowired
+    private ISysConfigService configService;
 
     @Override
     public List<QtLabMember> selectLabMemberList(QtLabMember query)
@@ -211,6 +232,222 @@ public class QtLabMemberServiceImpl implements IQtLabMemberService
         current.setStatus("ARCHIVED");
         current.setUpdateBy("system");
         qtCohortMapper.updateCohort(current);
+    }
+
+    @Override
+    @CacheEvict(cacheNames = { CacheConstants.CACHE_QT_MEMBER_COHORTS, CacheConstants.CACHE_QT_DASHBOARD_STATS },
+            allEntries = true)
+    public String importLabMembers(InputStream inputStream, boolean updateSupport, String operator)
+    {
+        List<QtLabMemberImportRow> rows = QtLabMemberImportParser.parse(inputStream);
+        int successNum = 0;
+        int failureNum = 0;
+        StringBuilder successMsg = new StringBuilder();
+        StringBuilder failureMsg = new StringBuilder();
+        for (QtLabMemberImportRow row : rows)
+        {
+            try
+            {
+                provisionMember(row, updateSupport, operator);
+                successNum++;
+                successMsg.append("<br/>" + successNum + "\u3001\u8d26\u53f7 " + row.getUserName() + " \u5f00\u901a\u6210\u529f");
+            }
+            catch (Exception ex)
+            {
+                failureNum++;
+                String name = StringUtils.isEmpty(row.getUserName()) ? ("\u7b2c" + row.getSourceRow() + "\u884c")
+                        : row.getUserName();
+                failureMsg.append("<br/>" + failureNum + "\u3001\u8d26\u53f7 " + name + " \u5bfc\u5165\u5931\u8d25\uff1a" + ex.getMessage());
+                log.error("import lab member failed: {}", name, ex);
+            }
+        }
+        if (failureNum > 0)
+        {
+            failureMsg.insert(0, "\u5f88\u62b1\u6b49\uff0c\u5bfc\u5165\u5931\u8d25\uff01\u5171 " + failureNum
+                    + " \u6761\u6570\u636e\u683c\u5f0f\u4e0d\u6b63\u786e\uff0c\u9519\u8bef\u5982\u4e0b\uff1a");
+            throw new ServiceException(failureMsg.toString());
+        }
+        successMsg.insert(0, "\u606d\u559c\u60a8\uff0c\u6570\u636e\u5df2\u5168\u90e8\u5bfc\u5165\u6210\u529f\uff01\u5171 " + successNum
+                + " \u6761\uff0c\u6570\u636e\u5982\u4e0b\uff1a");
+        return successMsg.toString();
+    }
+
+    private void provisionMember(QtLabMemberImportRow row, boolean updateSupport, String operator)
+    {
+        validateRow(row);
+        SysUser existing = userService.selectUserByUserName(row.getUserName());
+        SysUser user = toUser(row, operator);
+        user.setRoleIds(resolveRoleIds(row.getRoleCategory()));
+        QtCohort cohort = resolveCohort(row.getMemberCohort());
+        user.setMemberCohort(cohort.getCohortName());
+        if (existing == null)
+        {
+            String password = configService.selectConfigByKey("sys.user.initPassword");
+            if (StringUtils.isEmpty(password))
+            {
+                password = "123456";
+            }
+            user.setPassword(SecurityUtils.encryptPassword(password));
+            user.setCreateBy(operator);
+            userService.insertUser(user);
+        }
+        else if (updateSupport)
+        {
+            userService.checkUserAllowed(existing);
+            user.setUserId(existing.getUserId());
+            user.setPassword(null);
+            user.setUpdateBy(operator);
+            userService.updateUser(user);
+        }
+        else
+        {
+            throw new ServiceException("\u8d26\u53f7\u5df2\u5b58\u5728");
+        }
+        upsertMemberRecord(user.getUserId(), cohort.getCohortId(), row.getRoleCategory(), operator);
+    }
+
+    private void validateRow(QtLabMemberImportRow row)
+    {
+        if (StringUtils.isEmpty(row.getUserName()))
+        {
+            throw new ServiceException("\u767b\u5f55\u540d\u79f0\u4e0d\u80fd\u4e3a\u7a7a");
+        }
+        if (row.getUserName().length() < UserConstants.USERNAME_MIN_LENGTH
+                || row.getUserName().length() > UserConstants.USERNAME_MAX_LENGTH)
+        {
+            throw new ServiceException("\u8d26\u53f7\u957f\u5ea6\u5fc5\u987b\u5728 2 \u5230 20 \u4e2a\u5b57\u7b26\u4e4b\u95f4");
+        }
+        if (StringUtils.isEmpty(row.getNickName()))
+        {
+            row.setNickName(row.getUserName());
+        }
+        if (StringUtils.isEmpty(row.getEmail()) || !EMAIL_PATTERN.matcher(row.getEmail()).matches())
+        {
+            throw new ServiceException("\u90ae\u7bb1\u683c\u5f0f\u4e0d\u6b63\u786e");
+        }
+        if (!"PRODUCT".equals(row.getMemberDepartment()) && !"DESIGN".equals(row.getMemberDepartment())
+                && !"FRONTEND".equals(row.getMemberDepartment()) && !"BACKEND".equals(row.getMemberDepartment()))
+        {
+            throw new ServiceException("\u6210\u5458\u90e8\u95e8\u4ec5\u652f\u6301 PRODUCT/DESIGN/FRONTEND/BACKEND");
+        }
+        SysUser unique = new SysUser();
+        unique.setUserName(row.getUserName());
+        unique.setEmail(row.getEmail());
+        unique.setPhonenumber(row.getPhonenumber());
+        SysUser existing = userService.selectUserByUserName(row.getUserName());
+        if (existing != null)
+        {
+            unique.setUserId(existing.getUserId());
+        }
+        if (!userService.checkUserNameUnique(unique) && existing == null)
+        {
+            throw new ServiceException("\u767b\u5f55\u8d26\u53f7\u5df2\u5b58\u5728");
+        }
+        if (!userService.checkEmailUnique(unique))
+        {
+            throw new ServiceException("\u90ae\u7bb1\u8d26\u53f7\u5df2\u5b58\u5728");
+        }
+        if (StringUtils.isNotEmpty(row.getPhonenumber()) && !userService.checkPhoneUnique(unique))
+        {
+            throw new ServiceException("\u624b\u673a\u53f7\u7801\u5df2\u5b58\u5728");
+        }
+        if (StringUtils.isNotEmpty(row.getStudentNo()) && !userService.checkStudentNoUnique(row.getStudentNo()))
+        {
+            SysUser byName = userService.selectUserByUserName(row.getUserName());
+            if (byName == null || !row.getStudentNo().equals(byName.getStudentNo()))
+            {
+                throw new ServiceException("\u5b66\u53f7\u5df2\u5b58\u5728");
+            }
+        }
+    }
+
+    private SysUser toUser(QtLabMemberImportRow row, String operator)
+    {
+        SysUser user = new SysUser();
+        user.setDeptId(row.getDeptId() == null ? QtLabMemberImportParser.DEFAULT_DEPT_ID : row.getDeptId());
+        user.setUserName(row.getUserName());
+        user.setNickName(row.getNickName());
+        user.setEmail(row.getEmail());
+        user.setPhonenumber(row.getPhonenumber());
+        user.setSex(row.getSex());
+        user.setStatus(row.getStatus());
+        user.setMemberNo(row.getMemberNo());
+        user.setMemberDepartment(row.getMemberDepartment());
+        user.setMemberTitle(row.getMemberTitle());
+        user.setStudentNo(row.getStudentNo());
+        user.setClassName(row.getClassName());
+        user.setMajor(row.getMajor());
+        user.setIsQuantaMember("1");
+        user.setRemark(operator);
+        return user;
+    }
+
+    private QtCohort resolveCohort(String cohortName)
+    {
+        if (StringUtils.isNotEmpty(cohortName))
+        {
+            QtCohort named = qtCohortMapper.selectCohortByName(cohortName.trim());
+            if (named != null)
+            {
+                return named;
+            }
+            throw new ServiceException("\u5c4a\u6b21\u4e0d\u5b58\u5728\uff1a" + cohortName);
+        }
+        QtCohort current = qtCohortMapper.selectCurrentCohort();
+        if (current == null)
+        {
+            throw new ServiceException("\u5f53\u524d\u5c4a\u6b21\u4e0d\u5b58\u5728");
+        }
+        return current;
+    }
+
+    private Long[] resolveRoleIds(String roleCategory)
+    {
+        List<String> keys = new ArrayList<String>();
+        keys.add("qt_member");
+        if ("MGMT".equals(roleCategory))
+        {
+            keys.add("qt_mgmt");
+        }
+        else if ("MANAGER".equals(roleCategory))
+        {
+            keys.add("qt_manager");
+        }
+        List<Long> ids = new ArrayList<Long>();
+        for (SysRole role : roleService.selectRoleAll())
+        {
+            if (keys.contains(role.getRoleKey()))
+            {
+                ids.add(role.getRoleId());
+            }
+        }
+        if (ids.isEmpty())
+        {
+            throw new ServiceException("\u672a\u627e\u5230\u5854\u5458\u89d2\u8272\uff0c\u8bf7\u5148\u521d\u59cb\u5316 qt_member");
+        }
+        return ids.toArray(new Long[0]);
+    }
+
+    private void upsertMemberRecord(Long userId, Long cohortId, String roleCategory, String operator)
+    {
+        QtMemberRecord existing = qtCohortMapper.selectRecord(userId, cohortId);
+        if (existing == null)
+        {
+            QtMemberRecord record = new QtMemberRecord();
+            record.setUserId(userId);
+            record.setCohortId(cohortId);
+            record.setRoleCategory(roleCategory);
+            record.setMemberStatus("ACTIVE");
+            record.setJoinTime(new Date());
+            record.setRetainFlag("0");
+            record.setCreateBy(operator);
+            qtCohortMapper.insertRecord(record);
+            return;
+        }
+        existing.setRoleCategory(roleCategory);
+        existing.setMemberStatus("ACTIVE");
+        existing.setUpdateBy(operator);
+        qtCohortMapper.updateRecord(existing);
     }
 
     private QtCohort getOrCreateNextCohort(QtCohort source, String operator)

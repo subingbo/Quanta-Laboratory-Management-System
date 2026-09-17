@@ -10,6 +10,7 @@ import * as authApi from '@/api/auth'
 vi.mock('@/api/auth', () => ({
   getCaptcha: vi.fn().mockResolvedValue({ captchaEnabled: false }),
   registerFreshman: vi.fn(),
+  sendRegisterEmailCode: vi.fn().mockResolvedValue({ code: 200 }),
   login: vi.fn(),
   getInfo: vi.fn(),
   getRouters: vi.fn(),
@@ -73,6 +74,7 @@ describe('portal login', () => {
     try {
       ;({ wrapper } = await mountLogin('freshman'))
       await wrapper.get('[data-testid="register-mode"]').trigger('click')
+      await wrapper.get('input[name="studentNo"]').setValue('20241003193')
       await wrapper.get('input[name="email"]').setValue('bad-email')
       await wrapper.get('[data-testid="send-email-code"]').trigger('click')
       expect(wrapper.get('[data-testid="send-email-code"]').attributes('disabled')).toBeUndefined()
@@ -80,6 +82,11 @@ describe('portal login', () => {
 
       await wrapper.get('input[name="email"]').setValue('freshman@example.com')
       await wrapper.get('[data-testid="send-email-code"]').trigger('click')
+      await flushPromises()
+      expect(authApi.sendRegisterEmailCode).toHaveBeenCalledWith({
+        email: 'freshman@example.com',
+        studentNo: '20241003193',
+      })
       expect(wrapper.get('[data-testid="send-email-code"]').attributes('disabled')).toBeDefined()
       expect(wrapper.get('[data-testid="send-email-code"]').text()).toContain('60 秒后重新发送')
 

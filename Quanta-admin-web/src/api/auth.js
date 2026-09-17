@@ -16,6 +16,33 @@ export function registerFreshman(data) {
   })
 }
 
+export function sendRegisterEmailCode(data) {
+  return request({
+    url: '/register/emailCode',
+    method: 'post',
+    data: {
+      email: data.email,
+      studentNo: data.studentNo,
+    },
+  })
+}
+
+export function sendPasswordResetEmailCode(data) {
+  return request({
+    url: '/system/password/emailCode',
+    method: 'post',
+    data,
+  })
+}
+
+export function resetPasswordByEmail(data) {
+  return request({
+    url: '/system/password/reset',
+    method: 'post',
+    data,
+  })
+}
+
 export function getInfo() {
   return request({ url: '/getInfo', method: 'get' })
 }

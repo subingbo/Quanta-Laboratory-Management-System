@@ -1,5 +1,6 @@
 package com.ruoyi.qt.service;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import com.ruoyi.qt.domain.QtLabMember;
@@ -16,4 +17,6 @@ public interface IQtLabMemberService
     Map<String, Object> retain(Long userId, QtMemberRetainBody body, String operator);
 
     void rollover();
+
+    String importLabMembers(InputStream inputStream, boolean updateSupport, String operator);
 }

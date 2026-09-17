@@ -118,6 +118,15 @@ public class SysUserServiceImpl implements ISysUserService
     }
 
     /**
+     * 通过学号查询用户信息（登录学号回退解析用）
+     */
+    @Override
+    public SysUser selectUserByStudentNo(String studentNo)
+    {
+        return userMapper.selectUserByStudentNo(studentNo);
+    }
+
+    /**
      * 通过用户ID查询用户
      * 
      * @param userId 用户ID

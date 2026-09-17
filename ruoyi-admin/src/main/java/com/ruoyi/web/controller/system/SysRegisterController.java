@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.RateLimiter;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -26,6 +27,15 @@ public class SysRegisterController extends BaseController
 
     @Autowired
     private ISysConfigService configService;
+
+    @Anonymous
+    @PostMapping("/register/emailCode")
+    @RateLimiter(time = 60, count = 3, limitType = LimitType.IP, key = "rate_limit:register_email:")
+    public AjaxResult sendEmailCode(@RequestBody RegisterBody user)
+    {
+        registerService.sendRegisterEmailCode(user);
+        return success("验证码已发送，5 分钟内有效");
+    }
 
     @PostMapping("/register")
     @RateLimiter(time = 3600, count = 5, limitType = LimitType.IP, key = "rate_limit:register:")

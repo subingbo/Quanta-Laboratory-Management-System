@@ -62,9 +62,14 @@ export function mapApplication(data) {
   }
 }
 
+function resultRoundNo(result) {
+  const value = result?.roundNo ?? result?.roundId
+  return Number(value)
+}
+
 function resultStageStatus(result, round, unlocked) {
   if (!result) return unlocked ? 'pending' : 'locked'
-  if (result.resultStatus === 'FAIL') return 'rejected'
+  if (result.resultStatus === 'FAIL' || result.resultStatus === 'OUT') return 'rejected'
   if (result.resultStatus === 'PASS') return 'passed'
   if (result.resultStatus === 'WAITING') {
     if (round === 2) return 'invited'
@@ -91,10 +96,10 @@ export function mapInterviewProcess(application, results = []) {
 
   return choices.map((departmentCode) => {
     const first = results.find(
-      (item) => item.department === departmentCode && Number(item.roundId) === 1,
+      (item) => item.department === departmentCode && resultRoundNo(item) === 1,
     )
     const second = results.find(
-      (item) => item.department === departmentCode && Number(item.roundId) === 2,
+      (item) => item.department === departmentCode && resultRoundNo(item) === 2,
     )
     const firstStatus = resultStageStatus(first, 1, true)
     const secondStatus = resultStageStatus(second, 2, firstStatus === 'passed')
@@ -168,4 +173,12 @@ export async function submitApplication(form) {
     data.append('photoFile', form.photoFile)
   }
   return request({ url: '/qt/interview/apply', method: 'post', data })
+}
+
+/**
+ * 塔员只读查看全部新生报名信息（仅基本信息，已剥离电话/照片等敏感字段）
+ */
+export async function getMemberApplications(params) {
+  const response = await request({ url: '/qt/interview/member/applications', method: 'get', params })
+  return response.data || []
 }

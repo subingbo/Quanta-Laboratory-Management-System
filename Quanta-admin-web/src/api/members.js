@@ -2,13 +2,24 @@ import { request } from '@/utils/request'
 import { requestBlob } from '@/utils/download'
 
 const roleLabels = {
-  management: '管理层',
-  manager: '经理层',
-  intern: '实习生',
+  MGMT: '管理层',
+  MANAGER: '经理层',
+  INTERN: '实习生',
+  MEMBER: '成员',
+}
+
+function normalizeRoleCategory(code) {
+  const raw = String(code || '').trim()
+  const upper = raw.toUpperCase()
+  if (upper === 'MGMT' || raw === 'management' || upper === 'CEO') return 'MGMT'
+  if (upper === 'MANAGER' || raw === 'manager') return 'MANAGER'
+  if (upper === 'INTERN' || raw === 'intern') return 'INTERN'
+  if (upper === 'MEMBER') return 'MEMBER'
+  return upper || 'INTERN'
 }
 
 export function mapMember(user = {}) {
-  const roleCode = user.roleCategory || 'intern'
+  const roleCode = normalizeRoleCategory(user.roleCategory)
   return {
     id: user.userId,
     name: user.nickName || user.userName || '-',
@@ -55,8 +66,8 @@ export function removeMember(userId) {
   return request({ url: `/system/user/${userId}`, method: 'delete' })
 }
 
-export function resetMemberPassword(userId) {
-  return request({ url: '/system/user/resetPwd', method: 'put', data: { userId } })
+export function resetMemberPassword(userId, password) {
+  return request({ url: '/system/user/resetPwd', method: 'put', data: { userId, password } })
 }
 
 export function retainMember(userId, options = {}) {

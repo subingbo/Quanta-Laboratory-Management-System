@@ -37,6 +37,10 @@ public class QtInterviewApplication extends BaseEntity
     private String studentNo;
     @Excel(name = "电话")
     private String phonenumber;
+    @Excel(name = "邮箱")
+    private String email;
+    @Excel(name = "专业")
+    private String major;
     @Excel(name = "昵称")
     private String nickName;
     @Excel(name = "第一志愿轮次结果")
@@ -214,6 +218,26 @@ public class QtInterviewApplication extends BaseEntity
     public void setPhonenumber(String phonenumber)
     {
         this.phonenumber = phonenumber;
+    }
+
+    public String getEmail()
+    {
+        return email;
+    }
+
+    public void setEmail(String email)
+    {
+        this.email = email;
+    }
+
+    public String getMajor()
+    {
+        return major;
+    }
+
+    public void setMajor(String major)
+    {
+        this.major = major;
     }
 
     public String getNickName()

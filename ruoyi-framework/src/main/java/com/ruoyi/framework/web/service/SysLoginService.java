@@ -83,11 +83,22 @@ public class SysLoginService
         validateCaptcha(username, code, uuid);
         // 登录前置校验
         loginPreCheck(username, password);
+        // 学号回退解析：若用户名查不到用户，尝试用学号查找并替换为真实用户名
+        String authUsername = username;
+        SysUser userByName = userService.selectUserByUserName(username);
+        if (userByName == null)
+        {
+            SysUser userByStudentNo = userService.selectUserByStudentNo(username);
+            if (userByStudentNo != null)
+            {
+                authUsername = userByStudentNo.getUserName();
+            }
+        }
         // 用户验证
         Authentication authentication = null;
         try
         {
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(authUsername, password);
             AuthenticationContextHolder.setContext(authenticationToken);
             // 该方法会去调用UserDetailsServiceImpl.loadUserByUsername
             authentication = authenticationManager.authenticate(authenticationToken);

@@ -1,6 +1,10 @@
 package com.ruoyi.framework.web.service;
 
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.ruoyi.common.constant.CacheConstants;
@@ -9,12 +13,15 @@ import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.RegisterBody;
 import com.ruoyi.common.core.redis.RedisCache;
+import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.exception.user.CaptchaException;
 import com.ruoyi.common.exception.user.CaptchaExpireException;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.MailUtils;
 import com.ruoyi.common.utils.MessageUtils;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.ip.IpUtils;
 import com.ruoyi.framework.manager.AsyncManager;
 import com.ruoyi.framework.manager.factory.AsyncFactory;
 import com.ruoyi.system.service.ISysConfigService;
@@ -28,9 +35,11 @@ import com.ruoyi.system.service.ISysUserService;
 @Component
 public class SysRegisterService
 {
+    private static final Logger log = LoggerFactory.getLogger(SysRegisterService.class);
+
     private static final Pattern STUDENT_NO_PATTERN = Pattern.compile("^20\\d{9}$");
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+    public static final Pattern EMAIL_PATTERN = Pattern.compile(
             "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     @Autowired
@@ -41,6 +50,14 @@ public class SysRegisterService
 
     @Autowired
     private RedisCache redisCache;
+
+    @Autowired
+    private MailUtils mailUtils;
+
+    public static String randomEmailCode()
+    {
+        return String.format("%06d", ThreadLocalRandom.current().nextInt(1000000));
+    }
 
     /**
      * 注册（仅允许新生；塔员需后台开通）
@@ -87,6 +104,10 @@ public class SysRegisterService
         {
             msg = "邮箱格式不正确";
         }
+        else if (StringUtils.isEmpty(registerBody.getEmailCode()))
+        {
+            msg = "邮箱验证码不能为空";
+        }
         else if (StringUtils.isEmpty(password))
         {
             msg = "用户密码不能为空";
@@ -115,6 +136,7 @@ public class SysRegisterService
         }
         else
         {
+            consumeRegisterEmailCode(email, studentNo, registerBody.getEmailCode());
             sysUser.setNickName(StringUtils.isNotEmpty(nickName) ? nickName : username);
             sysUser.setStudentNo(studentNo);
             sysUser.setEmail(email);
@@ -134,6 +156,57 @@ public class SysRegisterService
             }
         }
         return msg;
+    }
+
+    /**
+     * 向填写邮箱发送 6 位注册验证码，与学号绑定，Redis 5 分钟。
+     */
+    public void sendRegisterEmailCode(RegisterBody registerBody)
+    {
+        String email = StringUtils.trim(registerBody.getEmail());
+        String studentNo = StringUtils.trim(registerBody.getStudentNo());
+        if (StringUtils.isEmpty(studentNo) || !STUDENT_NO_PATTERN.matcher(studentNo).matches())
+        {
+            throw new ServiceException("学号格式不正确，请输入11位学号");
+        }
+        if (StringUtils.isEmpty(email) || !EMAIL_PATTERN.matcher(email).matches())
+        {
+            throw new ServiceException("邮箱格式不正确");
+        }
+        SysUser unique = new SysUser();
+        unique.setUserName(studentNo);
+        unique.setEmail(email);
+        if (!userService.checkUserNameUnique(unique) || !userService.checkStudentNoUnique(studentNo))
+        {
+            throw new ServiceException("学号已存在，请勿重复注册");
+        }
+        if (!userService.checkEmailUnique(unique))
+        {
+            throw new ServiceException("邮箱账号已存在");
+        }
+        String code = randomEmailCode();
+        mailUtils.sendText(email, "Quanta 注册验证码",
+                "您的注册验证码为 " + code + "，5 分钟内有效。如非本人操作请忽略。");
+        redisCache.setCacheObject(CacheConstants.REGISTER_EMAIL_CODE_KEY + email.toLowerCase(),
+                code + "|" + studentNo, 5, TimeUnit.MINUTES);
+        log.info("register email sent, studentNo={}, ip={}", studentNo, IpUtils.getIpAddr());
+    }
+
+    private void consumeRegisterEmailCode(String email, String studentNo, String emailCode)
+    {
+        String verifyKey = CacheConstants.REGISTER_EMAIL_CODE_KEY + email.toLowerCase();
+        String cached = redisCache.getCacheObject(verifyKey);
+        if (StringUtils.isEmpty(cached))
+        {
+            throw new ServiceException("邮箱验证码已过期，请重新获取");
+        }
+        String[] parts = cached.split("\\|", 2);
+        if (parts.length != 2 || !StringUtils.trim(emailCode).equals(parts[0])
+                || !studentNo.equals(parts[1]))
+        {
+            throw new ServiceException("邮箱验证码不正确");
+        }
+        redisCache.deleteObject(verifyKey);
     }
 
     /**
