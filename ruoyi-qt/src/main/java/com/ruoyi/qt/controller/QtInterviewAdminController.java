@@ -30,6 +30,7 @@ import com.ruoyi.qt.domain.QtInterviewProfile;
 import com.ruoyi.qt.domain.QtInterviewResult;
 import com.ruoyi.qt.domain.QtStatusBody;
 import com.ruoyi.qt.service.IQtInterviewAdminService;
+import com.ruoyi.qt.util.QtAuthUtils;
 
 @RestController
 @RequestMapping("/qt/interview/admin")
@@ -78,26 +79,26 @@ public class QtInterviewAdminController extends BaseController
         return success(qtInterviewAdminService.selectResults(id));
     }
 
-    @PreAuthorize("@ss.hasPermi('qt:interview:admin:list')")
     @GetMapping("/evaluations")
     public AjaxResult evaluations(QtInterviewEvaluation query)
     {
+        QtAuthUtils.requireQuantaMember();
         return success(qtInterviewAdminService.selectEvaluations(query));
     }
 
-    @PreAuthorize("@ss.hasPermi('qt:interview:admin:evaluate')")
     @Log(title = "招新面评", businessType = BusinessType.INSERT)
     @PostMapping("/evaluations")
     public AjaxResult addEvaluation(@RequestBody QtInterviewEvaluation evaluation)
     {
+        QtAuthUtils.requireQuantaMember();
         return success(qtInterviewAdminService.saveEvaluation(evaluation, getUserId(), getUsername()));
     }
 
-    @PreAuthorize("@ss.hasPermi('qt:interview:admin:evaluate')")
     @Log(title = "招新面评", businessType = BusinessType.UPDATE)
     @PutMapping("/evaluations/{evaluationId}")
     public AjaxResult editEvaluation(@PathVariable Long evaluationId, @RequestBody QtInterviewEvaluation evaluation)
     {
+        QtAuthUtils.requireQuantaMember();
         evaluation.setEvaluationId(evaluationId);
         return success(qtInterviewAdminService.updateEvaluation(evaluation, getUserId(), getUsername()));
     }

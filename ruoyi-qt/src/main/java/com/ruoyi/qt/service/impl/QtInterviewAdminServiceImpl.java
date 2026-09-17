@@ -87,16 +87,11 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
     {
         if (query.getApplicationId() != null)
         {
-            selectApplication(query.getApplicationId());
+            requireApplication(query.getApplicationId());
         }
-        String scoped = QtAuthUtils.scopedDepartment();
-        if (scoped != null && StringUtils.isEmpty(query.getDepartment()))
+        if (query.getRoundId() != null)
         {
-            query.setDepartment(scoped);
-        }
-        else if (StringUtils.isNotEmpty(query.getDepartment()))
-        {
-            QtAuthUtils.assertDepartmentScope(query.getDepartment());
+            query.setRoundId(resolveEvalRoundId(query.getRoundId()));
         }
         return qtInterviewMapper.selectEvaluationList(query);
     }
@@ -107,13 +102,13 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
     public QtInterviewEvaluation saveEvaluation(QtInterviewEvaluation evaluation, Long operatorUserId, String operator)
     {
         validateEvaluation(evaluation);
-        QtInterviewApplication application = selectApplication(evaluation.getApplicationId());
+        QtInterviewApplication application = requireApplication(evaluation.getApplicationId());
         String department = resolveEvalDepartment(evaluation.getDepartment(), application);
         evaluation.setDepartment(department);
-        assertEvalRound(evaluation.getRoundId());
+        evaluation.setRoundId(resolveEvalRoundId(evaluation.getRoundId()));
+        evaluation.setEvaluatorUserId(operatorUserId);
         QtInterviewEvaluation old = qtInterviewMapper.selectEvaluationByUnique(evaluation.getApplicationId(),
                 evaluation.getRoundId(), department, operatorUserId);
-        evaluation.setEvaluatorUserId(operatorUserId);
         evaluation.setUpdateBy(operator);
         if (old == null)
         {
@@ -142,9 +137,6 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         {
             throw new ServiceException("无权修改他人面评");
         }
-        selectApplication(old.getApplicationId());
-        assertEvalRound(old.getRoundId());
-        QtAuthUtils.assertDepartmentScope(old.getDepartment());
         if (StringUtils.isEmpty(evaluation.getContent()))
         {
             throw new ServiceException("面评内容不能为空");
@@ -378,32 +370,18 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
     {
         if (StringUtils.isNotEmpty(department))
         {
-            QtAuthUtils.assertDepartmentScope(department);
             if (!department.equals(application.getFirstChoice()) && !department.equals(application.getSecondChoice()))
             {
                 throw new ServiceException("该部门不在候选人志愿中");
             }
             return department;
         }
-        String scoped = QtAuthUtils.scopedDepartment();
-        if (scoped != null)
-        {
-            return scoped;
-        }
         return application.getFirstChoice();
     }
 
-    private void assertEvalRound(Long roundId)
+    private Long resolveEvalRoundId(Long roundIdOrNo)
     {
-        if (!QtAuthUtils.isManagerOnly())
-        {
-            return;
-        }
-    QtInterviewRound round = QtInterviewRounds.require(qtInterviewMapper, roundId);
-    if (round.getRoundNo() == null || round.getRoundNo() != 2)
-    {
-        throw new ServiceException("经理层只能评本部门二面");
-    }
+        return QtInterviewRounds.require(qtInterviewMapper, roundIdOrNo).getRoundId();
     }
 
     private void markProcessing(QtInterviewApplication application, String operator)

@@ -290,6 +290,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="evaluatorUserId" column="evaluator_user_id"/>
         <result property="content" column="content"/>
         <result property="evaluatorName" column="evaluator_name"/>
+        <result property="evaluatorUserName" column="evaluator_user_name"/>
         <result property="createBy" column="create_by"/>
         <result property="createTime" column="create_time"/>
         <result property="updateBy" column="update_by"/>
@@ -301,7 +302,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectEvaluationList" parameterType="QtInterviewEvaluation" resultMap="QtInterviewEvaluationResult">
         select e.evaluation_id, e.application_id, e.round_id, e.department, e.evaluator_user_id, e.content,
                e.create_by, e.create_time, e.update_by, e.update_time,
-               u.nick_name as evaluator_name
+               u.nick_name as evaluator_name,
+               u.user_name as evaluator_user_name
         from qt_interview_evaluation e
         left join sys_user u on e.evaluator_user_id = u.user_id
         <where>
@@ -310,13 +312,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="department != null and department != ''">and e.department = #{department}</if>
             <if test="evaluatorUserId != null">and e.evaluator_user_id = #{evaluatorUserId}</if>
         </where>
-        order by e.create_time desc
+        order by e.create_time asc
     </select>
 
     <select id="selectEvaluationById" resultMap="QtInterviewEvaluationResult">
         select e.evaluation_id, e.application_id, e.round_id, e.department, e.evaluator_user_id, e.content,
                e.create_by, e.create_time, e.update_by, e.update_time,
-               u.nick_name as evaluator_name
+               u.nick_name as evaluator_name,
+               u.user_name as evaluator_user_name
         from qt_interview_evaluation e
         left join sys_user u on e.evaluator_user_id = u.user_id
         where e.evaluation_id = #{evaluationId}
@@ -325,7 +328,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectEvaluationByUnique" resultMap="QtInterviewEvaluationResult">
         select e.evaluation_id, e.application_id, e.round_id, e.department, e.evaluator_user_id, e.content,
                e.create_by, e.create_time, e.update_by, e.update_time,
-               u.nick_name as evaluator_name
+               u.nick_name as evaluator_name,
+               u.user_name as evaluator_user_name
         from qt_interview_evaluation e
         left join sys_user u on e.evaluator_user_id = u.user_id
         where e.application_id = #{applicationId} and e.round_id = #{roundId}
