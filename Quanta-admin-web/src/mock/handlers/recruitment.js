@@ -234,7 +234,7 @@ function saveResult(config) {
   }
   track.rounds[roundId].status = resultStatus
   recomputeAdvancement(application)
-  return { code: 200, msg: '评定结果已更新', data: application }
+  return { code: 200, msg: '评定结果已更新', data: { emailSent: true } }
 }
 
 function sendOffer(config) {
@@ -256,7 +256,7 @@ function sendOffer(config) {
   return {
     code: 200,
     msg: decision === 'PASS' ? '录用通知已发送' : '淘汰通知已发送',
-    data: application,
+    data: { emailSent: true },
   }
 }
 

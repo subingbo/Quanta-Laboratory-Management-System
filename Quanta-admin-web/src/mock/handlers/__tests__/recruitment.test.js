@@ -129,6 +129,7 @@ describe('recruitment mock handlers', () => {
     expect(response.code).toBe(200)
     expect(track.rounds[2].status).toBe('FAIL')
     expect(application.applicationStatus).toBe('REJECTED')
+    expect(response.data.emailSent).toBe(true)
   })
 
   it('rejects a management offer for another department', () => {

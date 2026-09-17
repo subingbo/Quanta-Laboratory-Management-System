@@ -141,4 +141,23 @@ describe('interview status mapping', () => {
       'offered',
     )
   })
+
+  it('treats OUT the same as FAIL on the timeline', () => {
+    const processes = mapInterviewProcess(application, [
+      { roundId: 1, department: 'FRONTEND', resultStatus: 'PASS' },
+      { roundId: 2, department: 'FRONTEND', resultStatus: 'OUT' },
+    ])
+
+    expect(processes[0].stages[1].status).toBe('rejected')
+  })
+
+  it('matches rounds by roundNo when the stored roundId is not 1 or 2', () => {
+    const processes = mapInterviewProcess(application, [
+      { roundId: 11, roundNo: 1, department: 'FRONTEND', resultStatus: 'PASS' },
+      { roundId: 12, roundNo: 2, department: 'FRONTEND', resultStatus: 'FAIL' },
+    ])
+
+    expect(processes[0].stages[0].status).toBe('passed')
+    expect(processes[0].stages[1].status).toBe('rejected')
+  })
 })

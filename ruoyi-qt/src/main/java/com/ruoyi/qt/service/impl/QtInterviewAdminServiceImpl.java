@@ -23,8 +23,7 @@ import com.ruoyi.qt.mapper.QtInterviewMapper;
 import com.ruoyi.qt.service.IQtInterviewAdminService;
 import com.ruoyi.qt.util.QtAuthUtils;
 import com.ruoyi.qt.util.QtDictUtils;
-import com.ruoyi.system.domain.SysNotice;
-import com.ruoyi.system.service.ISysNoticeService;
+import com.ruoyi.qt.util.QtInterviewRounds;
 
 @Service
 public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
@@ -33,7 +32,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
     private QtInterviewMapper qtInterviewMapper;
 
     @Autowired
-    private ISysNoticeService noticeService;
+    private QtInterviewNotifier interviewNotifier;
 
     @Override
     public List<QtInterviewApplication> selectAdminList(QtInterviewApplication query)
@@ -158,7 +157,8 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
     @Override
     @Transactional
-    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_RECRUIT_STATISTICS, allEntries = true)
+    @CacheEvict(cacheNames = { CacheConstants.CACHE_QT_RECRUIT_STATISTICS, CacheConstants.CACHE_QT_MY_RESULTS,
+            CacheConstants.CACHE_QT_MY_APPLICATION }, allEntries = true)
     public Map<String, Object> offer(QtInterviewOfferBody body, String operator)
     {
         if (body == null || body.getApplicationId() == null)
@@ -174,11 +174,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         String department = resolveOfferDepartment(body, application);
         QtAuthUtils.assertDepartmentScope(department);
         QtInterviewRound round = body.getRoundId() == null ? qtInterviewMapper.selectRoundByNo(2)
-                : qtInterviewMapper.selectRoundById(body.getRoundId());
-        if (round == null)
-        {
-            throw new ServiceException("面试轮次不存在");
-        }
+                : QtInterviewRounds.require(qtInterviewMapper, body.getRoundId());
         String resultStatus = "PASS".equals(decision) ? "PASS" : "OUT";
         QtDictUtils.requireValue(QtDictUtils.RESULT_STATUS, resultStatus, "decision");
         QtInterviewResult result = qtInterviewMapper.selectResultByAppRoundDept(application.getApplicationId(),
@@ -239,18 +235,14 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         application.setUpdateBy(operator);
         qtInterviewMapper.updateApplicationAdminFields(application);
 
-        SysNotice notice = new SysNotice();
         boolean pass = "PASS".equals(decision);
-        notice.setNoticeTitle(pass ? "录用通知" : "淘汰通知");
-        notice.setNoticeType("1");
-        notice.setStatus("0");
+        String deptLabel = interviewNotifier.departmentLabel(department);
+        String offeredLabel = interviewNotifier.departmentLabel(application.getOfferedDepartment());
         String content = StringUtils.isNotEmpty(body.getNotice()) ? body.getNotice()
-                : (pass ? ("恭喜你通过 " + application.getOfferedDepartment() + " 部门面试，请留意后续安排")
-                        : ("很遗憾，你未通过 " + department + " 部门面试"));
-        notice.setNoticeContent(content);
-        notice.setCreateBy(operator);
-        notice.setRemark("qt_offer:" + application.getUserId());
-        noticeService.insertNotice(notice);
+                : (pass ? ("\u606d\u559c\u4f60\u901a\u8fc7 " + offeredLabel + " \u90e8\u95e8\u9762\u8bd5\uff0c\u8bf7\u7559\u610f\u540e\u7eed\u5b89\u6392")
+                        : ("\u5f88\u9057\u61be\uff0c\u4f60\u672a\u901a\u8fc7 " + deptLabel + " \u90e8\u95e8\u9762\u8bd5"));
+        boolean emailSent = interviewNotifier.notifyApplicant(application.getUserId(),
+                pass ? "\u5f55\u7528\u901a\u77e5" : "\u6dd8\u6c70\u901a\u77e5", content);
 
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("applyStatus", application.getApplyStatus());
@@ -258,6 +250,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         data.put("noticeStatus", application.getNoticeStatus());
         data.put("resultStatus", resultStatus);
         data.put("department", department);
+        data.put("emailSent", emailSent);
         return data;
     }
 
@@ -406,11 +399,11 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         {
             return;
         }
-        QtInterviewRound round = qtInterviewMapper.selectRoundById(roundId);
-        if (round == null || round.getRoundNo() == null || round.getRoundNo() != 2)
-        {
-            throw new ServiceException("经理层只能评本部门二面");
-        }
+    QtInterviewRound round = QtInterviewRounds.require(qtInterviewMapper, roundId);
+    if (round.getRoundNo() == null || round.getRoundNo() != 2)
+    {
+        throw new ServiceException("经理层只能评本部门二面");
+    }
     }
 
     private void markProcessing(QtInterviewApplication application, String operator)

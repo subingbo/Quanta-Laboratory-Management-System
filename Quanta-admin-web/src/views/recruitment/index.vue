@@ -218,18 +218,26 @@ function selectFirstRoundResult(status) {
   decision.visible = true
 }
 
+function notifyPersistResult(response, sentMessage) {
+  if (response?.data?.emailSent) {
+    ElMessage.success(sentMessage)
+    return
+  }
+  ElMessage.warning('结果已保存，但邮件未发出')
+}
+
 async function submitDecision() {
   decision.submitting = true
   pendingAction.value = `decision-${decision.row.applicationId}`
   try {
-    await saveInterviewResult({
+    const response = await saveInterviewResult({
       applicationId: decision.row.applicationId,
       userId: decision.row.userId,
       roundId: roundId.value,
       department: decision.department,
       resultStatus: decision.result,
     })
-    ElMessage.success(decision.result === 'PASS' ? '已通过' : '已淘汰')
+    notifyPersistResult(response, decision.result === 'PASS' ? '已通过，通知邮件已发送' : '已淘汰，通知邮件已发送')
     decision.visible = false
     await refreshAll()
   } catch (error) {
@@ -288,13 +296,16 @@ function changeOfferDecision(value) {
 async function submitOffer() {
   offer.submitting = true
   try {
-    await sendOffer({
+    const response = await sendOffer({
       applicationId: offer.row.applicationId,
       department: offer.department,
       decision: offer.decision,
       content: offer.content,
     })
-    ElMessage.success(offer.decision === 'PASS' ? '录用通知已发送' : '淘汰通知已发送')
+    notifyPersistResult(
+      response,
+      offer.decision === 'PASS' ? '录用通知已发送' : '淘汰通知已发送',
+    )
     offer.visible = false
     await refreshAll()
   } catch (error) {

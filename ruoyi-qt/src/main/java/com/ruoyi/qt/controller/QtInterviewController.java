@@ -178,7 +178,7 @@ public class QtInterviewController extends BaseController
         {
             result.setCreateBy(getUsername());
         }
-        return toAjax(qtInterviewService.saveInterviewResult(result));
+        return success(qtInterviewService.saveInterviewResult(result));
     }
 
     private String uploadPhoto(MultipartFile photoFile) throws Exception

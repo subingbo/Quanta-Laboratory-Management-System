@@ -20,6 +20,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="noticeStatus" column="notice_status"/>
         <result property="studentNo" column="student_no"/>
         <result property="phonenumber" column="phonenumber"/>
+        <result property="email" column="email"/>
+        <result property="major" column="major"/>
         <result property="nickName" column="nick_name"/>
         <result property="firstChoiceStatus" column="first_choice_status"/>
         <result property="secondChoiceStatus" column="second_choice_status"/>
@@ -52,6 +54,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="applicationId" column="application_id"/>
         <result property="userId" column="user_id"/>
         <result property="roundId" column="round_id"/>
+        <result property="roundNo" column="round_no"/>
         <result property="roundName" column="round_name"/>
         <result property="department" column="department"/>
         <result property="resultStatus" column="result_status"/>
@@ -69,7 +72,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select a.application_id, a.user_id, a.real_name, a.gender, a.class_name, a.first_choice, a.second_choice, a.photo_url, a.apply_status,
                a.offered_department, a.join_status, a.final_status, a.notice_status,
                a.create_by, a.create_time, a.update_by, a.update_time,
-               u.student_no, u.phonenumber, u.nick_name
+               u.student_no, u.phonenumber, u.email, u.major, u.nick_name
         from qt_interview_application a
         left join sys_user u on a.user_id = u.user_id
         where a.user_id = #{userId}
@@ -80,7 +83,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select a.application_id, a.user_id, a.real_name, a.gender, a.class_name, a.first_choice, a.second_choice, a.photo_url, a.apply_status,
                a.offered_department, a.join_status, a.final_status, a.notice_status,
                a.create_by, a.create_time, a.update_by, a.update_time,
-               u.student_no, u.phonenumber, u.nick_name
+               u.student_no, u.phonenumber, u.email, u.major, u.nick_name
         from qt_interview_application a
         left join sys_user u on a.user_id = u.user_id
         where a.application_id = #{applicationId}
@@ -159,7 +162,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </update>
 
     <select id="selectResultsByUserId" resultMap="QtInterviewResultResult">
-        select r.result_id, r.application_id, r.user_id, r.round_id, rd.round_name, r.department, r.result_status, r.score,
+        select r.result_id, r.application_id, r.user_id, r.round_id, rd.round_no, rd.round_name, r.department, r.result_status, r.score,
                r.feedback, r.interview_time, r.published_time, r.create_by, r.create_time, r.update_by, r.update_time
         from qt_interview_result r
         left join qt_interview_round rd on r.round_id = rd.round_id
@@ -168,7 +171,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
     <select id="selectResultByUserIdAndRoundId" resultMap="QtInterviewResultResult">
-        select r.result_id, r.application_id, r.user_id, r.round_id, rd.round_name, r.department, r.result_status, r.score,
+        select r.result_id, r.application_id, r.user_id, r.round_id, rd.round_no, rd.round_name, r.department, r.result_status, r.score,
                r.feedback, r.interview_time, r.published_time, r.create_by, r.create_time, r.update_by, r.update_time
         from qt_interview_result r
         left join qt_interview_round rd on r.round_id = rd.round_id
@@ -199,7 +202,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </update>
 
     <select id="selectResultsByApplicationId" resultMap="QtInterviewResultResult">
-        select r.result_id, r.application_id, r.user_id, r.round_id, rd.round_name, r.department, r.result_status, r.score,
+        select r.result_id, r.application_id, r.user_id, r.round_id, rd.round_no, rd.round_name, r.department, r.result_status, r.score,
                r.feedback, r.interview_time, r.published_time, r.create_by, r.create_time, r.update_by, r.update_time
         from qt_interview_result r
         left join qt_interview_round rd on r.round_id = rd.round_id
@@ -208,7 +211,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
     <select id="selectResultByAppRoundDept" resultMap="QtInterviewResultResult">
-        select r.result_id, r.application_id, r.user_id, r.round_id, rd.round_name, r.department, r.result_status, r.score,
+        select r.result_id, r.application_id, r.user_id, r.round_id, rd.round_no, rd.round_name, r.department, r.result_status, r.score,
                r.feedback, r.interview_time, r.published_time, r.create_by, r.create_time, r.update_by, r.update_time
         from qt_interview_result r
         left join qt_interview_round rd on r.round_id = rd.round_id
@@ -220,7 +223,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select a.application_id, a.user_id, a.real_name, a.gender, a.class_name, a.first_choice, a.second_choice, a.photo_url, a.apply_status,
                a.offered_department, a.join_status, a.final_status, a.notice_status,
                a.create_by, a.create_time, a.update_by, a.update_time,
-               u.student_no, u.phonenumber, u.nick_name
+               u.student_no, u.phonenumber, u.email, u.major, u.nick_name
                ,
                (select r.result_status from qt_interview_result r
                 join qt_interview_round rd on r.round_id = rd.round_id
@@ -237,9 +240,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                <if test="roundId != null">
                ,
                (select r.result_status from qt_interview_result r
-                where r.application_id = a.application_id and r.round_id = #{roundId} and r.department = a.first_choice limit 1) as first_choice_status,
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = #{roundId} and r.department = a.first_choice limit 1) as first_choice_status,
                (select r.result_status from qt_interview_result r
-                where r.application_id = a.application_id and r.round_id = #{roundId} and r.department = a.second_choice limit 1) as second_choice_status
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = #{roundId} and r.department = a.second_choice limit 1) as second_choice_status
                </if>
         from qt_interview_application a
         left join sys_user u on a.user_id = u.user_id
@@ -255,8 +260,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="roundId != null and resultStatus != null and resultStatus != ''">
                 and exists (
                     select 1 from qt_interview_result r
+                    join qt_interview_round rd on r.round_id = rd.round_id
                     where r.application_id = a.application_id
-                      and r.round_id = #{roundId}
+                      and rd.round_no = #{roundId}
                       and r.result_status = #{resultStatus}
                     <if test="scopedDepartment != null and scopedDepartment != ''">and r.department = #{scopedDepartment}</if>
                     <if test="department != null and department != ''">and r.department = #{department}</if>

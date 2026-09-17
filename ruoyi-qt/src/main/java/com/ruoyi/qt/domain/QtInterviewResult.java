@@ -16,6 +16,7 @@ public class QtInterviewResult extends BaseEntity
     private Long applicationId;
     private Long userId;
     private Long roundId;
+    private Integer roundNo;
     private String roundName;
     private String department;
     private String resultStatus;
@@ -64,6 +65,16 @@ public class QtInterviewResult extends BaseEntity
     public void setRoundId(Long roundId)
     {
         this.roundId = roundId;
+    }
+
+    public Integer getRoundNo()
+    {
+        return roundNo;
+    }
+
+    public void setRoundNo(Integer roundNo)
+    {
+        this.roundNo = roundNo;
     }
 
     public String getRoundName()

@@ -1,6 +1,7 @@
 package com.ruoyi.qt.service;
 
 import java.util.List;
+import java.util.Map;
 import com.ruoyi.qt.domain.QtInterviewApplication;
 import com.ruoyi.qt.domain.QtInterviewProfile;
 import com.ruoyi.qt.domain.QtInterviewResult;
@@ -16,7 +17,7 @@ public interface IQtInterviewService
     List<QtInterviewResult> selectMyResultList(Long userId);
 
     /**
-     * 录入/更新面试轮次结果（联调最小能力）
+     * 录入/更新面试轮次结果，并尝试邮件通知新生。
      */
-    int saveInterviewResult(QtInterviewResult result);
+    Map<String, Object> saveInterviewResult(QtInterviewResult result);
 }

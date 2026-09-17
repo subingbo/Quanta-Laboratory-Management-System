@@ -29,7 +29,7 @@ describe('recruitment api', () => {
   })
 
   it('saves the second-round result with its notification', async () => {
-    await sendOffer({
+    const response = await sendOffer({
       applicationId: 1003,
       department: 'PRODUCT',
       decision: 'PASS',
@@ -39,6 +39,7 @@ describe('recruitment api', () => {
     const application = findMockApplication(1003)
     expect(application.tracks[1].rounds[2].status).toBe('PASS')
     expect(application.applicationStatus).toBe('OFFERED')
+    expect(response.data.emailSent).toBe(true)
   })
 
   it('maps flat backend choices to the stable page model', () => {
