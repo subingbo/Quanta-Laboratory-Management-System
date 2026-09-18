@@ -32,7 +32,9 @@ const groupedRoutes = computed(() => {
 <template>
   <aside class="app-sidebar">
     <div class="app-sidebar__brand">
-      <div class="app-sidebar__logo">Q</div>
+      <div class="app-sidebar__logo">
+        <img src="/quanta-logo.jpg" alt="Quanta 社团 Logo" />
+      </div>
       <div v-show="!sidebarCollapsed" class="app-sidebar__brand-copy">
         <strong>Quanta</strong>
         <span>后台管理系统</span>
