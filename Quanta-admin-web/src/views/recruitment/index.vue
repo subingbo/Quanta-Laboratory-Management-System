@@ -235,12 +235,16 @@ async function submitFeedback() {
   }
 }
 
-function selectFirstRoundResult(status) {
+function openResultDecision(row, status) {
+  const options = trackOptions(row, 1)
+  if (!options.length) {
+    ElMessage.warning('当前没有可评定的志愿部门')
+    return
+  }
   decision.result = status
-  decision.row = feedback.row
-  decision.department = feedback.department
-  decision.options = feedback.options.filter((option) => option.value === feedback.department)
-  feedback.visible = false
+  decision.row = row
+  decision.department = options[0].value
+  decision.options = options
   decision.visible = true
 }
 
@@ -410,6 +414,7 @@ onMounted(refreshAll)
           @resume="openResume"
           @view-feedback="openViewFeedback"
           @edit-feedback="openEditFeedback"
+          @select-result="openResultDecision"
           @offer="openOffer"
         />
       </template>
@@ -430,7 +435,6 @@ onMounted(refreshAll)
       :can-switch="isCeo"
       @update:department="changeFeedbackDepartment"
       @update:content="feedback.content = $event"
-      @select-result="selectFirstRoundResult"
       @submit="submitFeedback"
     />
     <DecisionDialog

@@ -85,7 +85,7 @@ describe('CandidateTable', () => {
     expect(wrapper.text()).not.toContain('评定')
   })
 
-  it('keeps manager first-round actions read-only', () => {
+  it('gives a regular manager all first-round review actions without result controls', () => {
     const wrapper = mountTable({
       roles: ['qt_manager'],
       permissions: ['qt:interview:admin:list', 'qt:interview:admin:evaluate'],
@@ -93,8 +93,9 @@ describe('CandidateTable', () => {
 
     expect(wrapper.text()).toContain('阅览简历')
     expect(wrapper.text()).toContain('编辑面评')
-    expect(wrapper.text()).not.toContain('已评')
-    expect(wrapper.text()).not.toContain('查看面评')
+    expect(wrapper.text()).toContain('查看面评')
+    expect(wrapper.find('[data-test="candidate-result-pass"]').exists()).toBe(false)
+    expect(wrapper.find('[data-test="candidate-result-out"]').exists()).toBe(false)
     expect(wrapper.text()).not.toContain('是否录用')
   })
 
@@ -108,7 +109,7 @@ describe('CandidateTable', () => {
     expect(wrapper.text()).toContain('编辑面评')
   })
 
-  it('renders the management second-round action only', () => {
+  it('gives management all second-round review actions', () => {
     const wrapper = mountTable({
       roles: ['qt_mgmt'],
       permissions: ['qt:interview:admin:offer'],
@@ -116,11 +117,12 @@ describe('CandidateTable', () => {
     })
 
     expect(wrapper.text()).toContain('是否录用')
-    expect(wrapper.text()).not.toContain('阅览简历')
-    expect(wrapper.text()).not.toContain('编辑面评')
+    expect(wrapper.text()).toContain('阅览简历')
+    expect(wrapper.text()).toContain('编辑面评')
+    expect(wrapper.text()).toContain('查看面评')
   })
 
-  it('renders the manager second-round action only', () => {
+  it('gives a regular manager all second-round review actions without admin controls', () => {
     const evaluatedCandidate = structuredClone(candidate)
     evaluatedCandidate.choices[0].rounds[2].evaluations = [
       { interviewerId: 21, content: '二面面评' },
@@ -133,8 +135,22 @@ describe('CandidateTable', () => {
     })
 
     expect(wrapper.text()).toContain('编辑面评')
-    expect(wrapper.text()).toContain('已评')
-    expect(wrapper.text()).not.toContain('阅览简历')
+    expect(wrapper.text()).toContain('查看面评')
+    expect(wrapper.text()).toContain('阅览简历')
+    expect(wrapper.find('[data-test="candidate-result-pass"]').exists()).toBe(false)
+    expect(wrapper.find('[data-test="candidate-result-out"]').exists()).toBe(false)
     expect(wrapper.text()).not.toContain('是否录用')
+  })
+
+  it('shows first-round Pass and Out as peer actions only for admin', async () => {
+    const wrapper = mountTable({
+      roles: ['admin'],
+      permissions: ['*:*:*'],
+    })
+
+    expect(wrapper.get('[data-test="candidate-result-pass"]').text()).toBe('Pass')
+    expect(wrapper.get('[data-test="candidate-result-out"]').text()).toBe('Out')
+    await wrapper.get('[data-test="candidate-result-pass"]').trigger('click')
+    expect(wrapper.emitted('select-result')).toEqual([[candidate, 'PASS']])
   })
 })

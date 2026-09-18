@@ -18,7 +18,6 @@ const emit = defineEmits([
   'update:modelValue',
   'update:department',
   'update:content',
-  'select-result',
   'submit',
 ])
 const visible = computed({ get: () => props.modelValue, set: (value) => emit('update:modelValue', value) })
@@ -53,29 +52,9 @@ const visible = computed({ get: () => props.modelValue, set: (value) => emit('up
         @update:model-value="emit('update:content', $event)"
       />
     </div>
-    <template #footer>
-      <template v-if="mode === 'view'">
-        <ElButton
-          size="small"
-          class="feedback-dialog__result feedback-dialog__result--pass"
-          data-test="feedback-result-pass"
-          @click="emit('select-result', 'PASS')"
-        >
-          Pass
-        </ElButton>
-        <ElButton
-          size="small"
-          class="feedback-dialog__result feedback-dialog__result--out"
-          data-test="feedback-result-out"
-          @click="emit('select-result', 'FAIL')"
-        >
-          Out
-        </ElButton>
-      </template>
-      <template v-else>
-        <ElButton class="feedback-dialog__cancel" size="small" @click="visible = false">取消</ElButton>
-        <ElButton class="feedback-dialog__submit" type="success" size="small" :loading="submitting" @click="emit('submit')">提交</ElButton>
-      </template>
+    <template v-if="mode === 'edit'" #footer>
+      <ElButton class="feedback-dialog__cancel" size="small" @click="visible = false">取消</ElButton>
+      <ElButton class="feedback-dialog__submit" type="success" size="small" :loading="submitting" @click="emit('submit')">提交</ElButton>
     </template>
   </ElDialog>
 </template>

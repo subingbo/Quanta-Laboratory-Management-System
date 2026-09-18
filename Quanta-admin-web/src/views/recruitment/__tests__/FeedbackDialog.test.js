@@ -44,21 +44,15 @@ function mountDialog(props = {}) {
 }
 
 describe('FeedbackDialog', () => {
-  it('renders read-only feedback with Pass and Out', async () => {
+  it('renders feedback as a read-only view without result controls', () => {
     const wrapper = mountDialog({ mode: 'view' })
 
     expect(wrapper.find('textarea').exists()).toBe(false)
-    expect(wrapper.text()).toContain('Pass')
-    expect(wrapper.text()).toContain('Out')
+    expect(wrapper.text()).not.toContain('Pass')
+    expect(wrapper.text()).not.toContain('Out')
     expect(wrapper.text()).not.toContain('Waiting')
 
-    const actions = wrapper.findAll('[data-test^="feedback-result-"]')
-    expect(actions.map((button) => button.text())).toEqual(['Pass', 'Out'])
-    expect(actions[0].classes()).toContain('feedback-dialog__result--pass')
-    expect(actions[1].classes()).toContain('feedback-dialog__result--out')
-
-    await actions[0].trigger('click')
-    expect(wrapper.emitted('select-result')).toEqual([['PASS']])
+    expect(wrapper.findAll('[data-test^="feedback-result-"]')).toHaveLength(0)
   })
 
   it('renders editable feedback without result controls', () => {

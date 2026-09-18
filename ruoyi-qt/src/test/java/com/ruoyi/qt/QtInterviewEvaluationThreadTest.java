@@ -186,6 +186,14 @@ class QtInterviewEvaluationThreadTest
         assertThrows(ServiceException.class, () -> controller.editEvaluation(1L, body("BACKEND", 1L, EVAL_A)));
     }
 
+    @Test
+    void regularMemberCannotSaveInterviewResult()
+    {
+        login(8L, "1", "tower_a", Set.of("qt:interview:admin:evaluate"));
+        QtInterviewController controller = new QtInterviewController();
+        assertThrows(ServiceException.class, () -> controller.saveResult(new QtInterviewResult()));
+    }
+
     private void login(Long userId, String memberFlag, String userName, Set<String> permissions)
     {
         SysUser user = new SysUser();

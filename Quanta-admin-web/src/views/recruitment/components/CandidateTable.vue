@@ -14,14 +14,13 @@ const props = defineProps({
   pendingAction: { type: String, default: '' },
 })
 
-const emit = defineEmits(['resume', 'view-feedback', 'edit-feedback', 'offer'])
+const emit = defineEmits(['resume', 'view-feedback', 'edit-feedback', 'select-result', 'offer'])
 const userStore = useUserStore()
-const { user, roles, departmentCode } = storeToRefs(userStore)
+const { roles, departmentCode } = storeToRefs(userStore)
 const isCeo = computed(() => roles.value.some(isCeoRole))
 const isManagement = computed(
   () => roles.value.includes('qt_mgmt') || roles.value.some(isCeoRole),
 )
-const isManager = computed(() => roles.value.includes('qt_manager'))
 function choice(row, order) {
   return row.choices?.find((item) => item.choiceOrder === order)
 }
@@ -45,14 +44,6 @@ function availableTracks(row) {
     if (props.roundId === 2 && !track.rounds?.[2]?.advanced) return false
     return isCeo.value || track.department === departmentCode.value
   })
-}
-
-function hasOwnEvaluation(row) {
-  return availableTracks(row).some((track) =>
-    track.rounds?.[props.roundId]?.evaluations?.some(
-      (evaluation) => evaluation.interviewerId === user.value?.userId,
-    ),
-  )
 }
 
 </script>
@@ -100,34 +91,47 @@ function hasOwnEvaluation(row) {
     <ElTableColumn label="操作" min-width="260" fixed="right">
       <template #default="{ row }">
         <div class="recruitment-table__actions">
-          <PermissionButton
-            v-if="roundId === 1 && (isManagement || isManager)"
+          <ElButton
             link
             class="recruitment-table__link is-primary is-underlined"
-            :permissions="'qt:interview:admin:list'"
             @click="emit('resume', row)"
           >
             阅览简历
-          </PermissionButton>
-          <PermissionButton
-            v-if="roundId === 1 && isManagement && availableTracks(row).length"
+          </ElButton>
+          <ElButton
+            v-if="availableTracks(row).length"
             link
             class="recruitment-table__link is-underlined"
-            :permissions="'qt:interview:admin:list'"
             @click="emit('view-feedback', row)"
           >
             查看面评
-          </PermissionButton>
-          <PermissionButton
+          </ElButton>
+          <ElButton
             v-if="availableTracks(row).length"
             link
             class="recruitment-table__link is-primary is-underlined"
-            :permissions="'qt:interview:admin:evaluate'"
             @click="emit('edit-feedback', row)"
           >
             编辑面评
-          </PermissionButton>
-          <span v-if="roundId === 2 && isManager && hasOwnEvaluation(row)" class="recruitment-table__reviewed">已评</span>
+          </ElButton>
+          <ElButton
+            v-if="roundId === 1 && isCeo && availableTracks(row).length"
+            link
+            class="recruitment-table__link feedback-dialog__result--pass"
+            data-test="candidate-result-pass"
+            @click="emit('select-result', row, 'PASS')"
+          >
+            Pass
+          </ElButton>
+          <ElButton
+            v-if="roundId === 1 && isCeo && availableTracks(row).length"
+            link
+            class="recruitment-table__link feedback-dialog__result--out"
+            data-test="candidate-result-out"
+            @click="emit('select-result', row, 'FAIL')"
+          >
+            Out
+          </ElButton>
           <PermissionButton
             v-if="roundId === 2 && isManagement && availableTracks(row).length"
             link

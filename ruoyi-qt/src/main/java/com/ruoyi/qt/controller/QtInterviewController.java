@@ -144,6 +144,7 @@ public class QtInterviewController extends BaseController
     @PostMapping("/result")
     public AjaxResult saveResult(@org.springframework.web.bind.annotation.RequestBody QtInterviewResult result)
     {
+        com.ruoyi.qt.util.QtAuthUtils.requireCeo();
         if (result.getUserId() == null)
         {
             return AjaxResult.error("userId不能为空");
