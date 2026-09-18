@@ -573,6 +573,11 @@
 .notice-dialog__body dl div { display: grid; grid-template-columns: 88px 1fr; gap: 14px; }
 .notice-dialog__body dt { color: #8a93a3; }
 .notice-dialog__body dd { margin: 0; color: #1f2430; font-weight: 650; }
+.notice-dialog__preview { padding: 14px 16px; border: 1px solid #eceff4; border-radius: 12px; background: #fff; color: #1f2430; line-height: 1.7; }
+.notice-dialog__preview p { margin: 0 0 10px; }
+.notice-dialog__preview p:last-child { margin-bottom: 0; }
+.notice-dialog__preview em { color: #8a93a3; font-style: normal; }
+.notice-dialog__preview img { max-width: 240px; height: auto; }
 .notice-dialog__upload { display: grid; gap: 8px; margin-top: 18px; padding: 16px; border: 1px dashed #ff9c5a; border-radius: 12px; background: #fff8f3; }
 .notice-dialog__upload span { font-weight: 750; }
 .notice-dialog__upload small { color: #8a93a3; }

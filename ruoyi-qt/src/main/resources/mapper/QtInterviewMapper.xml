@@ -31,6 +31,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="firstChoiceSecondRoundStatus" column="first_choice_second_round_status"/>
         <result property="secondChoiceFirstRoundStatus" column="second_choice_first_round_status"/>
         <result property="secondChoiceSecondRoundStatus" column="second_choice_second_round_status"/>
+        <result property="firstChoiceSecondRoundScore" column="first_choice_second_round_score"/>
+        <result property="secondChoiceSecondRoundScore" column="second_choice_second_round_score"/>
+        <result property="firstChoiceSecondRoundScoreUpdateBy" column="first_choice_second_round_score_update_by"/>
+        <result property="firstChoiceSecondRoundScoreUpdateTime" column="first_choice_second_round_score_update_time"/>
+        <result property="secondChoiceSecondRoundScoreUpdateBy" column="second_choice_second_round_score_update_by"/>
+        <result property="secondChoiceSecondRoundScoreUpdateTime" column="second_choice_second_round_score_update_time"/>
         <result property="createBy" column="create_by"/>
         <result property="createTime" column="create_time"/>
         <result property="updateBy" column="update_by"/>
@@ -233,24 +239,42 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                a.create_by, a.create_time, a.update_by, a.update_time,
                u.student_no, u.phonenumber, u.email, u.major, u.nick_name
                ,
-               (select r.result_status from qt_interview_result r
+               (select case when r.result_status = 'FAIL' then 'OUT' else r.result_status end from qt_interview_result r
                 join qt_interview_round rd on r.round_id = rd.round_id
                 where r.application_id = a.application_id and rd.round_no = 1 and r.department = a.first_choice limit 1) as first_choice_first_round_status,
-               (select r.result_status from qt_interview_result r
+               (select case when r.result_status = 'FAIL' then 'OUT' else r.result_status end from qt_interview_result r
                 join qt_interview_round rd on r.round_id = rd.round_id
                 where r.application_id = a.application_id and rd.round_no = 2 and r.department = a.first_choice limit 1) as first_choice_second_round_status,
-               (select r.result_status from qt_interview_result r
+               (select case when r.result_status = 'FAIL' then 'OUT' else r.result_status end from qt_interview_result r
                 join qt_interview_round rd on r.round_id = rd.round_id
                 where r.application_id = a.application_id and rd.round_no = 1 and r.department = a.second_choice limit 1) as second_choice_first_round_status,
-               (select r.result_status from qt_interview_result r
+               (select case when r.result_status = 'FAIL' then 'OUT' else r.result_status end from qt_interview_result r
                 join qt_interview_round rd on r.round_id = rd.round_id
-                where r.application_id = a.application_id and rd.round_no = 2 and r.department = a.second_choice limit 1) as second_choice_second_round_status
+                where r.application_id = a.application_id and rd.round_no = 2 and r.department = a.second_choice limit 1) as second_choice_second_round_status,
+               (select r.score from qt_interview_result r
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = 2 and r.department = a.first_choice limit 1) as first_choice_second_round_score,
+               (select r.score from qt_interview_result r
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = 2 and r.department = a.second_choice limit 1) as second_choice_second_round_score,
+               (select r.update_by from qt_interview_result r
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = 2 and r.department = a.first_choice limit 1) as first_choice_second_round_score_update_by,
+               (select r.update_time from qt_interview_result r
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = 2 and r.department = a.first_choice limit 1) as first_choice_second_round_score_update_time,
+               (select r.update_by from qt_interview_result r
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = 2 and r.department = a.second_choice limit 1) as second_choice_second_round_score_update_by,
+               (select r.update_time from qt_interview_result r
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = 2 and r.department = a.second_choice limit 1) as second_choice_second_round_score_update_time
                <if test="roundId != null">
                ,
-               (select r.result_status from qt_interview_result r
+               (select case when r.result_status = 'FAIL' then 'OUT' else r.result_status end from qt_interview_result r
                 join qt_interview_round rd on r.round_id = rd.round_id
                 where r.application_id = a.application_id and rd.round_no = #{roundId} and r.department = a.first_choice limit 1) as first_choice_status,
-               (select r.result_status from qt_interview_result r
+               (select case when r.result_status = 'FAIL' then 'OUT' else r.result_status end from qt_interview_result r
                 join qt_interview_round rd on r.round_id = rd.round_id
                 where r.application_id = a.application_id and rd.round_no = #{roundId} and r.department = a.second_choice limit 1) as second_choice_status
                </if>
@@ -265,19 +289,73 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="scopedDepartment != null and scopedDepartment != ''">
                 and (a.first_choice = #{scopedDepartment} or a.second_choice = #{scopedDepartment})
             </if>
+            <if test="roundId != null and roundId == 2 and (resultStatus == null or resultStatus == '')">
+                and exists (
+                    select 1 from qt_interview_result r
+                    join qt_interview_round rd on r.round_id = rd.round_id
+                    where r.application_id = a.application_id
+                      and rd.round_no = 1
+                      and r.result_status = 'PASS'
+                    <if test="scopedDepartment != null and scopedDepartment != ''">and r.department = #{scopedDepartment}</if>
+                    <if test="department != null and department != ''">and r.department = #{department}</if>
+                )
+            </if>
             <if test="roundId != null and resultStatus != null and resultStatus != ''">
                 and exists (
                     select 1 from qt_interview_result r
                     join qt_interview_round rd on r.round_id = rd.round_id
                     where r.application_id = a.application_id
                       and rd.round_no = #{roundId}
-                      and r.result_status = #{resultStatus}
+                      and (r.result_status = #{resultStatus}
+                           or (#{resultStatus} = 'OUT' and r.result_status = 'FAIL'))
                     <if test="scopedDepartment != null and scopedDepartment != ''">and r.department = #{scopedDepartment}</if>
                     <if test="department != null and department != ''">and r.department = #{department}</if>
                 )
             </if>
         </where>
-        order by a.create_time desc
+        <choose>
+            <when test="roundId != null and roundId == 2">
+                order by
+                <choose>
+                    <when test="sortDepartment != null and sortDepartment != ''">
+                        (select r.score from qt_interview_result r
+                         join qt_interview_round rd on r.round_id = rd.round_id
+                         where r.application_id = a.application_id and rd.round_no = 2 and r.department = #{sortDepartment} limit 1) is null,
+                        (select r.score from qt_interview_result r
+                         join qt_interview_round rd on r.round_id = rd.round_id
+                         where r.application_id = a.application_id and rd.round_no = 2 and r.department = #{sortDepartment} limit 1) desc,
+                    </when>
+                    <otherwise>
+                        (select max(r.score) from qt_interview_result r
+                         join qt_interview_round rd on r.round_id = rd.round_id
+                         where r.application_id = a.application_id and rd.round_no = 2
+                           and r.department in (a.first_choice, a.second_choice)
+                           and exists (
+                             select 1 from qt_interview_result r1
+                             join qt_interview_round rd1 on r1.round_id = rd1.round_id
+                             where r1.application_id = a.application_id and rd1.round_no = 1
+                               and r1.department = r.department and r1.result_status = 'PASS'
+                           )
+                        ) is null,
+                        (select max(r.score) from qt_interview_result r
+                         join qt_interview_round rd on r.round_id = rd.round_id
+                         where r.application_id = a.application_id and rd.round_no = 2
+                           and r.department in (a.first_choice, a.second_choice)
+                           and exists (
+                             select 1 from qt_interview_result r1
+                             join qt_interview_round rd1 on r1.round_id = rd1.round_id
+                             where r1.application_id = a.application_id and rd1.round_no = 1
+                               and r1.department = r.department and r1.result_status = 'PASS'
+                           )
+                        ) desc,
+                    </otherwise>
+                </choose>
+                a.create_time desc
+            </when>
+            <otherwise>
+                order by a.create_time desc
+            </otherwise>
+        </choose>
     </select>
 
     <select id="selectRoundById" resultType="com.ruoyi.qt.domain.QtInterviewRound">

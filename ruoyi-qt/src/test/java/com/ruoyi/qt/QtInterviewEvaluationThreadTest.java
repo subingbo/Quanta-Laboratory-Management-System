@@ -72,6 +72,7 @@ class QtInterviewEvaluationThreadTest
     @Test
     void twoEvaluatorsWriteIndependentRows()
     {
+        login(8L, "1", "tower_a", Set.of());
         when(qtInterviewMapper.selectApplicationById(10L)).thenReturn(application());
         when(qtInterviewMapper.selectRoundByNo(1)).thenReturn(roundOne());
         when(qtInterviewMapper.selectEvaluationByUnique(eq(10L), eq(101L), eq("BACKEND"), eq(8L))).thenReturn(null);
@@ -119,6 +120,7 @@ class QtInterviewEvaluationThreadTest
     @Test
     void listReturnsLoginUserNameNotNickAndDoesNotForceOwnDepartment()
     {
+        login(1L, "1", "ceo", Set.of("*:*:*"), "ceo");
         when(qtInterviewMapper.selectApplicationById(10L)).thenReturn(application());
         when(qtInterviewMapper.selectRoundByNo(1)).thenReturn(roundOne());
         QtInterviewEvaluation row = stored(1L, "tower_a", NICK, CONTENT);

@@ -1,5 +1,8 @@
 package com.ruoyi.qt.domain;
 
+import java.math.BigDecimal;
+import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
 
@@ -54,8 +57,18 @@ public class QtInterviewApplication extends BaseEntity
     private String firstChoiceSecondRoundStatus;
     private String secondChoiceFirstRoundStatus;
     private String secondChoiceSecondRoundStatus;
+    private BigDecimal firstChoiceSecondRoundScore;
+    private BigDecimal secondChoiceSecondRoundScore;
+    private String firstChoiceSecondRoundScoreUpdateBy;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date firstChoiceSecondRoundScoreUpdateTime;
+    private String secondChoiceSecondRoundScoreUpdateBy;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date secondChoiceSecondRoundScoreUpdateTime;
     /** 查询用：数据范围部门 */
     private String scopedDepartment;
+    /** 查询用：二面排序部门，空则按已晋级志愿最高分 */
+    private String sortDepartment;
     /** 查询用：轮次 */
     private Long roundId;
     /** 查询用：志愿部门筛选 */
@@ -341,6 +354,76 @@ public class QtInterviewApplication extends BaseEntity
     public void setSecondChoiceSecondRoundStatus(String secondChoiceSecondRoundStatus)
     {
         this.secondChoiceSecondRoundStatus = secondChoiceSecondRoundStatus;
+    }
+
+    public BigDecimal getFirstChoiceSecondRoundScore()
+    {
+        return firstChoiceSecondRoundScore;
+    }
+
+    public void setFirstChoiceSecondRoundScore(BigDecimal firstChoiceSecondRoundScore)
+    {
+        this.firstChoiceSecondRoundScore = firstChoiceSecondRoundScore;
+    }
+
+    public BigDecimal getSecondChoiceSecondRoundScore()
+    {
+        return secondChoiceSecondRoundScore;
+    }
+
+    public void setSecondChoiceSecondRoundScore(BigDecimal secondChoiceSecondRoundScore)
+    {
+        this.secondChoiceSecondRoundScore = secondChoiceSecondRoundScore;
+    }
+
+    public String getFirstChoiceSecondRoundScoreUpdateBy()
+    {
+        return firstChoiceSecondRoundScoreUpdateBy;
+    }
+
+    public void setFirstChoiceSecondRoundScoreUpdateBy(String firstChoiceSecondRoundScoreUpdateBy)
+    {
+        this.firstChoiceSecondRoundScoreUpdateBy = firstChoiceSecondRoundScoreUpdateBy;
+    }
+
+    public Date getFirstChoiceSecondRoundScoreUpdateTime()
+    {
+        return firstChoiceSecondRoundScoreUpdateTime;
+    }
+
+    public void setFirstChoiceSecondRoundScoreUpdateTime(Date firstChoiceSecondRoundScoreUpdateTime)
+    {
+        this.firstChoiceSecondRoundScoreUpdateTime = firstChoiceSecondRoundScoreUpdateTime;
+    }
+
+    public String getSecondChoiceSecondRoundScoreUpdateBy()
+    {
+        return secondChoiceSecondRoundScoreUpdateBy;
+    }
+
+    public void setSecondChoiceSecondRoundScoreUpdateBy(String secondChoiceSecondRoundScoreUpdateBy)
+    {
+        this.secondChoiceSecondRoundScoreUpdateBy = secondChoiceSecondRoundScoreUpdateBy;
+    }
+
+    public Date getSecondChoiceSecondRoundScoreUpdateTime()
+    {
+        return secondChoiceSecondRoundScoreUpdateTime;
+    }
+
+    public void setSecondChoiceSecondRoundScoreUpdateTime(Date secondChoiceSecondRoundScoreUpdateTime)
+    {
+        this.secondChoiceSecondRoundScoreUpdateTime = secondChoiceSecondRoundScoreUpdateTime;
+    }
+
+    public String getSortDepartment()
+    {
+        return sortDepartment;
+    }
+
+    public void setSortDepartment(String sortDepartment)
+    {
+        this.sortDepartment = sortDepartment;
     }
 
     public String getScopedDepartment()

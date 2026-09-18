@@ -50,6 +50,8 @@ function buildChoice(application, order) {
       2: {
         status: normalizeResultStatus(secondRoundStatus),
         score: application[`${prefix}SecondRoundScore`] ?? null,
+        updatedBy: application[`${prefix}SecondRoundScoreUpdateBy`] || '',
+        updatedTime: application[`${prefix}SecondRoundScoreUpdateTime`] || '',
         advanced: false,
         evaluations: [],
       },

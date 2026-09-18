@@ -120,6 +120,22 @@ describe('recruitment api', () => {
     expect(result.choices.map((choice) => choice.rounds[2].score)).toEqual([91, 87])
   })
 
+  it('maps FAIL as OUT and keeps second-round score metadata', () => {
+    const result = mapApplication({
+      applicationId: 11,
+      firstChoice: 'BACKEND',
+      firstChoiceFirstRoundStatus: 'PASS',
+      firstChoiceSecondRoundStatus: 'FAIL',
+      firstChoiceSecondRoundScore: 76,
+      firstChoiceSecondRoundScoreUpdateBy: 'tower_a',
+      firstChoiceSecondRoundScoreUpdateTime: '2026-09-18 12:00:00',
+    })
+    expect(result.choices[0].rounds[2].status).toBe('OUT')
+    expect(result.choices[0].rounds[2].score).toBe(76)
+    expect(result.choices[0].rounds[2].updatedBy).toBe('tower_a')
+    expect(result.choices[0].rounds[2].updatedTime).toBe('2026-09-18 12:00:00')
+  })
+
   it('normalizes the backend evaluation identity fields', () => {
     expect(normalizeEvaluation({ evaluatorUserId: 8, evaluatorName: '张三' })).toMatchObject({
       evaluatorUserId: 8,

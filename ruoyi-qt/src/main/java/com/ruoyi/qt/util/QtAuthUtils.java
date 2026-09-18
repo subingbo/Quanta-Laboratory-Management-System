@@ -161,7 +161,7 @@ public final class QtAuthUtils
      */
     public static String scopedDepartment()
     {
-        if (isCeo())
+        if (isCeo() || hasPermi(PERM_INTERVIEW_OFFER))
         {
             return null;
         }

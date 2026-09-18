@@ -1,7 +1,7 @@
 package com.ruoyi.qt;
 
+import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,6 @@ import com.ruoyi.system.service.ISysUserService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -98,17 +97,11 @@ class QtInterviewOfferMemberTest
     void offerPassConvertsFreshmanToMember()
     {
         loginAsCeo();
-        when(qtInterviewMapper.selectApplicationById(APP_ID)).thenReturn(application("PROCESSING"));
-        when(qtInterviewMapper.selectRoundByNo(2)).thenReturn(roundTwo());
-        // ?????????????????? -> ???????????????
-        when(qtInterviewMapper.selectResultByAppRoundDept(eq(APP_ID), eq(102L), eq(DEPT))).thenReturn(null);
-        when(qtInterviewMapper.selectResultByAppRoundDept(eq(APP_ID), eq(102L), eq("PRODUCT"))).thenReturn(null);
+        stubRoundTwoReady(DEPT);
         when(userService.selectUserById(USER_ID)).thenReturn(freshmanUser());
         when(roleService.selectRoleAll()).thenReturn(List.of(qtMemberRole()));
         when(qtCohortMapper.selectCurrentCohort()).thenReturn(currentCohort());
         when(qtCohortMapper.selectRecord(eq(USER_ID), eq(COHORT_ID))).thenReturn(null);
-        when(interviewNotifier.departmentLabel(any())).thenReturn("BACKEND");
-        when(interviewNotifier.notifyApplicant(anyLong(), any(), any())).thenReturn(true);
 
         QtInterviewOfferBody body = new QtInterviewOfferBody();
         body.setApplicationId(APP_ID);
@@ -117,17 +110,12 @@ class QtInterviewOfferMemberTest
 
         service.offer(body, "ceo_op");
 
-        // 1. ?????????????
         ArgumentCaptor<SysUser> userCaptor = ArgumentCaptor.forClass(SysUser.class);
         verify(userService, times(1)).updateUser(userCaptor.capture());
         SysUser updated = userCaptor.getValue();
         assertEquals("1", updated.getIsQuantaMember());
         assertEquals(DEPT, updated.getMemberDepartment());
-
-        // 2. ???? qt_member ???
         verify(qtInterviewMapper, times(1)).insertUserRoleIfAbsent(eq(USER_ID), eq(QT_MEMBER_ROLE_ID));
-
-        // 3. ???????????
         ArgumentCaptor<QtMemberRecord> recordCaptor = ArgumentCaptor.forClass(QtMemberRecord.class);
         verify(qtCohortMapper, times(1)).insertRecord(recordCaptor.capture());
         QtMemberRecord record = recordCaptor.getValue();
@@ -137,20 +125,17 @@ class QtInterviewOfferMemberTest
         assertEquals("ACTIVE", record.getMemberStatus());
         assertEquals("0", record.getRetainFlag());
         assertNotNull(record.getJoinTime());
+        verify(interviewNotifier, never()).notifyApplicant(anyLong(), any(), any());
     }
 
     @Test
     void offerPassWithExistingRecordReactivatesAsMember()
     {
         loginAsCeo();
-        when(qtInterviewMapper.selectApplicationById(APP_ID)).thenReturn(application("PROCESSING"));
-        when(qtInterviewMapper.selectRoundByNo(2)).thenReturn(roundTwo());
-        when(qtInterviewMapper.selectResultByAppRoundDept(eq(APP_ID), eq(102L), eq(DEPT))).thenReturn(null);
-        when(qtInterviewMapper.selectResultByAppRoundDept(eq(APP_ID), eq(102L), eq("PRODUCT"))).thenReturn(null);
+        stubRoundTwoReady(DEPT);
         when(userService.selectUserById(USER_ID)).thenReturn(freshmanUser());
         when(roleService.selectRoleAll()).thenReturn(List.of(qtMemberRole()));
         when(qtCohortMapper.selectCurrentCohort()).thenReturn(currentCohort());
-        // ?????????????? ACTIVE / ?? MEMBER
         QtMemberRecord existing = new QtMemberRecord();
         existing.setRecordId(99L);
         existing.setUserId(USER_ID);
@@ -158,8 +143,6 @@ class QtInterviewOfferMemberTest
         existing.setRoleCategory("FRESHMAN");
         existing.setMemberStatus("INACTIVE");
         when(qtCohortMapper.selectRecord(eq(USER_ID), eq(COHORT_ID))).thenReturn(existing);
-        when(interviewNotifier.departmentLabel(any())).thenReturn("BACKEND");
-        when(interviewNotifier.notifyApplicant(anyLong(), any(), any())).thenReturn(true);
 
         QtInterviewOfferBody body = new QtInterviewOfferBody();
         body.setApplicationId(APP_ID);
@@ -180,13 +163,7 @@ class QtInterviewOfferMemberTest
     void offerOutDoesNotConvertToMember()
     {
         loginAsCeo();
-        when(qtInterviewMapper.selectApplicationById(APP_ID)).thenReturn(application("PROCESSING"));
-        when(qtInterviewMapper.selectRoundByNo(2)).thenReturn(roundTwo());
-        // ??????? OUT?????????????? -> ?????
-        when(qtInterviewMapper.selectResultByAppRoundDept(eq(APP_ID), eq(102L), eq(DEPT))).thenReturn(null);
-        when(qtInterviewMapper.selectResultByAppRoundDept(eq(APP_ID), eq(102L), eq("PRODUCT"))).thenReturn(null);
-        when(interviewNotifier.departmentLabel(any())).thenReturn("BACKEND");
-        when(interviewNotifier.notifyApplicant(anyLong(), any(), any())).thenReturn(true);
+        stubRoundTwoReady(DEPT);
 
         QtInterviewOfferBody body = new QtInterviewOfferBody();
         body.setApplicationId(APP_ID);
@@ -205,15 +182,10 @@ class QtInterviewOfferMemberTest
     void offerPassWithoutCurrentCohortStillUpdatesUserAndRole()
     {
         loginAsCeo();
-        when(qtInterviewMapper.selectApplicationById(APP_ID)).thenReturn(application("PROCESSING"));
-        when(qtInterviewMapper.selectRoundByNo(2)).thenReturn(roundTwo());
-        when(qtInterviewMapper.selectResultByAppRoundDept(eq(APP_ID), eq(102L), eq(DEPT))).thenReturn(null);
-        when(qtInterviewMapper.selectResultByAppRoundDept(eq(APP_ID), eq(102L), eq("PRODUCT"))).thenReturn(null);
+        stubRoundTwoReady(DEPT);
         when(userService.selectUserById(USER_ID)).thenReturn(freshmanUser());
         when(roleService.selectRoleAll()).thenReturn(List.of(qtMemberRole()));
         when(qtCohortMapper.selectCurrentCohort()).thenReturn(null);
-        when(interviewNotifier.departmentLabel(any())).thenReturn("BACKEND");
-        when(interviewNotifier.notifyApplicant(anyLong(), any(), any())).thenReturn(true);
 
         QtInterviewOfferBody body = new QtInterviewOfferBody();
         body.setApplicationId(APP_ID);
@@ -231,10 +203,7 @@ class QtInterviewOfferMemberTest
     void offerPassMissingUserThrows()
     {
         loginAsCeo();
-        when(qtInterviewMapper.selectApplicationById(APP_ID)).thenReturn(application("PROCESSING"));
-        when(qtInterviewMapper.selectRoundByNo(2)).thenReturn(roundTwo());
-        when(qtInterviewMapper.selectResultByAppRoundDept(eq(APP_ID), eq(102L), eq(DEPT))).thenReturn(null);
-        when(qtInterviewMapper.selectResultByAppRoundDept(eq(APP_ID), eq(102L), eq("PRODUCT"))).thenReturn(null);
+        stubRoundTwoReady(DEPT);
         when(userService.selectUserById(USER_ID)).thenReturn(null);
 
         QtInterviewOfferBody body = new QtInterviewOfferBody();
@@ -272,6 +241,29 @@ class QtInterviewOfferMemberTest
         application.setSecondChoice("PRODUCT");
         application.setApplyStatus(applyStatus);
         return application;
+    }
+
+    private void stubRoundTwoReady(String department)
+    {
+        when(qtInterviewMapper.selectApplicationById(APP_ID)).thenReturn(application("PROCESSING"));
+        when(qtInterviewMapper.selectRoundByNo(1)).thenReturn(roundOne());
+        when(qtInterviewMapper.selectRoundByNo(2)).thenReturn(roundTwo());
+        QtInterviewResult round1 = new QtInterviewResult();
+        round1.setResultStatus("PASS");
+        when(qtInterviewMapper.selectResultByAppRoundDept(eq(APP_ID), eq(101L), eq(department))).thenReturn(round1);
+        QtInterviewResult round2 = new QtInterviewResult();
+        round2.setResultId(200L);
+        round2.setResultStatus("PENDING");
+        round2.setScore(new BigDecimal("88"));
+        when(qtInterviewMapper.selectResultByAppRoundDept(eq(APP_ID), eq(102L), eq(department))).thenReturn(round2);
+    }
+
+    private QtInterviewRound roundOne()
+    {
+        QtInterviewRound round = new QtInterviewRound();
+        round.setRoundId(101L);
+        round.setRoundNo(1);
+        return round;
     }
 
     private QtInterviewRound roundTwo()

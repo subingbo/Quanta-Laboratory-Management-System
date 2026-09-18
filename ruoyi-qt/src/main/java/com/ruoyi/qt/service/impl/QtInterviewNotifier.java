@@ -27,7 +27,19 @@ public class QtInterviewNotifier
 
     public boolean notifyApplicant(Long userId, String subject, String content)
     {
-        if (userId == null || StringUtils.isEmpty(subject) || StringUtils.isEmpty(content))
+        return notifyApplicant(userId, subject, content, null, null);
+    }
+
+    public boolean notifyApplicant(Long userId, String subject, String content, String attachmentName,
+            byte[] attachment)
+    {
+        return notifyApplicant(userId, subject, content, null, attachmentName, attachment, null);
+    }
+
+    public boolean notifyApplicant(Long userId, String subject, String html, String plain, String attachmentName,
+            byte[] attachment, String contentType)
+    {
+        if (userId == null || StringUtils.isEmpty(subject) || StringUtils.isEmpty(html))
         {
             return false;
         }
@@ -39,7 +51,7 @@ public class QtInterviewNotifier
                 log.warn("interview mail skipped, missing email, userId={}", userId);
                 return false;
             }
-            mailUtils.sendText(user.getEmail().trim(), subject, content);
+            mailUtils.sendHtml(user.getEmail().trim(), subject, plain, html, attachmentName, attachment, contentType);
             return true;
         }
         catch (Exception ex)

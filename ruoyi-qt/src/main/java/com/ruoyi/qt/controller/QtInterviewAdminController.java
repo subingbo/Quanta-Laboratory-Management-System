@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -24,10 +25,11 @@ import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.framework.config.ServerConfig;
 import com.ruoyi.framework.security.ProfileAccessSigner;
 import com.ruoyi.qt.domain.QtInterviewApplication;
+import com.ruoyi.qt.domain.QtInterviewDecisionBody;
 import com.ruoyi.qt.domain.QtInterviewEvaluation;
 import com.ruoyi.qt.domain.QtInterviewOfferBody;
 import com.ruoyi.qt.domain.QtInterviewProfile;
-import com.ruoyi.qt.domain.QtInterviewResult;
+import com.ruoyi.qt.domain.QtInterviewScoreBody;
 import com.ruoyi.qt.domain.QtStatusBody;
 import com.ruoyi.qt.service.IQtInterviewAdminService;
 import com.ruoyi.qt.util.QtAuthUtils;
@@ -109,6 +111,42 @@ public class QtInterviewAdminController extends BaseController
     public AjaxResult offers(@RequestBody QtInterviewOfferBody body)
     {
         return success(qtInterviewAdminService.offer(body, getUsername()));
+    }
+
+    @PreAuthorize("@ss.hasPermi('qt:interview:admin:offer')")
+    @Log(title = "招新评定", businessType = BusinessType.UPDATE)
+    @PutMapping("/applications/{applicationId}/rounds/{roundNo}/departments/{department}/decision")
+    public AjaxResult decision(@PathVariable Long applicationId, @PathVariable Long roundNo,
+            @PathVariable String department, @RequestBody QtInterviewDecisionBody body)
+    {
+        String decision = body == null ? null : body.getDecision();
+        return success(qtInterviewAdminService.saveDecision(applicationId, roundNo, department, decision, getUsername()));
+    }
+
+    @PreAuthorize("@ss.hasPermi('qt:interview:admin:evaluate')")
+    @Log(title = "二面评分", businessType = BusinessType.UPDATE)
+    @PutMapping("/applications/{applicationId}/round2/departments/{department}/score")
+    public AjaxResult score(@PathVariable Long applicationId, @PathVariable String department,
+            @RequestBody QtInterviewScoreBody body)
+    {
+        Integer score = body == null ? null : body.getScore();
+        return success(qtInterviewAdminService.saveScore(applicationId, department, score, getUsername()));
+    }
+
+    @PreAuthorize("@ss.hasPermi('qt:interview:admin:offer')")
+    @GetMapping("/applications/{applicationId}/notice-preview")
+    public AjaxResult noticePreview(@PathVariable Long applicationId)
+    {
+        return success(qtInterviewAdminService.previewNotice(applicationId));
+    }
+
+    @PreAuthorize("@ss.hasPermi('qt:interview:admin:offer')")
+    @Log(title = "招新结果邮件", businessType = BusinessType.UPDATE)
+    @PostMapping("/applications/{applicationId}/notice")
+    public AjaxResult notice(@PathVariable Long applicationId,
+            @RequestParam(value = "qrCode", required = false) MultipartFile qrCode)
+    {
+        return success(qtInterviewAdminService.sendNotice(applicationId, qrCode, getUsername()));
     }
 
     @GetMapping("/statistics")

@@ -2,6 +2,7 @@ package com.ruoyi.qt.service;
 
 import java.util.List;
 import java.util.Map;
+import org.springframework.web.multipart.MultipartFile;
 import com.ruoyi.qt.domain.QtInterviewApplication;
 import com.ruoyi.qt.domain.QtInterviewEvaluation;
 import com.ruoyi.qt.domain.QtInterviewOfferBody;
@@ -29,6 +30,15 @@ public interface IQtInterviewAdminService
     QtInterviewEvaluation saveEvaluation(QtInterviewEvaluation evaluation, Long operatorUserId, String operator);
 
     QtInterviewEvaluation updateEvaluation(QtInterviewEvaluation evaluation, Long operatorUserId, String operator);
+
+    Map<String, Object> saveDecision(Long applicationId, Long roundNo, String department, String decision,
+            String operator);
+
+    Map<String, Object> saveScore(Long applicationId, String department, Integer score, String operator);
+
+    Map<String, Object> previewNotice(Long applicationId);
+
+    Map<String, Object> sendNotice(Long applicationId, MultipartFile qrCode, String operator);
 
     Map<String, Object> offer(QtInterviewOfferBody body, String operator);
 

@@ -161,11 +161,12 @@ public class QtInterviewController extends BaseController
         {
             return AjaxResult.error("department不能为空");
         }
-        if (StringUtils.isEmpty(result.getResultStatus()))
-        {
-            return AjaxResult.error("resultStatus不能为空");
-        }
         com.ruoyi.qt.util.QtAuthUtils.assertDepartmentScope(result.getDepartment());
+        String status = com.ruoyi.qt.util.QtInterviewStatuses.normalizeDecision(result.getResultStatus());
+        if (status == null)
+        {
+            return AjaxResult.error("resultStatus 只能是 PASS 或 OUT");
+        }
         if (result.getApplicationId() == null)
         {
             QtInterviewApplication application = qtInterviewService.selectMyApplication(result.getUserId());
@@ -175,16 +176,8 @@ public class QtInterviewController extends BaseController
             }
             result.setApplicationId(application.getApplicationId());
         }
-        if (result.getPublishedTime() == null)
-        {
-            result.setPublishedTime(new java.util.Date());
-        }
-        result.setUpdateBy(getUsername());
-        if (StringUtils.isEmpty(result.getCreateBy()))
-        {
-            result.setCreateBy(getUsername());
-        }
-        return success(qtInterviewService.saveInterviewResult(result));
+        return success(qtInterviewAdminService.saveDecision(result.getApplicationId(), result.getRoundId(),
+                result.getDepartment(), status, getUsername()));
     }
 
     private String uploadPhoto(MultipartFile photoFile) throws Exception
