@@ -23,9 +23,12 @@ public class QtInterviewApplication extends BaseEntity
     @Excel(name = "第二志愿")
     private String secondChoice;
     private String photoUrl;
+    private String resumeUrl;
+    private String resumeFileName;
     @Excel(name = "投递状态")
     private String applyStatus;
     private String photoAccessUrl;
+    private String resumeAccessUrl;
     @Excel(name = "录用部门")
     private String offeredDepartment;
     @Excel(name = "入职确认")
@@ -140,6 +143,26 @@ public class QtInterviewApplication extends BaseEntity
         this.photoUrl = photoUrl;
     }
 
+    public String getResumeUrl()
+    {
+        return resumeUrl;
+    }
+
+    public void setResumeUrl(String resumeUrl)
+    {
+        this.resumeUrl = resumeUrl;
+    }
+
+    public String getResumeFileName()
+    {
+        return resumeFileName;
+    }
+
+    public void setResumeFileName(String resumeFileName)
+    {
+        this.resumeFileName = resumeFileName;
+    }
+
     public String getApplyStatus()
     {
         return applyStatus;
@@ -158,6 +181,16 @@ public class QtInterviewApplication extends BaseEntity
     public void setPhotoAccessUrl(String photoAccessUrl)
     {
         this.photoAccessUrl = photoAccessUrl;
+    }
+
+    public String getResumeAccessUrl()
+    {
+        return resumeAccessUrl;
+    }
+
+    public void setResumeAccessUrl(String resumeAccessUrl)
+    {
+        this.resumeAccessUrl = resumeAccessUrl;
     }
 
     public String getOfferedDepartment()

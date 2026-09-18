@@ -125,14 +125,26 @@ export async function getRecruitmentApplication(applicationId) {
   return mergeApplicationDetail(response.data || {})
 }
 
+export function mapEvaluation(item = {}) {
+  const evaluatorUserId = item.evaluatorUserId ?? item.interviewerId
+  const evaluatorUserName = item.evaluatorUserName || item.interviewerName || ''
+  return {
+    ...item,
+    evaluatorUserId,
+    evaluatorUserName,
+    interviewerId: evaluatorUserId,
+    interviewerName: evaluatorUserName,
+  }
+}
+
 export async function getEvaluations(params) {
   const response = await request({
     url: '/qt/interview/admin/evaluations',
     method: 'get',
     params,
   })
-  if (Array.isArray(response.data)) return response.data
-  return response.data?.rows || response.rows || []
+  const rows = Array.isArray(response.data) ? response.data : response.data?.rows || response.rows || []
+  return rows.map(mapEvaluation)
 }
 
 export function saveEvaluation(data) {

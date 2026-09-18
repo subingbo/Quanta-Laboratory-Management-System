@@ -29,6 +29,8 @@ public class MimeTypeUtils
     /** 表格导入用 */
     public static final String[] EXCEL_EXTENSION = { "xls", "xlsx" };
 
+    public static final String[] PDF_EXTENSION = { "pdf" };
+
     public static final String[] DEFAULT_ALLOWED_EXTENSION = {
             // 图片
             "bmp", "gif", "jpg", "jpeg", "png",

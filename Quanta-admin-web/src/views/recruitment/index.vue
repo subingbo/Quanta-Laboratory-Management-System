@@ -175,7 +175,9 @@ async function loadFeedback() {
       department: feedback.department,
     })
     if (feedback.mode === 'edit') {
-      const mine = feedback.evaluations.find((item) => item.interviewerId === user.value?.userId)
+      const mine = feedback.evaluations.find(
+        (item) => (item.evaluatorUserId || item.interviewerId) === user.value?.userId,
+      )
       feedback.content = mine?.content || ''
     } else {
       feedback.content = ''

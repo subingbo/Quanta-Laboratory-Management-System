@@ -49,7 +49,8 @@ public class QtInterviewController extends BaseController
     @RateLimiter(time = 60, count = 10, limitType = LimitType.USER, key = "rate_limit:apply:")
     @RepeatSubmit(message = "正在提交简历，请勿重复提交")
     public AjaxResult apply(QtInterviewApplication application, QtInterviewProfile profile,
-            @RequestParam(value = "photoFile", required = false) MultipartFile photoFile)
+            @RequestParam(value = "photoFile", required = false) MultipartFile photoFile,
+            @RequestParam(value = "resumeFile", required = false) MultipartFile resumeFile)
     {
         if (StringUtils.isEmpty(application.getFirstChoice()) || StringUtils.isEmpty(application.getSecondChoice()))
         {
@@ -79,6 +80,11 @@ public class QtInterviewController extends BaseController
             {
                 return AjaxResult.error("请上传证件照");
             }
+            if (resumeFile != null && !resumeFile.isEmpty())
+            {
+                application.setResumeUrl(uploadResume(resumeFile));
+                application.setResumeFileName(originalFileName(resumeFile));
+            }
         }
         catch (Exception e)
         {
@@ -105,7 +111,7 @@ public class QtInterviewController extends BaseController
         QtInterviewProfile profile = qtInterviewService.selectMyProfile(getUserId());
         if (application != null)
         {
-            fillPhotoAccessUrl(application);
+            com.ruoyi.qt.util.QtInterviewAccessUrls.fill(application, profileAccessSigner, serverConfig);
         }
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("application", application);
@@ -130,9 +136,7 @@ public class QtInterviewController extends BaseController
         List<QtInterviewApplication> list = qtInterviewAdminService.selectMemberList(query);
         for (QtInterviewApplication app : list)
         {
-            app.setPhonenumber(null);
-            app.setPhotoUrl(null);
-            app.setPhotoAccessUrl(null);
+            com.ruoyi.qt.util.QtInterviewAccessUrls.clearSensitiveFiles(app);
         }
         return success(list);
     }
@@ -188,18 +192,24 @@ public class QtInterviewController extends BaseController
         return FileUploadUtils.upload(uploadPath, photoFile, MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE);
     }
 
-    private void fillPhotoAccessUrl(QtInterviewApplication application)
+    private String uploadResume(MultipartFile resumeFile) throws Exception
     {
-        if (StringUtils.isEmpty(application.getPhotoUrl()))
+        String uploadPath = RuoYiConfig.getUploadPath() + "/qt/interview-resume";
+        return FileUploadUtils.upload(uploadPath, resumeFile, MimeTypeUtils.PDF_EXTENSION, true,
+                FileValidator.SIZE_RESUME);
+    }
+
+    private String originalFileName(MultipartFile file)
+    {
+        if (file == null)
         {
-            return;
+            return null;
         }
-        String imagePath = application.getPhotoUrl();
-        if (imagePath.startsWith("http://") || imagePath.startsWith("https://"))
+        String name = file.getOriginalFilename();
+        if (StringUtils.isEmpty(name))
         {
-            application.setPhotoAccessUrl(profileAccessSigner.signUrl(imagePath));
-            return;
+            return "resume.pdf";
         }
-        application.setPhotoAccessUrl(profileAccessSigner.signUrl(serverConfig.getUrl() + imagePath));
+        return name.length() > 255 ? name.substring(0, 255) : name;
     }
 }

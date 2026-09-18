@@ -28,6 +28,7 @@ public class ProfileAccessSigner
 
     private static final String[] SENSITIVE_PREFIXES = {
         "/profile/upload/qt/interview-photo/",
+        "/profile/upload/qt/interview-resume/",
         "/profile/upload/qt/payment-proof/",
         "/profile/upload/qt/materials/"
     };

@@ -13,6 +13,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="firstChoice" column="first_choice"/>
         <result property="secondChoice" column="second_choice"/>
         <result property="photoUrl" column="photo_url"/>
+        <result property="resumeUrl" column="resume_url"/>
+        <result property="resumeFileName" column="resume_file_name"/>
         <result property="applyStatus" column="apply_status"/>
         <result property="offeredDepartment" column="offered_department"/>
         <result property="joinStatus" column="join_status"/>
@@ -69,7 +71,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <select id="selectApplicationByUserId" resultMap="QtInterviewApplicationResult">
-        select a.application_id, a.user_id, a.real_name, a.gender, a.class_name, a.first_choice, a.second_choice, a.photo_url, a.apply_status,
+        select a.application_id, a.user_id, a.real_name, a.gender, a.class_name, a.first_choice, a.second_choice, a.photo_url,
+               a.resume_url, a.resume_file_name, a.apply_status,
                a.offered_department, a.join_status, a.final_status, a.notice_status,
                a.create_by, a.create_time, a.update_by, a.update_time,
                u.student_no, u.phonenumber, u.email, u.major, u.nick_name
@@ -80,7 +83,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
     <select id="selectApplicationById" resultMap="QtInterviewApplicationResult">
-        select a.application_id, a.user_id, a.real_name, a.gender, a.class_name, a.first_choice, a.second_choice, a.photo_url, a.apply_status,
+        select a.application_id, a.user_id, a.real_name, a.gender, a.class_name, a.first_choice, a.second_choice, a.photo_url,
+               a.resume_url, a.resume_file_name, a.apply_status,
                a.offered_department, a.join_status, a.final_status, a.notice_status,
                a.create_by, a.create_time, a.update_by, a.update_time,
                u.student_no, u.phonenumber, u.email, u.major, u.nick_name
@@ -91,10 +95,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <insert id="insertInterviewApplication" parameterType="QtInterviewApplication" useGeneratedKeys="true" keyProperty="applicationId">
         insert into qt_interview_application
-        (user_id, real_name, gender, class_name, first_choice, second_choice, photo_url, apply_status, create_by, create_time, update_by, update_time)
+        (user_id, real_name, gender, class_name, first_choice, second_choice, photo_url, resume_url, resume_file_name,
+         apply_status, create_by, create_time, update_by, update_time)
         values
-        (#{userId}, #{realName}, #{gender}, #{className}, #{firstChoice}, #{secondChoice}, #{photoUrl}, #{applyStatus},
-         #{createBy}, now(), #{updateBy}, now())
+        (#{userId}, #{realName}, #{gender}, #{className}, #{firstChoice}, #{secondChoice}, #{photoUrl}, #{resumeUrl},
+         #{resumeFileName}, #{applyStatus}, #{createBy}, now(), #{updateBy}, now())
     </insert>
 
     <update id="updateInterviewApplication" parameterType="QtInterviewApplication">
@@ -105,6 +110,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             first_choice = #{firstChoice},
             second_choice = #{secondChoice},
             <if test="photoUrl != null and photoUrl != ''">photo_url = #{photoUrl},</if>
+            <if test="resumeUrl != null and resumeUrl != ''">resume_url = #{resumeUrl},</if>
+            <if test="resumeFileName != null and resumeFileName != ''">resume_file_name = #{resumeFileName},</if>
             apply_status = #{applyStatus},
             update_by = #{updateBy},
             update_time = now()
@@ -220,7 +227,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
     <select id="selectAdminApplicationList" parameterType="QtInterviewApplication" resultMap="QtInterviewApplicationResult">
-        select a.application_id, a.user_id, a.real_name, a.gender, a.class_name, a.first_choice, a.second_choice, a.photo_url, a.apply_status,
+        select a.application_id, a.user_id, a.real_name, a.gender, a.class_name, a.first_choice, a.second_choice, a.photo_url,
+               a.resume_url, a.resume_file_name, a.apply_status,
                a.offered_department, a.join_status, a.final_status, a.notice_status,
                a.create_by, a.create_time, a.update_by, a.update_time,
                u.student_no, u.phonenumber, u.email, u.major, u.nick_name

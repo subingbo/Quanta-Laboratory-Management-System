@@ -4,6 +4,7 @@ import {
   getRecruitmentApplications,
   getRecruitmentStatistics,
   mapApplication,
+  mapEvaluation,
   mergeApplicationDetail,
   sendOffer,
 } from '../recruitment'
@@ -60,6 +61,22 @@ describe('recruitment api', () => {
     expect(result.appliedAt).toBe('2026-08-30 10:00:00')
     expect(result.resumeUrl).toBe('https://example.com/resume.pdf?token=x')
     expect(result.resumeFileName).toBe('吴晓萌-简历.pdf')
+  })
+
+  it('maps evaluation login names onto interviewer fields', () => {
+    expect(
+      mapEvaluation({
+        evaluationId: 1,
+        evaluatorUserId: 8,
+        evaluatorUserName: 'tower_a',
+        evaluatorName: 'nick',
+        content: 'ok',
+      }),
+    ).toMatchObject({
+      interviewerId: 8,
+      interviewerName: 'tower_a',
+      evaluatorUserName: 'tower_a',
+    })
   })
 
   it('merges detail sections and translates the offer contract', () => {

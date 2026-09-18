@@ -55,7 +55,7 @@ public class QtInterviewAdminController extends BaseController
         applyListAliases(query, round, departmentId, status);
         startPage();
         List<QtInterviewApplication> list = qtInterviewAdminService.selectAdminList(query);
-        fillPhoto(list);
+        fillAccessUrls(list);
         return getDataTable(list);
     }
 
@@ -64,7 +64,7 @@ public class QtInterviewAdminController extends BaseController
     public AjaxResult application(@PathVariable("id") Long id)
     {
         QtInterviewApplication application = qtInterviewAdminService.selectApplication(id);
-        fillPhoto(java.util.Collections.singletonList(application));
+        fillAccessUrls(java.util.Collections.singletonList(application));
         QtInterviewProfile profile = qtInterviewAdminService.selectProfile(id);
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("application", application);
@@ -185,7 +185,7 @@ public class QtInterviewAdminController extends BaseController
         }
     }
 
-    private void fillPhoto(List<QtInterviewApplication> list)
+    private void fillAccessUrls(List<QtInterviewApplication> list)
     {
         if (list == null)
         {
@@ -193,19 +193,7 @@ public class QtInterviewAdminController extends BaseController
         }
         for (QtInterviewApplication application : list)
         {
-            if (application == null || StringUtils.isEmpty(application.getPhotoUrl()))
-            {
-                continue;
-            }
-            String path = application.getPhotoUrl();
-            if (path.startsWith("http://") || path.startsWith("https://"))
-            {
-                application.setPhotoAccessUrl(profileAccessSigner.signUrl(path));
-            }
-            else
-            {
-                application.setPhotoAccessUrl(profileAccessSigner.signUrl(serverConfig.getUrl() + path));
-            }
+            com.ruoyi.qt.util.QtInterviewAccessUrls.fill(application, profileAccessSigner, serverConfig);
         }
     }
 }

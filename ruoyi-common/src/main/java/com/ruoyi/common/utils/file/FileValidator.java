@@ -28,6 +28,9 @@ public class FileValidator
     /** 文档类档位：学习资料（pdf / word / excel / ppt / 压缩包） */
     public static final long SIZE_DOCUMENT = 20L * 1024 * 1024;
 
+    /** 招新 PDF 简历 */
+    public static final long SIZE_RESUME = 10L * 1024 * 1024;
+
     /** 表格导入档位 */
     public static final long SIZE_IMPORT = 5L * 1024 * 1024;
 

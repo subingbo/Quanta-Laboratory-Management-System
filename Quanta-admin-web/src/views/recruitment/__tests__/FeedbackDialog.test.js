@@ -62,4 +62,12 @@ describe('FeedbackDialog', () => {
     expect(wrapper.text()).toContain('提交')
     expect(wrapper.text()).not.toContain('Pass')
   })
+
+  it('prefers evaluator login name over nick', () => {
+    const wrapper = mountDialog({
+      evaluations: [{ evaluationId: 2, evaluatorUserName: 'tower_a', interviewerName: 'nick', content: '独立面评' }],
+    })
+    expect(wrapper.text()).toContain('tower_a')
+    expect(wrapper.text()).not.toContain('nick')
+  })
 })

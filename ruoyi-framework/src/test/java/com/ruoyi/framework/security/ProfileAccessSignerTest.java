@@ -38,4 +38,14 @@ class ProfileAccessSignerTest
         assertTrue(signed.contains("sig="));
         assertTrue(signed.contains("exp="));
     }
+
+    @Test
+    void interviewResumeIsSensitiveAndSignable()
+    {
+        when(tokenService.getSigningSecret()).thenReturn("unit-test-secret-key-32bytes-min!!");
+        String path = "/profile/upload/qt/interview-resume/2026/09/17/a.pdf";
+        assertTrue(signer.isSensitiveResource(path));
+        String signed = signer.signUrl("https://example.com" + path);
+        assertTrue(signed.contains("sig="));
+    }
 }
