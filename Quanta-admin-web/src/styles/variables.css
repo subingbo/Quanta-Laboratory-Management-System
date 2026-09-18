@@ -1,20 +1,19 @@
 :root {
-  --quanta-primary: #ffad2f;
-  --quanta-primary-dark: #e99719;
-  --quanta-sidebar: #171b2d;
-  --quanta-sidebar-hover: #22273c;
-  --quanta-page-bg: #f3f5fa;
+  --quanta-primary: #ff6700;
+  --quanta-primary-dark: #e95d00;
+  --quanta-sidebar: #202124;
+  --quanta-sidebar-hover: #2b2d31;
+  --quanta-page-bg: #f6f5f3;
   --quanta-card-bg: #ffffff;
-  --quanta-text: #20243a;
-  --quanta-text-secondary: #7d8497;
-  --quanta-border: #e8ebf2;
+  --quanta-text: #202124;
+  --quanta-text-secondary: #70757d;
+  --quanta-border: #e8e7e4;
   --quanta-success: #16b864;
   --quanta-danger: #f04444;
   --quanta-info: #4f86ee;
-  --quanta-radius: 14px;
-  --quanta-shadow: 0 8px 24px rgba(31, 35, 53, 0.06);
-  --quanta-sidebar-width: 255px;
-  --quanta-sidebar-collapsed-width: 78px;
-  --quanta-header-height: 68px;
+  --quanta-radius: 20px;
+  --quanta-shadow: 0 18px 50px rgb(32 33 36 / 7%);
+  --quanta-sidebar-width: 248px;
+  --quanta-sidebar-collapsed-width: 80px;
+  --quanta-header-height: 76px;
 }
-

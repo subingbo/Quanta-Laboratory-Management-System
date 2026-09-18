@@ -30,7 +30,10 @@ onBeforeUnmount(() => window.clearInterval(timer))
         <ElIcon :size="20"><component :is="sidebarCollapsed ? Expand : Fold" /></ElIcon>
         <span class="sr-only">{{ sidebarCollapsed ? '展开侧边栏' : '折叠侧边栏' }}</span>
       </button>
-      <h1>{{ pageTitle }}</h1>
+      <div class="app-header__copy">
+        <span>QUANTA ADMIN</span>
+        <h1>{{ pageTitle }}</h1>
+      </div>
     </div>
     <div class="app-header__actions">
       <time>{{ currentTime }}</time>
