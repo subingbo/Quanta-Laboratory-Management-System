@@ -21,21 +21,39 @@ defineProps({
 
 <style scoped>
 .stat-card {
+  position: relative;
   display: flex;
-  min-height: 96px;
-  padding: 20px 22px;
+  min-height: 118px;
+  padding: 24px;
   align-items: center;
-  gap: 17px;
+  gap: 18px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.stat-card::before {
+  position: absolute;
+  top: 0;
+  left: 24px;
+  width: 42px;
+  height: 3px;
+  content: "";
+  background: var(--quanta-primary);
+  border-radius: 0 0 4px 4px;
+}
+
+.stat-card:hover {
+  box-shadow: 0 22px 58px rgb(32 33 36 / 10%);
+  transform: translateY(-3px);
 }
 
 .stat-card__icon {
   display: grid;
-  width: 52px;
-  height: 52px;
-  color: #5c5a9c;
-  background: #eef2ff;
-  border-radius: 13px;
-  flex: 0 0 52px;
+  width: 56px;
+  height: 56px;
+  color: #5d61a8;
+  background: #f0f1ff;
+  border-radius: 17px;
+  flex: 0 0 56px;
   place-items: center;
 }
 
@@ -45,8 +63,8 @@ defineProps({
 }
 
 .stat-card__icon--orange {
-  color: #a86f55;
-  background: #fff4e8;
+  color: #e95d00;
+  background: #fff1e7;
 }
 
 .stat-card__icon--red {
@@ -57,14 +75,13 @@ defineProps({
 .stat-card strong {
   display: block;
   color: #1f2438;
-  font-size: 24px;
+  font-size: 28px;
   line-height: 1.15;
 }
 
 .stat-card p {
-  margin: 5px 0 0;
+  margin: 6px 0 0;
   color: #7e8597;
-  font-size: 12px;
+  font-size: 13px;
 }
 </style>
-

@@ -62,14 +62,16 @@ onMounted(loadStats)
 <style scoped>
 .dashboard-view {
   min-width: 760px;
+  max-width: 1640px;
+  margin: 0 auto;
 }
 
 .dashboard-view__stats {
   display: grid;
   min-height: 96px;
-  margin-top: 24px;
+  margin-top: 22px;
   grid-template-columns: repeat(4, minmax(180px, 1fr));
-  gap: 16px;
+  gap: 18px;
 }
 
 .dashboard-view__error {
