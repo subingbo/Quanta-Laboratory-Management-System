@@ -21,6 +21,7 @@ describe('auth mock handlers', () => {
       'Dashboard',
       'Members',
       'Recruitment',
+      'ActivitySignups',
       'LearningMaterials',
       'BookBorrows',
     ])

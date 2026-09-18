@@ -36,6 +36,13 @@ public final class QtAuthUtils
         return SecurityUtils.isAdmin() || SecurityUtils.hasRole(ROLE_CEO);
     }
 
+    public static boolean isBackofficeUser()
+    {
+        return isCeo()
+                || SecurityUtils.hasRole(ROLE_MGMT)
+                || SecurityUtils.hasRole(ROLE_MANAGER);
+    }
+
     public static boolean isQuantaMember()
     {
         SysUser user = SecurityUtils.getLoginUser().getUser();
@@ -95,6 +102,30 @@ public final class QtAuthUtils
         if (!hasAdminList(listPermission))
         {
             setUserId.accept(SecurityUtils.getUserId());
+        }
+    }
+
+    /**
+     * 活动报名管理：后台管理身份可查看全量，新生端只能查看本人。
+     */
+    public static void restrictSignupToSelfIfNoBackoffice(Consumer<Long> setUserId)
+    {
+        if (!isBackofficeUser())
+        {
+            setUserId.accept(SecurityUtils.getUserId());
+        }
+    }
+
+    public static void assertSignupOwnerOrBackoffice(Long ownerUserId)
+    {
+        if (isBackofficeUser())
+        {
+            return;
+        }
+        Long current = SecurityUtils.getUserId();
+        if (ownerUserId == null || current == null || !current.equals(ownerUserId))
+        {
+            throw new ServiceException("无权查看该报名记录");
         }
     }
 

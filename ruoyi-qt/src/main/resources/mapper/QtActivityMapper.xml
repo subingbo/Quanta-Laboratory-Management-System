@@ -30,7 +30,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectQtActivityList" parameterType="QtActivity" resultMap="QtActivityResult">
         <include refid="selectQtActivityVo"/>
         <where>  
-            <if test="title != null  and title != ''"> and title = #{title}</if>
+            <if test="title != null  and title != ''"> and title like concat('%', #{title}, '%')</if>
             <if test="description != null  and description != ''"> and description = #{description}</if>
             <if test="signupStart != null "> and signup_start = #{signupStart}</if>
             <if test="signupEnd != null "> and signup_end = #{signupEnd}</if>

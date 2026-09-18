@@ -154,7 +154,7 @@ INSERT IGNORE INTO sys_menu VALUES
 (4002, '招新管理', 4000, 2, 'interview', 'qt/interview/index', '', '', 1, 0, 'C', '0', '0', 'qt:interview:admin:list', 'education', 'admin', NOW(), '', NULL, '招新候选人'),
 (4003, '学习资料', 4000, 3, 'material', 'qt/material/index', '', '', 1, 0, 'C', '0', '0', 'qt:material:list', 'documentation', 'admin', NOW(), '', NULL, '学习资料'),
 (4004, '控制台统计', 4000, 4, 'dashboard-stats', 'qt/dashboard/index', '', '', 1, 0, 'C', '0', '0', 'qt:dashboard:stats', 'chart', 'admin', NOW(), '', NULL, '控制台卡片'),
-(4005, '活动报名名单', 4000, 5, 'registrations', 'qt/activity/registrations', '', '', 1, 0, 'C', '0', '0', 'qt:activity:registrations', 'list', 'admin', NOW(), '', NULL, '宣讲会/分享会'),
+(4005, '旧活动报名名单', 4000, 5, 'registrations', 'qt/activity/registrations', '', '', 1, 0, 'C', '1', '0', 'qt:activity:registrations', 'list', 'admin', NOW(), '', NULL, '已由统一活动报名入口替代'),
 (4006, '活动管理', 4000, 6, 'activity', 'qt/activity/index', '', '', 1, 0, 'C', '0', '0', 'qt:activity:list', 'date', 'admin', NOW(), '', NULL, '活动维护'),
 (4007, '图书管理', 4000, 7, 'book', 'qt/book/index', '', '', 1, 0, 'C', '0', '0', 'qt:book:list', 'education', 'admin', NOW(), '', NULL, '图书维护'),
 (4008, '工位管理', 4000, 8, 'workstation', 'qt/workstation/index', '', '', 1, 0, 'C', '0', '0', 'qt:workstation:list', 'tree', 'admin', NOW(), '', NULL, '工位维护'),
@@ -163,7 +163,7 @@ INSERT IGNORE INTO sys_menu VALUES
 (4015, '付款码配置', 4000, 11, 'payment-config', 'qt/payment/index', '', '', 1, 0, 'C', '0', '0', 'qt:payment-config:list', 'qrcode', 'admin', NOW(), '', NULL, '付款码'),
 (4016, '借阅记录', 4000, 12, 'borrow', 'qt/borrow/index', '', '', 1, 0, 'C', '0', '0', 'qt:borrow:list', 'log', 'admin', NOW(), '', NULL, '借阅'),
 (4017, '预约记录', 4000, 13, 'reservation', 'qt/reservation/index', '', '', 1, 0, 'C', '0', '0', 'qt:reservation:list', 'time', 'admin', NOW(), '', NULL, '工位预约'),
-(4018, '报名记录', 4000, 14, 'signup', 'qt/signup/index', '', '', 1, 0, 'C', '0', '0', 'qt:signup:list', 'form', 'admin', NOW(), '', NULL, '活动报名'),
+(4018, '活动报名', 4000, 14, 'activity-signups', 'activity-signups/index', '', '', 1, 0, 'C', '0', '0', 'qt:signup:list', 'form', 'admin', NOW(), '', NULL, '统一活动报名名单'),
 (4010, '成员留任', 4001, 1, '', '', '', '', 1, 0, 'F', '0', '0', 'qt:member:retain', '#', 'admin', NOW(), '', NULL, ''),
 (4011, '成员删除', 4001, 2, '', '', '', '', 1, 0, 'F', '0', '0', 'qt:member:remove', '#', 'admin', NOW(), '', NULL, ''),
 (4012, '重置密码', 4001, 3, '', '', '', '', 1, 0, 'F', '0', '0', 'qt:member:resetPwd', '#', 'admin', NOW(), '', NULL, ''),
@@ -222,7 +222,7 @@ SELECT 4, menu_id FROM sys_menu WHERE menu_id IN (
 
 -- 经理层：招新面评 + 成员只读 + 资料下载，无工位/塔服
 INSERT IGNORE INTO sys_role_menu (role_id, menu_id)
-SELECT 5, menu_id FROM sys_menu WHERE menu_id IN (4000,4001,4002,4003,4004,4020,4021,4033);
+SELECT 5, menu_id FROM sys_menu WHERE menu_id IN (4000,4001,4002,4003,4004,4018,4020,4021,4033);
 
 -- 10) 字典
 INSERT INTO sys_dict_type (dict_id, dict_name, dict_type, status, create_by, create_time, remark)

@@ -44,7 +44,7 @@ public class QtActivitySignupController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(QtActivitySignup qtActivitySignup)
     {
-        QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_SIGNUP_LIST, qtActivitySignup::setUserId);
+        QtAuthUtils.restrictSignupToSelfIfNoBackoffice(qtActivitySignup::setUserId);
         startPage();
         List<QtActivitySignup> list = qtActivitySignupService.selectQtActivitySignupList(qtActivitySignup);
         return getDataTable(list);
@@ -56,7 +56,7 @@ public class QtActivitySignupController extends BaseController
     @GetMapping("/detailList")
     public TableDataInfo detailList(QtActivitySignup qtActivitySignup)
     {
-        QtAuthUtils.restrictToSelfIfNoAdmin(QtAuthUtils.PERM_SIGNUP_LIST, qtActivitySignup::setUserId);
+        QtAuthUtils.restrictSignupToSelfIfNoBackoffice(qtActivitySignup::setUserId);
         startPage();
         List<QtActivitySignup> list = qtActivitySignupService.selectQtActivitySignupDetailList(qtActivitySignup);
         return getDataTable(list);
@@ -85,7 +85,7 @@ public class QtActivitySignupController extends BaseController
         QtActivitySignup signup = qtActivitySignupService.selectQtActivitySignupBySignupId(signupId);
         if (signup != null)
         {
-            QtAuthUtils.assertOwnerOrAdmin(signup.getUserId(), QtAuthUtils.PERM_SIGNUP_LIST);
+            QtAuthUtils.assertSignupOwnerOrBackoffice(signup.getUserId());
         }
         return success(signup);
     }

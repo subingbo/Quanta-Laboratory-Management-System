@@ -44,25 +44,14 @@ export const mockRouters = [
     },
   },
   {
-    path: '/lecture-signups',
-    name: 'LectureSignups',
-    component: 'lecture-signups/index',
+    path: '/activity-signups',
+    name: 'ActivitySignups',
+    component: 'activity-signups/index',
     meta: {
-      title: '宣讲会报名',
-      icon: 'Promotion',
-      group: '招生端',
-      permission: 'qt:activity:registrations',
-    },
-  },
-  {
-    path: '/sharing-signups',
-    name: 'SharingSignups',
-    component: 'sharing-signups/index',
-    meta: {
-      title: '精英分享会',
-      icon: 'Sunny',
-      group: '招生端',
-      permission: 'qt:activity:registrations',
+      title: '活动报名',
+      icon: 'List',
+      group: '塔员端',
+      permission: 'qt:signup:list',
     },
   },
   {

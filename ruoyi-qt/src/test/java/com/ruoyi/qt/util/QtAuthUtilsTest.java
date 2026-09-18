@@ -75,6 +75,23 @@ class QtAuthUtilsTest
     }
 
     @Test
+    void backofficeRolesCanReadAllActivitySignups()
+    {
+        for (String roleKey : List.of("admin", "ceo", "qt_mgmt", "qt_manager"))
+        {
+            login(8L, "1", Set.of(), roleKey);
+            org.junit.jupiter.api.Assertions.assertTrue(QtAuthUtils.isBackofficeUser(), roleKey);
+        }
+    }
+
+    @Test
+    void freshmanIsNotBackofficeUser()
+    {
+        login(8L, "0", Set.of(), "freshman");
+        org.junit.jupiter.api.Assertions.assertFalse(QtAuthUtils.isBackofficeUser());
+    }
+
+    @Test
     void requireQuantaMemberRejectsFreshman()
     {
         login(8L, "0", Set.of());
@@ -137,11 +154,16 @@ class QtAuthUtilsTest
 
     private void login(Long userId, String memberFlag, Set<String> permissions)
     {
+        login(userId, memberFlag, permissions, "qt_member");
+    }
+
+    private void login(Long userId, String memberFlag, Set<String> permissions, String roleKey)
+    {
         SysUser user = new SysUser();
         user.setUserId(userId);
         user.setIsQuantaMember(memberFlag);
         SysRole role = new SysRole();
-        role.setRoleKey("qt_member");
+        role.setRoleKey(roleKey);
         user.setRoles(List.of(role));
         LoginUser loginUser = new LoginUser(userId, 100L, user, new HashSet<>(permissions));
         UsernamePasswordAuthenticationToken authentication =

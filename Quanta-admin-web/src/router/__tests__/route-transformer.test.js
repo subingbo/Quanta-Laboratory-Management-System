@@ -43,9 +43,10 @@ describe('route transformer', () => {
 
   it('recognizes the recruitment page component', () => {
     expect(isKnownComponent('recruitment/index')).toBe(true)
-    expect(isKnownComponent('sharing-signups/index')).toBe(true)
+    expect(isKnownComponent('activity-signups/index')).toBe(true)
     expect(isKnownComponent('workstations/index')).toBe(true)
-    expect(isKnownComponent('lecture-signups/index')).toBe(true)
+    expect(isKnownComponent('sharing-signups/index')).toBe(false)
+    expect(isKnownComponent('lecture-signups/index')).toBe(false)
     expect(isKnownComponent('book-borrows/index')).toBe(true)
     expect(isKnownComponent('learning-materials/index')).toBe(true)
     expect(isKnownComponent('clothing-orders/index')).toBe(true)
