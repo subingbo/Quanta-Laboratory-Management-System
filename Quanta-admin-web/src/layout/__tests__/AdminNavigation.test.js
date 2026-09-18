@@ -24,7 +24,8 @@ describe('admin navigation', () => {
     const html = readFileSync(join(process.cwd(), 'index.html'), 'utf8')
     const sidebar = readFileSync(join(process.cwd(), 'src/layout/components/AppSidebar.vue'), 'utf8')
 
-    expect(html).toContain('href="/quanta-logo.jpg"')
+    expect(html).toContain('type="image/png"')
+    expect(html).toContain('href="/quanta-favicon.png"')
     expect(sidebar).toContain("'/quanta-logo.jpg'")
     expect(sidebar).toContain('alt="Quanta 社团 Logo"')
   })
