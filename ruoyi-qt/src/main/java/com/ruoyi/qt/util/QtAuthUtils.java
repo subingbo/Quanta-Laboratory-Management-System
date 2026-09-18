@@ -36,11 +36,14 @@ public final class QtAuthUtils
         return SecurityUtils.isAdmin() || SecurityUtils.hasRole(ROLE_CEO);
     }
 
+    public static boolean isManagement()
+    {
+        return isCeo() || SecurityUtils.hasRole(ROLE_MGMT);
+    }
+
     public static boolean isBackofficeUser()
     {
-        return isCeo()
-                || SecurityUtils.hasRole(ROLE_MGMT)
-                || SecurityUtils.hasRole(ROLE_MANAGER);
+        return isManagement() || SecurityUtils.hasRole(ROLE_MANAGER);
     }
 
     public static boolean isQuantaMember()
@@ -72,6 +75,14 @@ public final class QtAuthUtils
         if (!isCeo())
         {
             throw new ServiceException("仅 CEO 可执行该操作");
+        }
+    }
+
+    public static void requireManagement()
+    {
+        if (!isManagement())
+        {
+            throw new ServiceException("仅管理层可执行该操作");
         }
     }
 

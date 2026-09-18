@@ -25,6 +25,7 @@ import com.ruoyi.qt.controller.QtInterviewAdminController;
 import com.ruoyi.qt.controller.QtInterviewController;
 import com.ruoyi.qt.domain.QtInterviewApplication;
 import com.ruoyi.qt.domain.QtInterviewEvaluation;
+import com.ruoyi.qt.domain.QtInterviewOfferBody;
 import com.ruoyi.qt.domain.QtInterviewResult;
 import com.ruoyi.qt.domain.QtInterviewRound;
 import com.ruoyi.qt.mapper.QtInterviewMapper;
@@ -194,7 +195,72 @@ class QtInterviewEvaluationThreadTest
         assertThrows(ServiceException.class, () -> controller.saveResult(new QtInterviewResult()));
     }
 
+    @Test
+    void managerCannotSaveInterviewResult()
+    {
+        login(8L, "1", "manager_a", Set.of("qt:interview:admin:evaluate"), "qt_manager");
+        QtInterviewController controller = new QtInterviewController();
+        ServiceException error = assertThrows(ServiceException.class, () -> controller.saveResult(new QtInterviewResult()));
+        assertTrue(error.getMessage().contains("\u4ec5\u7ba1\u7406\u5c42"));
+    }
+
+    @Test
+    void managementCanPassInterviewResultAuthButNotOtherDepartment()
+    {
+        login(8L, "1", "qt_admin_backend", Set.of("qt:interview:admin:evaluate"), "qt_mgmt");
+        QtInterviewController controller = new QtInterviewController();
+        QtInterviewResult missingUser = new QtInterviewResult();
+        Object code = controller.saveResult(missingUser).get(com.ruoyi.common.core.domain.AjaxResult.CODE_TAG);
+        assertEquals(com.ruoyi.common.constant.HttpStatus.ERROR, code);
+
+        QtInterviewResult otherDept = new QtInterviewResult();
+        otherDept.setUserId(88L);
+        otherDept.setRoundId(1L);
+        otherDept.setDepartment("PRODUCT");
+        otherDept.setResultStatus("PASS");
+        ServiceException error = assertThrows(ServiceException.class, () -> controller.saveResult(otherDept));
+        assertTrue(error.getMessage().contains("\u672c\u90e8\u95e8"));
+    }
+
+    @Test
+    void regularMemberCanListApplicationsAndEvaluationsWithoutAdminListPermi() throws Exception
+    {
+        // 列表/详情/统计接口不再要求 qt:interview:admin:list，塔员即可
+        Method apps = QtInterviewAdminController.class.getMethod("applications",
+                QtInterviewApplication.class, Long.class, String.class, String.class);
+        Method detail = QtInterviewAdminController.class.getMethod("application", Long.class);
+        Method results = QtInterviewAdminController.class.getMethod("results", Long.class);
+        Method stats = QtInterviewAdminController.class.getMethod("statistics");
+        for (Method m : new Method[]{apps, detail, results, stats})
+        {
+            assertNull(m.getAnnotation(PreAuthorize.class),
+                    m.getName() + " should not require qt:interview:admin:list");
+        }
+
+        // 录用/导出仍卡权限
+        Method offers = QtInterviewAdminController.class.getMethod("offers", QtInterviewOfferBody.class);
+        PreAuthorize offersAuth = offers.getAnnotation(PreAuthorize.class);
+        assertNotNull(offersAuth);
+        assertTrue(offersAuth.value().contains("qt:interview:admin:offer"));
+
+        // 普通塔员（无 qt:interview:admin:list）能进入详情接口（不依赖 Servlet 上下文）
+        login(8L, "1", "tower_a", Set.of());
+        QtInterviewAdminController controller = new QtInterviewAdminController();
+        IQtInterviewAdminService adminService = mock(IQtInterviewAdminService.class);
+        when(adminService.selectApplication(10L)).thenReturn(application());
+        when(adminService.selectProfile(10L)).thenReturn(new com.ruoyi.qt.domain.QtInterviewProfile());
+        ReflectionTestUtils.setField(controller, "qtInterviewAdminService", adminService);
+        // 不应抛 ServiceException（requireQuantaMember 通过）
+        controller.application(10L);
+        verify(adminService).selectApplication(10L);
+    }
+
     private void login(Long userId, String memberFlag, String userName, Set<String> permissions)
+    {
+        login(userId, memberFlag, userName, permissions, "qt_member");
+    }
+
+    private void login(Long userId, String memberFlag, String userName, Set<String> permissions, String roleKey)
     {
         SysUser user = new SysUser();
         user.setUserId(userId);
@@ -202,7 +268,7 @@ class QtInterviewEvaluationThreadTest
         user.setIsQuantaMember(memberFlag);
         user.setMemberDepartment("BACKEND");
         SysRole role = new SysRole();
-        role.setRoleKey("qt_member");
+        role.setRoleKey(roleKey);
         user.setRoles(List.of(role));
         LoginUser loginUser = new LoginUser(userId, 100L, user, new HashSet<>(permissions));
         UsernamePasswordAuthenticationToken authentication =

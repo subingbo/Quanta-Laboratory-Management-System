@@ -45,13 +45,13 @@ public class QtInterviewAdminController extends BaseController
     @Autowired
     private ProfileAccessSigner profileAccessSigner;
 
-    @PreAuthorize("@ss.hasPermi('qt:interview:admin:list')")
     @GetMapping("/applications")
     public TableDataInfo applications(QtInterviewApplication query,
             @RequestParam(value = "round", required = false) Long round,
             @RequestParam(value = "departmentId", required = false) String departmentId,
             @RequestParam(value = "status", required = false) String status)
     {
+        QtAuthUtils.requireQuantaMember();
         applyListAliases(query, round, departmentId, status);
         startPage();
         List<QtInterviewApplication> list = qtInterviewAdminService.selectAdminList(query);
@@ -59,10 +59,10 @@ public class QtInterviewAdminController extends BaseController
         return getDataTable(list);
     }
 
-    @PreAuthorize("@ss.hasPermi('qt:interview:admin:list')")
     @GetMapping("/applications/{id:\\d+}")
     public AjaxResult application(@PathVariable("id") Long id)
     {
+        QtAuthUtils.requireQuantaMember();
         QtInterviewApplication application = qtInterviewAdminService.selectApplication(id);
         fillAccessUrls(java.util.Collections.singletonList(application));
         QtInterviewProfile profile = qtInterviewAdminService.selectProfile(id);
@@ -72,10 +72,10 @@ public class QtInterviewAdminController extends BaseController
         return success(data);
     }
 
-    @PreAuthorize("@ss.hasPermi('qt:interview:admin:list')")
     @GetMapping("/applications/{id:\\d+}/results")
     public AjaxResult results(@PathVariable("id") Long id)
     {
+        QtAuthUtils.requireQuantaMember();
         return success(qtInterviewAdminService.selectResults(id));
     }
 
@@ -111,10 +111,10 @@ public class QtInterviewAdminController extends BaseController
         return success(qtInterviewAdminService.offer(body, getUsername()));
     }
 
-    @PreAuthorize("@ss.hasPermi('qt:interview:admin:list')")
     @GetMapping("/statistics")
     public AjaxResult statistics()
     {
+        QtAuthUtils.requireQuantaMember();
         return success(qtInterviewAdminService.statistics());
     }
 

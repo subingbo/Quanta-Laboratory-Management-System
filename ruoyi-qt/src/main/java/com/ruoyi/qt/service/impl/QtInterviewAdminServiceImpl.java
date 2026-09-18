@@ -10,20 +10,27 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.ruoyi.common.constant.CacheConstants;
+import com.ruoyi.common.core.domain.entity.SysRole;
+import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.qt.domain.QtCohort;
 import com.ruoyi.qt.domain.QtInterviewApplication;
 import com.ruoyi.qt.domain.QtInterviewEvaluation;
 import com.ruoyi.qt.domain.QtInterviewOfferBody;
 import com.ruoyi.qt.domain.QtInterviewProfile;
 import com.ruoyi.qt.domain.QtInterviewResult;
 import com.ruoyi.qt.domain.QtInterviewRound;
+import com.ruoyi.qt.domain.QtMemberRecord;
 import com.ruoyi.qt.domain.QtStatusBody;
+import com.ruoyi.qt.mapper.QtCohortMapper;
 import com.ruoyi.qt.mapper.QtInterviewMapper;
 import com.ruoyi.qt.service.IQtInterviewAdminService;
 import com.ruoyi.qt.util.QtAuthUtils;
 import com.ruoyi.qt.util.QtDictUtils;
 import com.ruoyi.qt.util.QtInterviewRounds;
+import com.ruoyi.system.service.ISysRoleService;
+import com.ruoyi.system.service.ISysUserService;
 
 @Service
 public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
@@ -33,6 +40,15 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
     @Autowired
     private QtInterviewNotifier interviewNotifier;
+
+    @Autowired
+    private ISysUserService userService;
+
+    @Autowired
+    private QtCohortMapper qtCohortMapper;
+
+    @Autowired
+    private ISysRoleService roleService;
 
     @Override
     public List<QtInterviewApplication> selectAdminList(QtInterviewApplication query)
@@ -150,7 +166,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
     @Override
     @Transactional
     @CacheEvict(cacheNames = { CacheConstants.CACHE_QT_RECRUIT_STATISTICS, CacheConstants.CACHE_QT_MY_RESULTS,
-            CacheConstants.CACHE_QT_MY_APPLICATION }, allEntries = true)
+            CacheConstants.CACHE_QT_MY_APPLICATION, CacheConstants.CACHE_QT_MEMBER_COHORTS }, allEntries = true)
     public Map<String, Object> offer(QtInterviewOfferBody body, String operator)
     {
         if (body == null || body.getApplicationId() == null)
@@ -226,6 +242,11 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         application.setNoticeStatus("SENT");
         application.setUpdateBy(operator);
         qtInterviewMapper.updateApplicationAdminFields(application);
+
+        if ("PASS".equals(decision) && "OFFERED".equals(application.getApplyStatus()))
+        {
+            convertToMember(application, operator);
+        }
 
         boolean pass = "PASS".equals(decision);
         String deptLabel = interviewNotifier.departmentLabel(department);
@@ -414,5 +435,85 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         }
         String scoped = QtAuthUtils.scopedDepartment();
         return scoped != null ? scoped : application.getFirstChoice();
+    }
+
+    /**
+     * 录用为普通塔员：将申请人转换为正式塔员。
+     * <p>
+     * 步骤：
+     * 1. 设置 sys_user.is_quanta_member = '1'，并写入 member_department（录用部门）；
+     * 2. 幂等绑定 qt_member 角色（roleId 通过 roleKey 查询）；
+     * 3. 在 qt_member_record 中建立当前届次的成员档案（roleCategory = MEMBER，memberStatus = ACTIVE）。
+     * <p>
+     * 仅在 offer 决策为 PASS 且 applyStatus 变为 OFFERED 时调用。
+     */
+    private void convertToMember(QtInterviewApplication application, String operator)
+    {
+        Long userId = application.getUserId();
+        if (userId == null)
+        {
+            return;
+        }
+        SysUser user = userService.selectUserById(userId);
+        if (user == null)
+        {
+            throw new ServiceException("用户不存在，无法转为塔员：userId=" + userId);
+        }
+        String offeredDept = application.getOfferedDepartment();
+        user.setIsQuantaMember("1");
+        if (StringUtils.isNotEmpty(offeredDept))
+        {
+            user.setMemberDepartment(offeredDept);
+        }
+        userService.updateUser(user);
+
+        // 幂等绑定 qt_member 角色
+        Long qtMemberRoleId = resolveRoleIdByRoleKey("qt_member");
+        if (qtMemberRoleId != null)
+        {
+            qtInterviewMapper.insertUserRoleIfAbsent(userId, qtMemberRoleId);
+        }
+
+        // 建立当前届次成员档案
+        QtCohort current = qtCohortMapper.selectCurrentCohort();
+        if (current != null)
+        {
+            QtMemberRecord existing = qtCohortMapper.selectRecord(userId, current.getCohortId());
+            if (existing == null)
+            {
+                QtMemberRecord record = new QtMemberRecord();
+                record.setUserId(userId);
+                record.setCohortId(current.getCohortId());
+                record.setRoleCategory("MEMBER");
+                record.setMemberStatus("ACTIVE");
+                record.setJoinTime(new Date());
+                record.setRetainFlag("0");
+                record.setCreateBy(operator);
+                qtCohortMapper.insertRecord(record);
+            }
+            else if (!"ACTIVE".equals(existing.getMemberStatus()) || !"MEMBER".equals(existing.getRoleCategory()))
+            {
+                existing.setRoleCategory("MEMBER");
+                existing.setMemberStatus("ACTIVE");
+                existing.setUpdateBy(operator);
+                qtCohortMapper.updateRecord(existing);
+            }
+        }
+    }
+
+    private Long resolveRoleIdByRoleKey(String roleKey)
+    {
+        if (StringUtils.isEmpty(roleKey))
+        {
+            return null;
+        }
+        for (SysRole role : roleService.selectRoleAll())
+        {
+            if (roleKey.equals(role.getRoleKey()))
+            {
+                return role.getRoleId();
+            }
+        }
+        return null;
     }
 }

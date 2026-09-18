@@ -73,4 +73,9 @@ public interface QtInterviewMapper
     int countRoundPassed(@Param("scopedDepartment") String scopedDepartment, @Param("roundNo") Integer roundNo);
 
     int countJoined(@Param("scopedDepartment") String scopedDepartment);
+
+    /**
+     * 幂等绑定角色：若 sys_user_role 中不存在该 (userId, roleId) 则插入。
+     */
+    int insertUserRoleIfAbsent(@Param("userId") Long userId, @Param("roleId") Long roleId);
 }
