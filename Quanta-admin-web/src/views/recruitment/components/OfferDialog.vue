@@ -97,7 +97,7 @@ watch(
           :key="evaluation.evaluationId"
           class="offer-dialog__evaluation"
         >
-          <span>{{ evaluation.evaluatorUserName || evaluation.interviewerName }}</span>
+          <span>{{ evaluation.evaluatorUserName || evaluation.evaluatorName || evaluation.interviewerName }}</span>
           <p>{{ evaluation.content }}</p>
         </article>
       </div>

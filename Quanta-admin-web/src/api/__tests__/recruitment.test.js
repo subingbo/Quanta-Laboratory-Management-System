@@ -6,6 +6,7 @@ import {
   mapApplication,
   mapEvaluation,
   mergeApplicationDetail,
+  normalizeEvaluation,
   sendOffer,
 } from '../recruitment'
 import { findMockApplication, resetMockRecruitment } from '@/mock/data/recruitment'
@@ -57,7 +58,7 @@ describe('recruitment api', () => {
     })
 
     expect(result.choices.map((item) => item.department)).toEqual(['DESIGN', 'PRODUCT'])
-    expect(result.choices[1].rounds[1].status).toBe('FAIL')
+    expect(result.choices[1].rounds[1].status).toBe('OUT')
     expect(result.appliedAt).toBe('2026-08-30 10:00:00')
     expect(result.resumeUrl).toBe('https://example.com/resume.pdf?token=x')
     expect(result.resumeFileName).toBe('吴晓萌-简历.pdf')
@@ -100,6 +101,33 @@ describe('recruitment api', () => {
       decision: 'OUT',
       notice: '通知内容',
       roundId: 2,
+    })
+  })
+
+  it('advances both choices when both pass the first round', () => {
+    const result = mapApplication({
+      applicationId: 9,
+      firstChoice: 'FRONTEND',
+      secondChoice: 'DESIGN',
+      firstChoiceFirstRoundStatus: 'PASS',
+      secondChoiceFirstRoundStatus: 'PASS',
+      firstChoiceSecondRoundStatus: 'PENDING',
+      secondChoiceSecondRoundStatus: 'PENDING',
+      firstChoiceSecondRoundScore: 91,
+      secondChoiceSecondRoundScore: 87,
+    })
+    expect(result.choices.map((choice) => choice.rounds[2].advanced)).toEqual([true, true])
+    expect(result.choices.map((choice) => choice.rounds[2].score)).toEqual([91, 87])
+  })
+
+  it('normalizes the backend evaluation identity fields', () => {
+    expect(normalizeEvaluation({ evaluatorUserId: 8, evaluatorName: '张三' })).toMatchObject({
+      evaluatorUserId: 8,
+      evaluatorName: '张三',
+    })
+    expect(normalizeEvaluation({ interviewerId: 9, interviewerName: '兼容数据' })).toMatchObject({
+      evaluatorUserId: 9,
+      evaluatorName: '兼容数据',
     })
   })
 })

@@ -42,7 +42,7 @@ describe('DecisionDialog', () => {
 
     expect(wrapper.text()).toContain('一面结果评定')
     expect(wrapper.text()).toContain('Pass')
-    expect(wrapper.get('[aria-label="评定部门"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.get('[aria-label="评定部门"]').attributes('disabled')).toBeUndefined()
     expect(wrapper.text()).not.toContain('Waiting')
 
     await wrapper.get('[data-test="confirm-decision"]').trigger('click')

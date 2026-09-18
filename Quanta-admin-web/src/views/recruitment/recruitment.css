@@ -175,9 +175,17 @@
   display: flex;
   min-height: 26px;
   align-items: center;
-  gap: 10px;
-  white-space: nowrap;
+  flex-wrap: wrap;
+  gap: 8px;
 }
+
+.recruitment-action.el-button { height: 32px; padding: 0 13px; margin: 0; border-radius: 8px; font-weight: 700; }
+.recruitment-action.is-neutral { color: #475569; border-color: #d8dee9; background: #fff; }
+.recruitment-action.is-primary { color: #fff; border-color: #ff6a00; background: #ff6a00; }
+.recruitment-action.is-pass { color: #087a43; border-color: #b8e4ce; background: #edf9f3; }
+.recruitment-action.is-out { color: #dc3f45; border-color: #f3c2c5; background: #fff7f7; }
+.recruitment-action.is-mail { color: #fff; border-color: #1f2125; background: #1f2125; }
+.candidate-choice__score { display: block; margin-top: 5px; color: #7b8494; }
 
 .recruitment-table__link.el-button {
   padding: 0;
@@ -555,6 +563,21 @@
   color: #616778;
   line-height: 1.6;
 }
+
+.score-dialog .el-select { width: 100%; }
+.score-dialog__field { display: flex; align-items: center; gap: 14px; margin-top: 24px; padding: 22px; border-radius: 14px; background: #f7f8fa; }
+.score-dialog__field > span { flex: 1; font-weight: 700; }
+.score-dialog__field em { color: #8a93a3; font-style: normal; }
+.score-dialog__meta, .score-dialog__hint { margin: 14px 0 0; color: #7b8494; font-size: 13px; }
+.notice-dialog__body dl { display: grid; gap: 10px; margin: 0 0 18px; }
+.notice-dialog__body dl div { display: grid; grid-template-columns: 88px 1fr; gap: 14px; }
+.notice-dialog__body dt { color: #8a93a3; }
+.notice-dialog__body dd { margin: 0; color: #1f2430; font-weight: 650; }
+.notice-dialog__upload { display: grid; gap: 8px; margin-top: 18px; padding: 16px; border: 1px dashed #ff9c5a; border-radius: 12px; background: #fff8f3; }
+.notice-dialog__upload span { font-weight: 750; }
+.notice-dialog__upload small { color: #8a93a3; }
+.notice-dialog__error { margin: 10px 0 0; color: #dc3f45; }
+.notice-dialog__submit.el-button { border-color: #1f2125; background: #1f2125; }
 
 @media (max-width: 1280px) {
   .recruitment-board {

@@ -25,7 +25,7 @@ const candidate = {
       choiceOrder: 2,
       department: 'DESIGN',
       rounds: {
-        1: { status: 'FAIL', evaluations: [] },
+        1: { status: 'OUT', evaluations: [] },
         2: { status: 'PENDING', advanced: false, evaluations: [] },
       },
     },
@@ -116,10 +116,13 @@ describe('CandidateTable', () => {
       roundId: 2,
     })
 
-    expect(wrapper.text()).toContain('是否录用')
+    expect(wrapper.text()).toContain('面试评分')
     expect(wrapper.text()).toContain('阅览简历')
-    expect(wrapper.text()).toContain('编辑面评')
-    expect(wrapper.text()).toContain('查看面评')
+    expect(wrapper.text()).toContain('Pass')
+    expect(wrapper.text()).toContain('Out')
+    expect(wrapper.text()).toContain('发送邮件')
+    expect(wrapper.text()).not.toContain('编辑面评')
+    expect(wrapper.text()).not.toContain('查看面评')
   })
 
   it('gives a regular manager all second-round review actions without admin controls', () => {
@@ -134,12 +137,11 @@ describe('CandidateTable', () => {
       rows: [evaluatedCandidate],
     })
 
-    expect(wrapper.text()).toContain('编辑面评')
-    expect(wrapper.text()).toContain('查看面评')
+    expect(wrapper.text()).toContain('面试评分')
     expect(wrapper.text()).toContain('阅览简历')
     expect(wrapper.find('[data-test="candidate-result-pass"]').exists()).toBe(false)
     expect(wrapper.find('[data-test="candidate-result-out"]').exists()).toBe(false)
-    expect(wrapper.text()).not.toContain('是否录用')
+    expect(wrapper.text()).not.toContain('发送邮件')
   })
 
   it('shows first-round Pass and Out as peer actions only for admin', async () => {

@@ -12,23 +12,25 @@ export const departmentLabels = {
 export const resultLabels = {
   PENDING: '待评',
   PASS: 'Pass',
-  FAIL: 'Out',
+  OUT: 'Out',
 }
 
 function normalizeResultStatus(status) {
-  return status === 'OUT' ? 'FAIL' : status || 'PENDING'
+  return status === 'FAIL' ? 'OUT' : status || 'PENDING'
 }
 
 function normalizeTrack(track = {}) {
+  const rounds = Object.fromEntries(
+    Object.entries(track.rounds || {}).map(([round, value]) => [
+      round,
+      { ...value, status: normalizeResultStatus(value?.status) },
+    ]),
+  )
+  if (rounds[2]) rounds[2].advanced = rounds[2].advanced ?? rounds[1]?.status === 'PASS'
   return {
     ...track,
     label: departmentLabels[track.department] || track.department,
-    rounds: Object.fromEntries(
-      Object.entries(track.rounds || {}).map(([round, value]) => [
-        round,
-        { ...value, status: normalizeResultStatus(value?.status) },
-      ]),
-    ),
+    rounds,
   }
 }
 
@@ -47,6 +49,7 @@ function buildChoice(application, order) {
       1: { status: normalizeResultStatus(firstRoundStatus), evaluations: [] },
       2: {
         status: normalizeResultStatus(secondRoundStatus),
+        score: application[`${prefix}SecondRoundScore`] ?? null,
         advanced: false,
         evaluations: [],
       },
@@ -58,7 +61,7 @@ function applyDefaultAdvancement(choices) {
   const first = choices.find((item) => item.choiceOrder === 1)
   const second = choices.find((item) => item.choiceOrder === 2)
   if (first?.rounds?.[1]?.status === 'PASS') first.rounds[2].advanced = true
-  else if (second?.rounds?.[1]?.status === 'PASS') second.rounds[2].advanced = true
+  if (second?.rounds?.[1]?.status === 'PASS') second.rounds[2].advanced = true
   return choices
 }
 
@@ -132,9 +135,14 @@ export function mapEvaluation(item = {}) {
     ...item,
     evaluatorUserId,
     evaluatorUserName,
+    evaluatorName: item.evaluatorName || evaluatorUserName || '-',
     interviewerId: evaluatorUserId,
     interviewerName: evaluatorUserName,
   }
+}
+
+export function normalizeEvaluation(item = {}) {
+  return mapEvaluation(item)
 }
 
 export async function getEvaluations(params) {
@@ -144,7 +152,7 @@ export async function getEvaluations(params) {
     params,
   })
   const rows = Array.isArray(response.data) ? response.data : response.data?.rows || response.rows || []
-  return rows.map(mapEvaluation)
+  return rows.map(normalizeEvaluation)
 }
 
 export function saveEvaluation(data) {
@@ -152,7 +160,41 @@ export function saveEvaluation(data) {
 }
 
 export function saveInterviewResult(data) {
-  return request({ url: '/qt/interview/result', method: 'post', data })
+  return saveInterviewDecision(data.applicationId, data.roundId, data.department, data.resultStatus)
+}
+
+export function saveInterviewDecision(applicationId, roundNo, department, decision) {
+  return request({
+    url: `/qt/interview/admin/applications/${applicationId}/rounds/${roundNo}/departments/${department}/decision`,
+    method: 'put',
+    data: { decision: normalizeResultStatus(decision) },
+  })
+}
+
+export function saveInterviewScore(applicationId, department, score) {
+  return request({
+    url: `/qt/interview/admin/applications/${applicationId}/round2/departments/${department}/score`,
+    method: 'put',
+    data: { score },
+  })
+}
+
+export async function getNoticePreview(applicationId) {
+  const response = await request({
+    url: `/qt/interview/admin/applications/${applicationId}/notice-preview`,
+    method: 'get',
+  })
+  return response.data || {}
+}
+
+export function sendResultNotice(applicationId, qrCode) {
+  const data = new FormData()
+  if (qrCode) data.append('qrCode', qrCode)
+  return request({
+    url: `/qt/interview/admin/applications/${applicationId}/notice`,
+    method: 'post',
+    data,
+  })
 }
 
 export function sendOffer(data) {

@@ -10,7 +10,7 @@ const props = defineProps({
   options: { type: Array, default: () => [] },
   submitting: { type: Boolean, default: false },
 })
-const emit = defineEmits(['update:modelValue', 'confirm'])
+const emit = defineEmits(['update:modelValue', 'update:department', 'confirm'])
 const visible = computed({ get: () => props.modelValue, set: (value) => emit('update:modelValue', value) })
 const resultLabel = computed(() => (props.result === 'PASS' ? 'Pass' : 'Out'))
 </script>
@@ -22,8 +22,8 @@ const resultLabel = computed(() => (props.result === 'PASS' ? 'Pass' : 'Out'))
     <ElSelect
       :model-value="department"
       class="decision-dialog__department"
-      disabled
       aria-label="评定部门"
+      @update:model-value="emit('update:department', $event)"
     >
       <ElOption v-for="option in options" :key="option.value" :label="option.label" :value="option.value" />
     </ElSelect>

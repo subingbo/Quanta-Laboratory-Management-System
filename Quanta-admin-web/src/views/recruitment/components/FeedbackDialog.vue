@@ -38,7 +38,7 @@ const visible = computed({ get: () => props.modelValue, set: (value) => emit('up
       </ElSelect>
       <div v-if="evaluations.length" class="feedback-dialog__history">
         <article v-for="evaluation in evaluations" :key="evaluation.evaluationId">
-          <span>{{ evaluation.evaluatorUserName || evaluation.interviewerName }}</span><p>{{ evaluation.content }}</p>
+          <span>{{ evaluation.evaluatorUserName || evaluation.evaluatorName || evaluation.interviewerName }}</span><p>{{ evaluation.content }}</p>
         </article>
       </div>
       <ElInput

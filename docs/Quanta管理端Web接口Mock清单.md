@@ -1,6 +1,6 @@
 # Quanta 管理端 Web 接口 Mock 清单
 
-更新日期：2026-09-16
+更新日期：2026-09-18
 适用项目：`Quanta-admin-web`
 
 ## 使用规则
@@ -49,7 +49,10 @@
 | 模块 | 方法 | 路径 | 待确认事项 | 状态 | 最近确认 |
 | --- | --- | --- | --- | --- | --- |
 | 成员管理 | `PUT` | `/system/user/resetPwd` | 前端缺少明确的新密码来源，不能安全执行 | 待复测 | 2026-09-13 |
-| 招新管理 | `POST` | `/qt/interview/result` | 需确认一面 Pass / Out 的正式管理端契约 | 待复测 | 2026-09-13 |
+| 招新管理 | `PUT` | `/qt/interview/admin/applications/{applicationId}/rounds/{roundNo}/departments/{department}/decision` | 前端已按一面/二面统一 Pass/Out 契约接入，等待后端接口联调 | 待复测 | 2026-09-18 |
+| 招新管理 | `PUT` | `/qt/interview/admin/applications/{applicationId}/round2/departments/{department}/score` | 前端已实现 0～100 唯一分数的查看与多次修改，等待后端接口联调 | 待复测 | 2026-09-18 |
+| 招新管理 | `GET` | `/qt/interview/admin/applications/{applicationId}/notice-preview` | 前端已实现固定模板预览弹窗，等待后端返回收件人、最终部门、主题和正文 | 待复测 | 2026-09-18 |
+| 招新管理 | `POST multipart` | `/qt/interview/admin/applications/{applicationId}/notice` | 前端已实现 JPG/JPEG/PNG、5 MB 群二维码附件和重复点击锁定，等待后端发送与幂等拦截 | 待复测 | 2026-09-18 |
 | 招新管理 | `GET` | `/qt/interview/admin/applications` | 需用多轮次数据确认各志愿分轮状态字段 | 待复测 | 2026-09-13 |
 | 招新管理 | `GET` | `/qt/interview/admin/statistics` | 需确认一面通过、二面通过、确认加入的精确字段含义 | 待复测 | 2026-09-13 |
 | 文件下载 | `POST/GET` | 成员模板、招新导出、学习资料下载 | 需在存在可下载文件时确认文件名响应头 | 待复测 | 2026-09-13 |
