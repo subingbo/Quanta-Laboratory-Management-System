@@ -26,6 +26,7 @@ import com.ruoyi.framework.web.service.SysPermissionService;
 import com.ruoyi.framework.web.service.TokenService;
 import com.ruoyi.system.service.ISysConfigService;
 import com.ruoyi.system.service.ISysMenuService;
+import com.ruoyi.system.service.ISysUserService;
 
 /**
  * 登录验证
@@ -49,6 +50,9 @@ public class SysLoginController
 
     @Autowired
     private ISysConfigService configService;
+
+    @Autowired
+    private ISysUserService userService;
 
     /**
      * 登录方法
@@ -87,11 +91,17 @@ public class SysLoginController
     {
         LoginUser loginUser = SecurityUtils.getLoginUser();
         SysUser user = loginUser.getUser();
+        SysUser dbUser = userService.selectUserById(loginUser.getUserId());
+        if (dbUser != null)
+        {
+            loginUser.setUser(dbUser);
+            user = dbUser;
+        }
         // 角色集合
         Set<String> roles = permissionService.getRolePermission(user);
         // 权限集合
         Set<String> permissions = permissionService.getMenuPermission(user);
-        if (!loginUser.getPermissions().equals(permissions))
+        if (!loginUser.getPermissions().equals(permissions) || dbUser != null)
         {
             loginUser.setPermissions(permissions);
             tokenService.refreshToken(loginUser);

@@ -8,10 +8,13 @@ import { useUserStore } from '@/stores/user'
 const props = defineProps({ rows: { type: Array, default: () => [] }, loading: { type: Boolean, default: false }, roundId: { type: Number, default: 1 }, pendingAction: { type: String, default: '' } })
 const emit = defineEmits(['resume', 'view-feedback', 'edit-feedback', 'select-result', 'score', 'notice'])
 const userStore = useUserStore()
-const { permissions, departmentCode } = storeToRefs(userStore)
+const { permissions, roles, departmentCode } = storeToRefs(userStore)
 const hasPermission = (permission) => permissions.value.includes('*:*:*') || permissions.value.includes(permission)
 const canEvaluate = computed(() => hasPermission('qt:interview:admin:evaluate'))
 const canDecide = computed(() => hasPermission('qt:interview:admin:offer'))
+const canViewAllDepartments = computed(
+  () => hasPermission('*:*:*') || (roles.value || []).some((role) => role === 'ceo' || role === 'admin'),
+)
 const choice = (row, order) => row.choices?.find((item) => item.choiceOrder === order)
 function roundState(track) {
   if (!track || (props.roundId === 2 && !track.rounds?.[2]?.advanced)) return null
@@ -21,7 +24,7 @@ const statusType = (status) => ({ PASS: 'success', OUT: 'danger', WAITING: 'warn
 function availableTracks(row) {
   return (row.choices || []).filter((track) => {
     if (props.roundId === 2 && !track.rounds?.[2]?.advanced) return false
-    return canDecide.value || track.department === departmentCode.value
+    return canViewAllDepartments.value || track.department === departmentCode.value
   })
 }
 const canEditDepartment = (row) => canEvaluate.value && availableTracks(row).some((track) => track.department === departmentCode.value)

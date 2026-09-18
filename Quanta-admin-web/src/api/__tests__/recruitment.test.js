@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   createOfferPayload,
+  departmentLabels,
   getRecruitmentApplications,
   getRecruitmentStatistics,
   mapApplication,
@@ -118,6 +119,12 @@ describe('recruitment api', () => {
     })
     expect(result.choices.map((choice) => choice.rounds[2].advanced)).toEqual([true, true])
     expect(result.choices.map((choice) => choice.rounds[2].score)).toEqual([91, 87])
+  })
+
+  it('exposes only the four active departments', () => {
+    expect(Object.keys(departmentLabels)).toEqual(['BACKEND', 'PRODUCT', 'DESIGN', 'FRONTEND'])
+    expect(JSON.stringify(departmentLabels)).not.toContain('ANDROID')
+    expect(JSON.stringify(departmentLabels)).not.toContain('安卓')
   })
 
   it('maps FAIL as OUT and keeps second-round score metadata', () => {

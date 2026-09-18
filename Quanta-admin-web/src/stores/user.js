@@ -27,7 +27,7 @@ export function normalizeDepartmentCode(value) {
   const text = String(value || '').trim()
   if (!text) return ''
   const code = text.toUpperCase()
-  if (['PRODUCT', 'DESIGN', 'FRONTEND', 'BACKEND', 'ANDROID'].includes(code)) return code
+  if (['PRODUCT', 'DESIGN', 'FRONTEND', 'BACKEND'].includes(code)) return code
   return departmentAliases[text] || ''
 }
 

@@ -10,7 +10,7 @@ const stubs = {
 describe('NoticeDialog', () => {
   it('requires a QR image for an admission email', async () => {
     const wrapper = mount(NoticeDialog, {
-      props: { modelValue: true, preview: { result: 'PASS', offeredDepartment: 'FRONTEND', subject: 'Quanta 前端部录用通知', content: '<p>祝贺你通过 Quanta 前端部面试</p>' } },
+      props: { modelValue: true, preview: { result: 'PASS', offeredDepartment: 'FRONTEND', subject: 'Quanta 前端部录用通知', content: '<p>你好，李同学。</p><p>你已通过 Quanta 前端部面试，正式加入前端部。</p>' } },
       global: { stubs },
     })
     await wrapper.get('[data-test="send-notice"]').trigger('click')
@@ -20,7 +20,7 @@ describe('NoticeDialog', () => {
 
   it('renders the department admission template as HTML', () => {
     const wrapper = mount(NoticeDialog, {
-      props: { modelValue: true, preview: { result: 'PASS', offeredDepartment: 'BACKEND', content: '<p>祝贺你通过 Quanta 后端部面试</p>' } },
+      props: { modelValue: true, preview: { result: 'PASS', offeredDepartment: 'BACKEND', content: '<p>你好，李同学。</p><p>你已通过 Quanta 后端部面试，正式加入后端部。</p>' } },
       global: { stubs },
     })
     expect(wrapper.get('[aria-label="邮件模板"]').html()).toContain('后端部')

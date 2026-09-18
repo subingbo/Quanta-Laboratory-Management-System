@@ -6,7 +6,6 @@ export const departmentLabels = {
   PRODUCT: '产品部',
   DESIGN: '设计部',
   FRONTEND: '前端部',
-  ANDROID: '安卓部',
 }
 
 export const resultLabels = {

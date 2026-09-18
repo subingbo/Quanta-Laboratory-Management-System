@@ -125,6 +125,19 @@ describe('CandidateTable', () => {
     expect(wrapper.text()).not.toContain('查看面评')
   })
 
+  it('hides Pass and Out when a department VP has no own-department track', () => {
+    const wrapper = mountTable({
+      roles: ['qt_mgmt'],
+      permissions: ['qt:interview:admin:list', 'qt:interview:admin:offer', 'qt:interview:admin:evaluate'],
+      roundId: 2,
+      user: { userId: 21, memberDepartment: 'DESIGN', deptCode: 'DESIGN' },
+    })
+
+    expect(wrapper.find('[data-test="candidate-result-pass"]').exists()).toBe(false)
+    expect(wrapper.find('[data-test="candidate-result-out"]').exists()).toBe(false)
+    expect(wrapper.find('[data-test="candidate-score"]').exists()).toBe(false)
+  })
+
   it('gives a regular manager all second-round review actions without admin controls', () => {
     const evaluatedCandidate = structuredClone(candidate)
     evaluatedCandidate.choices[0].rounds[2].evaluations = [

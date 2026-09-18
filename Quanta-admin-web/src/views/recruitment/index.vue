@@ -23,7 +23,7 @@ import ScoreDialog from './components/ScoreDialog.vue'
 import './recruitment.css'
 
 const userStore = useUserStore()
-const { user, permissions, departmentCode } = storeToRefs(userStore)
+const { user, permissions, roles, departmentCode } = storeToRefs(userStore)
 const activeTab = ref('board')
 const loading = ref(false)
 const statisticsLoading = ref(false)
@@ -39,9 +39,12 @@ let requestSequence = 0
 const hasPermission = (permission) => permissions.value.includes('*:*:*') || permissions.value.includes(permission)
 const canDecide = computed(() => hasPermission('qt:interview:admin:offer'))
 const canEvaluate = computed(() => hasPermission('qt:interview:admin:evaluate'))
+const canViewAllDepartments = computed(
+  () => hasPermission('*:*:*') || (roles.value || []).some((role) => role === 'ceo' || role === 'admin'),
+)
 const currentDepartment = departmentCode
 const roundId = computed(() => Number(activeTab.value) || 1)
-const departmentOptions = computed(() => Object.entries(departmentLabels).filter(([value]) => value !== 'ANDROID').map(([value, label]) => ({ value, label })))
+const departmentOptions = computed(() => Object.entries(departmentLabels).map(([value, label]) => ({ value, label })))
 const filteredRows = computed(() => {
   const keyword = filters.keyword.trim().toLocaleLowerCase()
   return rows.value.filter((row) => {
@@ -60,7 +63,7 @@ const notice = reactive({ visible: false, loading: false, submitting: false, row
 function eligibleTracks(row, targetRound = roundId.value) {
   return (row?.choices || []).filter((track) => {
     if (targetRound === 2 && !track.rounds?.[2]?.advanced) return false
-    return canDecide.value || track.department === currentDepartment.value
+    return canViewAllDepartments.value || track.department === currentDepartment.value
   })
 }
 function trackOptions(row, targetRound = roundId.value) {
@@ -212,7 +215,7 @@ onMounted(refreshAll)
       </template>
     </section>
     <ResumeDialog v-model="resume.visible" :application="resume.application" :loading="resume.loading" />
-    <FeedbackDialog v-model="feedback.visible" :mode="feedback.mode" :candidate-name="feedback.row?.name" :round-id="1" :department="feedback.department" :options="feedback.options" :content="feedback.content" :evaluations="feedback.evaluations" :loading="feedback.loading" :submitting="feedback.submitting" :can-switch="canDecide && feedback.mode === 'view'" @update:department="changeFeedbackDepartment" @update:content="feedback.content = $event" @submit="submitFeedback" />
+    <FeedbackDialog v-model="feedback.visible" :mode="feedback.mode" :candidate-name="feedback.row?.name" :round-id="1" :department="feedback.department" :options="feedback.options" :content="feedback.content" :evaluations="feedback.evaluations" :loading="feedback.loading" :submitting="feedback.submitting" :can-switch="canViewAllDepartments && feedback.mode === 'view'" @update:department="changeFeedbackDepartment" @update:content="feedback.content = $event" @submit="submitFeedback" />
     <DecisionDialog v-model="decision.visible" :candidate-name="decision.row?.name" :round-id="roundId" :result="decision.result" :department="decision.department" :options="decision.options" :submitting="decision.submitting" @update:department="decision.department = $event" @confirm="submitDecision" />
     <ScoreDialog v-model="score.visible" :candidate-name="score.row?.name" :department="score.department" :options="score.options" :score="score.value" :can-edit="canEditScore" :updated-by="score.updatedBy" :updated-time="score.updatedTime" :submitting="score.submitting" @update:department="changeScoreDepartment" @submit="submitScore" />
     <NoticeDialog v-model="notice.visible" :preview="notice.preview" :loading="notice.loading" :submitting="notice.submitting" @submit="submitNotice" />

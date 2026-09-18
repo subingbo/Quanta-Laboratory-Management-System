@@ -59,14 +59,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
     @Override
     public List<QtInterviewApplication> selectAdminList(QtInterviewApplication query)
     {
-        if (QtAuthUtils.isCeo() || QtAuthUtils.hasPermi(QtAuthUtils.PERM_INTERVIEW_OFFER))
-        {
-            query.setScopedDepartment(null);
-        }
-        else
-        {
-            query.setScopedDepartment(QtAuthUtils.scopedDepartment());
-        }
+        query.setScopedDepartment(QtAuthUtils.scopedDepartment());
         if (query.getRoundId() != null && query.getRoundId() == 2L)
         {
             query.setSortDepartment(QtAuthUtils.currentDepartment());
@@ -200,7 +193,11 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         }
         QtInterviewApplication application = selectApplication(applicationId);
         department = requireChoiceDepartment(department, application);
-        if (!QtAuthUtils.hasPermi(QtAuthUtils.PERM_INTERVIEW_OFFER) && !QtAuthUtils.isCeo())
+        if (QtInterviewStatuses.isPass(resultStatus))
+        {
+            QtDictUtils.requireActiveDepartment(department, "department");
+        }
+        if (!QtAuthUtils.isCeo())
         {
             QtAuthUtils.assertDepartmentScope(department);
         }
@@ -325,7 +322,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
     @Override
     @Transactional
     @CacheEvict(cacheNames = { CacheConstants.CACHE_QT_RECRUIT_STATISTICS, CacheConstants.CACHE_QT_MY_RESULTS,
-            CacheConstants.CACHE_QT_MY_APPLICATION }, allEntries = true)
+            CacheConstants.CACHE_QT_MY_APPLICATION, CacheConstants.CACHE_QT_MEMBER_COHORTS }, allEntries = true)
     public Map<String, Object> sendNotice(Long applicationId, MultipartFile qrCode, String operator)
     {
         QtInterviewApplication application = selectApplication(applicationId);
@@ -334,12 +331,17 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
             throw new ServiceException("结果邮件已发送，不能重复发送");
         }
         NoticeOutcome outcome = requireNoticeReady(application);
+        if (!QtAuthUtils.isCeo() && outcome.pass)
+        {
+            QtAuthUtils.assertDepartmentScope(outcome.offeredDepartment);
+        }
         byte[] attachment = null;
         String attachmentName = null;
         if (outcome.pass)
         {
             attachment = requireQrBytes(qrCode);
             attachmentName = qrFileName(qrCode);
+            bindOfferAndConvert(application, outcome.offeredDepartment, operator);
         }
         Map<String, Object> preview = buildNoticePreview(application, outcome, false);
         boolean emailSent = interviewNotifier.notifyApplicant(application.getUserId(),
@@ -546,7 +548,7 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 
     private boolean canViewAllDepartments()
     {
-        return QtAuthUtils.isCeo() || QtAuthUtils.hasPermi(QtAuthUtils.PERM_INTERVIEW_OFFER);
+        return QtAuthUtils.isCeo();
     }
 
     private String requireOwnDepartment()
@@ -657,6 +659,18 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         {
             convertToMember(application, operator);
         }
+    }
+
+    private void bindOfferAndConvert(QtInterviewApplication application, String offeredDepartment, String operator)
+    {
+        application.setOfferedDepartment(offeredDepartment);
+        application.setApplyStatus("OFFERED");
+        if (StringUtils.isEmpty(application.getJoinStatus()))
+        {
+            application.setJoinStatus("PENDING");
+        }
+        application.setUpdateBy(operator);
+        convertToMember(application, operator);
     }
 
     private boolean allAdvancedOut(boolean firstAdvanced, boolean secondAdvanced, boolean firstOut, boolean secondOut)
@@ -814,7 +828,11 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         {
             user.setMemberDepartment(offeredDept);
         }
-        userService.updateUser(user);
+        if (StringUtils.isNotEmpty(operator))
+        {
+            user.setUpdateBy(operator);
+        }
+        userService.updateUserProfile(user);
 
         // 幂等绑定 qt_member 角色
         Long qtMemberRoleId = resolveRoleIdByRoleKey("qt_member");

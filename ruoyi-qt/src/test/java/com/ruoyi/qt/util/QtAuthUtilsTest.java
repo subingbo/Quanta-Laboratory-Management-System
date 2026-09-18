@@ -109,6 +109,15 @@ class QtAuthUtilsTest
     }
 
     @Test
+    void offerPermissionDoesNotUnscopeRecruitmentDepartment()
+    {
+        loginDepartment(8L, "BACKEND", Set.of(QtAuthUtils.PERM_INTERVIEW_OFFER), "qt_mgmt");
+        org.junit.jupiter.api.Assertions.assertEquals("BACKEND", QtAuthUtils.scopedDepartment());
+        loginDepartment(1L, "PRODUCT", Set.of(QtAuthUtils.PERM_INTERVIEW_OFFER), "ceo");
+        org.junit.jupiter.api.Assertions.assertNull(QtAuthUtils.scopedDepartment());
+    }
+
+    @Test
     void memberPortalControllerEntriesRejectFreshmanBeforeQuerying()
     {
         login(8L, "0", Set.of());
@@ -162,6 +171,21 @@ class QtAuthUtilsTest
         SysUser user = new SysUser();
         user.setUserId(userId);
         user.setIsQuantaMember(memberFlag);
+        SysRole role = new SysRole();
+        role.setRoleKey(roleKey);
+        user.setRoles(List.of(role));
+        LoginUser loginUser = new LoginUser(userId, 100L, user, new HashSet<>(permissions));
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(loginUser, null, Collections.emptyList());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private void loginDepartment(Long userId, String department, Set<String> permissions, String roleKey)
+    {
+        SysUser user = new SysUser();
+        user.setUserId(userId);
+        user.setIsQuantaMember("1");
+        user.setMemberDepartment(department);
         SysRole role = new SysRole();
         role.setRoleKey(roleKey);
         user.setRoles(List.of(role));

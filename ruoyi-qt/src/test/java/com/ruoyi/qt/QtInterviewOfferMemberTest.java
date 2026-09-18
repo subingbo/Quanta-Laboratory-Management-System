@@ -111,10 +111,11 @@ class QtInterviewOfferMemberTest
         service.offer(body, "ceo_op");
 
         ArgumentCaptor<SysUser> userCaptor = ArgumentCaptor.forClass(SysUser.class);
-        verify(userService, times(1)).updateUser(userCaptor.capture());
+        verify(userService, times(1)).updateUserProfile(userCaptor.capture());
         SysUser updated = userCaptor.getValue();
         assertEquals("1", updated.getIsQuantaMember());
         assertEquals(DEPT, updated.getMemberDepartment());
+        verify(userService, never()).updateUser(any());
         verify(qtInterviewMapper, times(1)).insertUserRoleIfAbsent(eq(USER_ID), eq(QT_MEMBER_ROLE_ID));
         ArgumentCaptor<QtMemberRecord> recordCaptor = ArgumentCaptor.forClass(QtMemberRecord.class);
         verify(qtCohortMapper, times(1)).insertRecord(recordCaptor.capture());
@@ -173,6 +174,7 @@ class QtInterviewOfferMemberTest
         service.offer(body, "ceo_op");
 
         verify(userService, never()).updateUser(any());
+        verify(userService, never()).updateUserProfile(any());
         verify(qtInterviewMapper, never()).insertUserRoleIfAbsent(anyLong(), anyLong());
         verify(qtCohortMapper, never()).insertRecord(any());
         verify(qtCohortMapper, never()).updateRecord(any());
@@ -194,7 +196,8 @@ class QtInterviewOfferMemberTest
 
         service.offer(body, "ceo_op");
 
-        verify(userService, times(1)).updateUser(any());
+        verify(userService, times(1)).updateUserProfile(any());
+        verify(userService, never()).updateUser(any());
         verify(qtInterviewMapper, times(1)).insertUserRoleIfAbsent(eq(USER_ID), eq(QT_MEMBER_ROLE_ID));
         verify(qtCohortMapper, never()).insertRecord(any());
     }
@@ -214,6 +217,7 @@ class QtInterviewOfferMemberTest
         ServiceException error = assertThrows(ServiceException.class, () -> service.offer(body, "ceo_op"));
         assertTrue(error.getMessage().contains("\u65e0\u6cd5\u8f6c\u4e3a\u5854\u5458"));
         verify(userService, never()).updateUser(any());
+        verify(userService, never()).updateUserProfile(any());
     }
 
     private void loginAsCeo()

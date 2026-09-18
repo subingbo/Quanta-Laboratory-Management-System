@@ -157,11 +157,11 @@ public final class QtAuthUtils
     }
 
     /**
-     * 招新：非 CEO 只能看到与本部门志愿相关的候选人。
+     * 招新：仅 CEO/超管可看全部部门。部门 VP、经理层都只看本部门志愿相关的候选人。
      */
     public static String scopedDepartment()
     {
-        if (isCeo() || hasPermi(PERM_INTERVIEW_OFFER))
+        if (isCeo())
         {
             return null;
         }

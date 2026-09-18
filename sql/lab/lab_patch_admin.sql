@@ -259,7 +259,8 @@ SELECT 1003, 3, '设计', 'DESIGN', 'qt_department', '', 'default', 'N', '0', 'a
 INSERT INTO sys_dict_data (dict_code, dict_sort, dict_label, dict_value, dict_type, css_class, list_class, is_default, status, create_by, create_time, remark)
 SELECT 1004, 4, '前端', 'FRONTEND', 'qt_department', '', 'primary', 'N', '0', 'admin', NOW(), '' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM sys_dict_data WHERE dict_type='qt_department' AND dict_value='FRONTEND');
 INSERT INTO sys_dict_data (dict_code, dict_sort, dict_label, dict_value, dict_type, css_class, list_class, is_default, status, create_by, create_time, remark)
-SELECT 1005, 5, '安卓', 'ANDROID', 'qt_department', '', 'success', 'N', '0', 'admin', NOW(), '' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM sys_dict_data WHERE dict_type='qt_department' AND dict_value='ANDROID');
+SELECT 1005, 5, '安卓', 'ANDROID', 'qt_department', '', 'success', 'N', '1', 'admin', NOW(), '已取消' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM sys_dict_data WHERE dict_type='qt_department' AND dict_value='ANDROID');
+UPDATE sys_dict_data SET status='1', remark='已取消' WHERE dict_type='qt_department' AND dict_value='ANDROID';
 
 INSERT INTO sys_dict_data (dict_code, dict_sort, dict_label, dict_value, dict_type, css_class, list_class, is_default, status, create_by, create_time, remark)
 SELECT 1011, 1, '一面', '1', 'qt_interview_round', '', 'default', 'N', '0', 'admin', NOW(), '' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM sys_dict_data WHERE dict_type='qt_interview_round' AND dict_value='1');

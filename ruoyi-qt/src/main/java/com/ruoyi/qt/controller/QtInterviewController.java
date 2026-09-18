@@ -60,8 +60,8 @@ public class QtInterviewController extends BaseController
         {
             return AjaxResult.error("两个志愿不能相同");
         }
-        com.ruoyi.qt.util.QtDictUtils.requireValue(com.ruoyi.qt.util.QtDictUtils.DEPT, application.getFirstChoice(), "firstChoice");
-        com.ruoyi.qt.util.QtDictUtils.requireValue(com.ruoyi.qt.util.QtDictUtils.DEPT, application.getSecondChoice(), "secondChoice");
+        com.ruoyi.qt.util.QtDictUtils.requireActiveDepartment(application.getFirstChoice(), "firstChoice");
+        com.ruoyi.qt.util.QtDictUtils.requireActiveDepartment(application.getSecondChoice(), "secondChoice");
         application.setUserId(getUserId());
         application.setApplyStatus("SUBMITTED");
         application.setUpdateBy(getUsername());

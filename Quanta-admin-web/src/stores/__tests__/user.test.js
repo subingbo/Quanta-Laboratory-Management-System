@@ -90,5 +90,8 @@ describe('user store', () => {
 
     store.user = { memberDepartment: 'BACKEND' }
     expect(store.departmentCode).toBe('BACKEND')
+
+    store.user = { memberDepartment: 'ANDROID' }
+    expect(store.departmentCode).toBe('')
   })
 })
