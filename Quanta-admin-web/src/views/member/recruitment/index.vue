@@ -22,8 +22,6 @@ const statusOptions = [
 
 const statusLabels = Object.fromEntries(statusOptions.map(({ value, label }) => [value, label]))
 
-const joinLabels = { PENDING: '待确认', ACCEPTED: '已接受', DECLINED: '已拒绝' }
-
 function statusType(status) {
   return {
     SUBMITTED: 'info',
@@ -101,7 +99,6 @@ onMounted(load)
             <th>二面</th>
             <th>投递状态</th>
             <th>录用部门</th>
-            <th>加入状态</th>
           </tr>
         </thead>
         <tbody>
@@ -146,7 +143,6 @@ onMounted(load)
               </StatusTag>
             </td>
             <td>{{ departmentLabels[row.offeredDepartment] || row.offeredDepartment || '-' }}</td>
-            <td>{{ joinLabels[row.joinStatus] || row.joinStatus || '-' }}</td>
           </tr>
         </tbody>
       </table>
