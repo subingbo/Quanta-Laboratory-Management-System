@@ -65,6 +65,19 @@ public class QtBookBorrowController extends BaseController
     }
 
     /**
+     * 塔员「我的服务」：只查当前登录用户的借阅记录。
+     */
+    @GetMapping("/myDetailList")
+    public TableDataInfo myDetailList(QtBookBorrow qtBookBorrow)
+    {
+        QtAuthUtils.requireQuantaMember();
+        QtAuthUtils.restrictToSelf(qtBookBorrow::setUserId);
+        startPage();
+        List<QtBookBorrow> list = qtBookBorrowService.selectQtBookBorrowDetailList(qtBookBorrow);
+        return getDataTable(list);
+    }
+
+    /**
      * 导出图书借阅记录列表
      */
     @PreAuthorize("@ss.hasPermi('qt:borrow:export')")

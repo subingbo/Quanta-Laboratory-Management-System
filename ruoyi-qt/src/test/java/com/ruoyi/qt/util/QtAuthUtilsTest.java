@@ -75,6 +75,15 @@ class QtAuthUtilsTest
     }
 
     @Test
+    void restrictToSelfAlwaysUsesCurrentUserEvenWithListPermission()
+    {
+        login(8L, "1", Set.of(QtAuthUtils.PERM_BORROW_LIST));
+        Long[] holder = new Long[1];
+        QtAuthUtils.restrictToSelf(id -> holder[0] = id);
+        org.junit.jupiter.api.Assertions.assertEquals(8L, holder[0]);
+    }
+
+    @Test
     void backofficeRolesCanReadAllActivitySignups()
     {
         for (String roleKey : List.of("admin", "ceo", "qt_mgmt", "qt_manager"))
@@ -141,16 +150,20 @@ class QtAuthUtilsTest
         assertThrows(ServiceException.class, () -> new QtMaterialController().download(1L, null));
         assertThrows(ServiceException.class, () -> new QtBookController().getInfo(1L));
         assertThrows(ServiceException.class, () -> new QtBookBorrowController().detailList(new QtBookBorrow()));
+        assertThrows(ServiceException.class, () -> new QtBookBorrowController().myDetailList(new QtBookBorrow()));
         assertThrows(ServiceException.class, () -> new QtBookBorrowController().getInfo(1L));
         assertThrows(ServiceException.class, () -> new QtBookBorrowController().add(new QtBookBorrow()));
         assertThrows(ServiceException.class, () -> new QtWorkstationController().getInfo(1L));
         assertThrows(ServiceException.class,
                 () -> new QtWorkstationReservationController().detailList(new QtWorkstationReservation()));
+        assertThrows(ServiceException.class,
+                () -> new QtWorkstationReservationController().myDetailList(new QtWorkstationReservation()));
         assertThrows(ServiceException.class, () -> new QtWorkstationReservationController().getInfo(1L));
         assertThrows(ServiceException.class,
                 () -> new QtWorkstationReservationController().add(new QtWorkstationReservation()));
         assertThrows(ServiceException.class, () -> new QtClothingItemController().getInfo(1L));
         assertThrows(ServiceException.class, () -> new QtClothingOrderController().detailList(new QtClothingOrder()));
+        assertThrows(ServiceException.class, () -> new QtClothingOrderController().myDetailList(new QtClothingOrder()));
         assertThrows(ServiceException.class, () -> new QtClothingOrderController().getInfo(1L));
         assertThrows(ServiceException.class, () -> new QtClothingOrderController().add(new QtClothingOrder()));
         assertThrows(ServiceException.class, () -> new QtPaymentConfigController().getInfo(1L));

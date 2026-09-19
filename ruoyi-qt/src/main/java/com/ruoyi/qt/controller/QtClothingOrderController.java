@@ -66,6 +66,20 @@ public class QtClothingOrderController extends BaseController
         return getDataTable(list);
     }
 
+    /**
+     * 塔员「我的服务」：只查当前登录用户的塔服订单。
+     */
+    @GetMapping("/myDetailList")
+    public TableDataInfo myDetailList(QtClothingOrder qtClothingOrder)
+    {
+        QtAuthUtils.requireQuantaMember();
+        QtAuthUtils.restrictToSelf(qtClothingOrder::setUserId);
+        startPage();
+        List<QtClothingOrder> list = qtClothingOrderService.selectQtClothingOrderDetailList(qtClothingOrder);
+        fillOrderAliases(list);
+        return getDataTable(list);
+    }
+
     @PreAuthorize("@ss.hasPermi('qt:order:export')")
     @Log(title = "实验室服装订单", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
@@ -149,6 +163,7 @@ public class QtClothingOrderController extends BaseController
                     order.setPaymentProofUrl(profileAccessSigner.signUrl(serverConfig.getUrl() + path));
                 }
             }
+            order.setPaymentProofPath(null);
         }
     }
 }

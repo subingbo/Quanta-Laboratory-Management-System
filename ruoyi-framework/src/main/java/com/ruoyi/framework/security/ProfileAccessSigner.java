@@ -52,6 +52,24 @@ public class ProfileAccessSigner
         return startsWithAny(normalizePath(path), SENSITIVE_PREFIXES);
     }
 
+    public boolean isSensitiveDownloadResource(String resource)
+    {
+        if (StringUtils.isEmpty(resource))
+        {
+            return false;
+        }
+        String path = extractPath(resource.replace("\\", "/"));
+        if (isSensitiveResource(path))
+        {
+            return true;
+        }
+        if (!path.startsWith("/profile/"))
+        {
+            return isSensitiveResource("/profile" + (path.startsWith("/") ? path : "/" + path));
+        }
+        return false;
+    }
+
     public String signUrl(String url)
     {
         if (StringUtils.isEmpty(url))

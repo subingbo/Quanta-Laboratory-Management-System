@@ -24,6 +24,8 @@ import com.ruoyi.common.utils.file.FileUtils;
 import com.ruoyi.common.utils.file.FileValidator;
 import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.framework.config.ServerConfig;
+import com.ruoyi.framework.security.ProfileAccessSigner;
+import com.ruoyi.qt.util.QtAuthUtils;
 
 /**
  * 通用请求处理
@@ -39,18 +41,19 @@ public class CommonController
     @Autowired
     private ServerConfig serverConfig;
 
+    @Autowired
+    private ProfileAccessSigner profileAccessSigner;
+
     private static final String FILE_DELIMITER = ",";
-    private static final Set<String> ALLOWED_UPLOAD_SUB_DIRS = Set.of("qt/clothing-item", "qt/payment-qr", "qt/payment-proof", "qt/materials", "qt/interview-photo");
+    private static final Set<String> ALLOWED_UPLOAD_SUB_DIRS = Set.of("qt/clothing-item", "qt/payment-qr", "qt/payment-proof");
 
     /** 未指定 subDir 时的档位（富文本编辑器、通用文件上传都走这条） */
     private static final String[] DEFAULT_SUBDIR_EXTENSION = MimeTypeUtils.DEFAULT_ALLOWED_EXTENSION;
 
     private static final java.util.Map<String, UploadPolicy> UPLOAD_POLICIES = java.util.Map.of(
-            "qt/interview-photo", new UploadPolicy(MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE),
             "qt/payment-proof", new UploadPolicy(MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE),
             "qt/payment-qr", new UploadPolicy(MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE),
-            "qt/clothing-item", new UploadPolicy(MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE),
-            "qt/materials", new UploadPolicy(MimeTypeUtils.DEFAULT_ALLOWED_EXTENSION, FileValidator.SIZE_DOCUMENT));
+            "qt/clothing-item", new UploadPolicy(MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE));
 
     private record UploadPolicy(String[] allowedExtension, long maxSize)
     {
@@ -102,11 +105,12 @@ public class CommonController
      * 通用上传请求（单个）
      */
     @PostMapping("/upload")
-    @RateLimiter(time = 60, count = 30, limitType = LimitType.USER, key = "rate_limit:upload:")
+    @RateLimiter(time = 60, count = 10, limitType = LimitType.USER, key = "rate_limit:upload:")
     public AjaxResult uploadFile(MultipartFile file, String subDir) throws Exception
     {
         try
         {
+            assertMemberUpload(subDir);
             UploadPolicy policy = policyOf(subDir);
             // 上传文件路径
             String filePath = resolveUploadPath(subDir);
@@ -135,6 +139,7 @@ public class CommonController
     {
         try
         {
+            assertMemberUpload(subDir);
             UploadPolicy policy = policyOf(subDir);
             // 上传文件路径
             String filePath = resolveUploadPath(subDir);
@@ -165,6 +170,14 @@ public class CommonController
         }
     }
 
+    private void assertMemberUpload(String subDir)
+    {
+        if (StringUtils.isNotEmpty(subDir))
+        {
+            QtAuthUtils.requireQuantaMember();
+        }
+    }
+
     private String resolveUploadPath(String subDir)
     {
         String basePath = RuoYiConfig.getUploadPath();
@@ -189,6 +202,11 @@ public class CommonController
     {
         try
         {
+            if (profileAccessSigner.isSensitiveDownloadResource(resource))
+            {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
             if (!FileUtils.checkAllowDownload(resource))
             {
                 throw new Exception(StringUtils.format("资源文件({})非法，不允许下载。 ", resource));

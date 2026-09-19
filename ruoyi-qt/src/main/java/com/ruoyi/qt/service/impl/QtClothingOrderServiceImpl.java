@@ -65,26 +65,20 @@ public class QtClothingOrderServiceImpl implements IQtClothingOrderService
     @Transactional
     public int insertQtClothingOrder(QtClothingOrder qtClothingOrder)
     {
-        if (StringUtils.isEmpty(qtClothingOrder.getOrderNo()))
-        {
-            qtClothingOrder.setOrderNo(generateOrderNo());
-        }
-        // 无付款截图时只能落草稿，有截图才允许直接提交
+        qtClothingOrder.setOrderNo(generateOrderNo());
+        qtClothingOrder.setUnitPrice(null);
+        qtClothingOrder.setTotalAmount(null);
+        qtClothingOrder.setConfirmedBy(null);
+        qtClothingOrder.setConfirmedAt(null);
         if (StringUtils.isEmpty(qtClothingOrder.getPaymentProofPath()))
         {
             qtClothingOrder.setStatus("DRAFT");
+            qtClothingOrder.setPaymentTime(null);
         }
-        else if (StringUtils.isEmpty(qtClothingOrder.getStatus()))
+        else
         {
             qtClothingOrder.setStatus("SUBMITTED");
             qtClothingOrder.setPaymentTime(DateUtils.getNowDate());
-        }
-        else if ("SUBMITTED".equals(qtClothingOrder.getStatus()) || "APPROVED".equals(qtClothingOrder.getStatus()))
-        {
-            if (qtClothingOrder.getPaymentTime() == null)
-            {
-                qtClothingOrder.setPaymentTime(DateUtils.getNowDate());
-            }
         }
         qtClothingOrder.setCreateTime(DateUtils.getNowDate());
         return qtClothingOrderMapper.insertQtClothingOrder(qtClothingOrder);
@@ -106,6 +100,14 @@ public class QtClothingOrderServiceImpl implements IQtClothingOrderService
     @Override
     public int updateQtClothingOrder(QtClothingOrder qtClothingOrder)
     {
+        if ("APPROVED".equals(qtClothingOrder.getStatus()))
+        {
+            throw new com.ruoyi.common.exception.ServiceException("收款确认请使用确认收款接口");
+        }
+        qtClothingOrder.setUnitPrice(null);
+        qtClothingOrder.setTotalAmount(null);
+        qtClothingOrder.setConfirmedBy(null);
+        qtClothingOrder.setConfirmedAt(null);
         qtClothingOrder.setUpdateTime(DateUtils.getNowDate());
         return qtClothingOrderMapper.updateQtClothingOrder(qtClothingOrder);
     }

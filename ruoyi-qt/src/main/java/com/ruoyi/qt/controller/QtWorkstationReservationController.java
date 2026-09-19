@@ -65,6 +65,19 @@ public class QtWorkstationReservationController extends BaseController
     }
 
     /**
+     * 塔员「我的服务」：只查当前登录用户的工位预约。
+     */
+    @GetMapping("/myDetailList")
+    public TableDataInfo myDetailList(QtWorkstationReservation qtWorkstationReservation)
+    {
+        QtAuthUtils.requireQuantaMember();
+        QtAuthUtils.restrictToSelf(qtWorkstationReservation::setUserId);
+        startPage();
+        List<QtWorkstationReservation> list = qtWorkstationReservationService.selectQtWorkstationReservationDetailList(qtWorkstationReservation);
+        return getDataTable(list);
+    }
+
+    /**
      * 导出工位预约记录列表
      */
     @PreAuthorize("@ss.hasPermi('qt:reservation:export')")

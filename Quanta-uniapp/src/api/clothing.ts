@@ -19,7 +19,7 @@ export interface ShirtProduct {
   images: string[]
   colors: string[]
   sizes: string[]
-  price: number
+  price: number | null
 }
 
 export const parseOptionArray = (value = ''): string[] => {
@@ -39,7 +39,7 @@ export const mapClothingItem = (row: ClothingItemDto): ShirtProduct => {
     images: image ? [image] : [],
     colors: parseOptionArray(row.colorOptionsJson),
     sizes: parseOptionArray(row.sizeOptionsJson),
-    price: 45,
+    price: null,
   }
 }
 
@@ -51,20 +51,15 @@ export const getShirtProduct = async () => {
 }
 
 export const createDraftShirtOrder = async (product: ShirtProduct, selection: ShirtSelection) => {
-  const orderNo = `QT${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`
   await request({
     url: '/qt/order',
     method: 'POST',
     data: {
-      orderNo,
       itemId: product.itemId,
       selectedColor: selection.color,
       selectedSize: selection.size,
       quantity: 1,
-      unitPrice: product.price,
-      totalAmount: product.price,
-      status: 'DRAFT',
     },
   })
-  return { orderNo, status: 'DRAFT' as const }
+  return { status: 'DRAFT' as const }
 }

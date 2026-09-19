@@ -2,8 +2,6 @@ package com.ruoyi.framework.security.filter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import com.ruoyi.framework.security.ProfileAccessSigner;
@@ -13,7 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Sensitive upload dirs require a valid signature or a logged-in session.
+ * Sensitive upload dirs require a valid HMAC query string; login tokens are not enough.
  */
 @Component
 public class ProfileAccessFilter extends OncePerRequestFilter
@@ -42,7 +40,7 @@ public class ProfileAccessFilter extends OncePerRequestFilter
             filterChain.doFilter(request, response);
             return;
         }
-        if (profileAccessSigner.isValidRequest(request) || isAuthenticated())
+        if (profileAccessSigner.isValidRequest(request))
         {
             filterChain.doFilter(request, response);
             return;
@@ -51,12 +49,5 @@ public class ProfileAccessFilter extends OncePerRequestFilter
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write("{\"code\":403,\"msg\":\"file access denied\"}");
-    }
-
-    private boolean isAuthenticated()
-    {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null && authentication.isAuthenticated()
-                && !"anonymousUser".equals(String.valueOf(authentication.getPrincipal()));
     }
 }

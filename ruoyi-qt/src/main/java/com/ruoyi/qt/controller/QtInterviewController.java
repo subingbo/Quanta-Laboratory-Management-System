@@ -46,7 +46,7 @@ public class QtInterviewController extends BaseController
     private ProfileAccessSigner profileAccessSigner;
 
     @PostMapping("/apply")
-    @RateLimiter(time = 60, count = 10, limitType = LimitType.USER, key = "rate_limit:apply:")
+    @RateLimiter(time = 60, count = 5, limitType = LimitType.USER, key = "rate_limit:apply:")
     @RepeatSubmit(message = "正在提交简历，请勿重复提交")
     public AjaxResult apply(QtInterviewApplication application, QtInterviewProfile profile,
             @RequestParam(value = "photoFile", required = false) MultipartFile photoFile,

@@ -48,4 +48,15 @@ class ProfileAccessSignerTest
         String signed = signer.signUrl("https://example.com" + path);
         assertTrue(signed.contains("sig="));
     }
+
+    @Test
+    void downloadBypassPathsAreSensitive()
+    {
+        assertTrue(signer.isSensitiveDownloadResource("/profile/upload/qt/payment-proof/p.png"));
+        assertTrue(signer.isSensitiveDownloadResource("/profile/upload/qt/interview-resume/a.pdf"));
+        assertTrue(signer.isSensitiveDownloadResource("upload/qt/materials/a.pdf"));
+        assertTrue(signer.isSensitiveDownloadResource("/profile/upload/qt/interview-photo/a.jpg"));
+        assertFalse(signer.isSensitiveDownloadResource("/profile/upload/qt/clothing-item/a.png"));
+        assertFalse(signer.isSensitiveDownloadResource("/profile/upload/qt/payment-qr/a.png"));
+    }
 }

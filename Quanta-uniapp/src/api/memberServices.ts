@@ -73,9 +73,9 @@ export const mapOrderRecord = (row: OrderDto): ShirtOrderRecord => ({
 export const getMemberServices = async (): Promise<MemberServicesSnapshot> => {
   const query = { pageNum: 1, pageSize: 500 }
   const [reservations, borrows, orders] = await Promise.all([
-    request<TableResponse<ReservationDto>>({ url: '/qt/reservation/detailList', data: query }),
-    request<TableResponse<BorrowDto>>({ url: '/qt/borrow/detailList', data: query }),
-    request<TableResponse<OrderDto>>({ url: '/qt/order/detailList', data: query }),
+    request<TableResponse<ReservationDto>>({ url: '/qt/reservation/myDetailList', data: query }),
+    request<TableResponse<BorrowDto>>({ url: '/qt/borrow/myDetailList', data: query }),
+    request<TableResponse<OrderDto>>({ url: '/qt/order/myDetailList', data: query }),
   ])
   return {
     reservations: (reservations.rows || []).map(mapReservationRecord),

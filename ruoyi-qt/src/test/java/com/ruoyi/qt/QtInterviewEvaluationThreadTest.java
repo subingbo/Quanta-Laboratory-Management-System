@@ -16,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.util.ReflectionTestUtils;
 import com.ruoyi.common.core.domain.entity.SysRole;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginUser;
@@ -29,18 +28,15 @@ import com.ruoyi.qt.domain.QtInterviewOfferBody;
 import com.ruoyi.qt.domain.QtInterviewResult;
 import com.ruoyi.qt.domain.QtInterviewRound;
 import com.ruoyi.qt.mapper.QtInterviewMapper;
-import com.ruoyi.qt.service.IQtInterviewAdminService;
 import com.ruoyi.qt.service.impl.QtInterviewAdminServiceImpl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -156,27 +152,19 @@ class QtInterviewEvaluationThreadTest
     }
 
     @Test
-    void memberWithoutEvaluateCanPostEvaluationButResultStaysEvaluate() throws Exception
+    void evaluationApisRequireListOrEvaluatePermission() throws Exception
     {
         Method get = QtInterviewAdminController.class.getMethod("evaluations", QtInterviewEvaluation.class);
         Method post = QtInterviewAdminController.class.getMethod("addEvaluation", QtInterviewEvaluation.class);
         Method put = QtInterviewAdminController.class.getMethod("editEvaluation", Long.class, QtInterviewEvaluation.class);
-        assertNull(get.getAnnotation(PreAuthorize.class));
-        assertNull(post.getAnnotation(PreAuthorize.class));
-        assertNull(put.getAnnotation(PreAuthorize.class));
+        assertTrue(get.getAnnotation(PreAuthorize.class).value().contains("qt:interview:admin:list"));
+        assertTrue(post.getAnnotation(PreAuthorize.class).value().contains("qt:interview:admin:evaluate"));
+        assertTrue(put.getAnnotation(PreAuthorize.class).value().contains("qt:interview:admin:evaluate"));
 
         Method result = QtInterviewController.class.getMethod("saveResult", QtInterviewResult.class);
         PreAuthorize resultAuth = result.getAnnotation(PreAuthorize.class);
         assertNotNull(resultAuth);
         assertTrue(resultAuth.value().contains("qt:interview:admin:evaluate"));
-
-        login(8L, "1", "tower_a", Set.of());
-        IQtInterviewAdminService adminService = mock(IQtInterviewAdminService.class);
-        when(adminService.saveEvaluation(any(), eq(8L), eq("tower_a"))).thenReturn(stored(3L, "tower_a", "nickA", EVAL_A));
-        QtInterviewAdminController controller = new QtInterviewAdminController();
-        ReflectionTestUtils.setField(controller, "qtInterviewAdminService", adminService);
-        controller.addEvaluation(body("BACKEND", 1L, EVAL_A));
-        verify(adminService).saveEvaluation(any(), eq(8L), eq("tower_a"));
     }
 
     @Test
@@ -225,9 +213,8 @@ class QtInterviewEvaluationThreadTest
     }
 
     @Test
-    void regularMemberCanListApplicationsAndEvaluationsWithoutAdminListPermi() throws Exception
+    void adminListApisRequireInterviewListPermission() throws Exception
     {
-        // 列表/详情/统计接口不再要求 qt:interview:admin:list，塔员即可
         Method apps = QtInterviewAdminController.class.getMethod("applications",
                 QtInterviewApplication.class, Long.class, String.class, String.class);
         Method detail = QtInterviewAdminController.class.getMethod("application", Long.class);
@@ -235,26 +222,15 @@ class QtInterviewEvaluationThreadTest
         Method stats = QtInterviewAdminController.class.getMethod("statistics");
         for (Method m : new Method[]{apps, detail, results, stats})
         {
-            assertNull(m.getAnnotation(PreAuthorize.class),
-                    m.getName() + " should not require qt:interview:admin:list");
+            PreAuthorize auth = m.getAnnotation(PreAuthorize.class);
+            assertNotNull(auth, m.getName() + " should require qt:interview:admin:list");
+            assertTrue(auth.value().contains("qt:interview:admin:list"), m.getName());
         }
 
-        // 录用/导出仍卡权限
         Method offers = QtInterviewAdminController.class.getMethod("offers", QtInterviewOfferBody.class);
         PreAuthorize offersAuth = offers.getAnnotation(PreAuthorize.class);
         assertNotNull(offersAuth);
         assertTrue(offersAuth.value().contains("qt:interview:admin:offer"));
-
-        // 普通塔员（无 qt:interview:admin:list）能进入详情接口（不依赖 Servlet 上下文）
-        login(8L, "1", "tower_a", Set.of());
-        QtInterviewAdminController controller = new QtInterviewAdminController();
-        IQtInterviewAdminService adminService = mock(IQtInterviewAdminService.class);
-        when(adminService.selectApplication(10L)).thenReturn(application());
-        when(adminService.selectProfile(10L)).thenReturn(new com.ruoyi.qt.domain.QtInterviewProfile());
-        ReflectionTestUtils.setField(controller, "qtInterviewAdminService", adminService);
-        // 不应抛 ServiceException（requireQuantaMember 通过）
-        controller.application(10L);
-        verify(adminService).selectApplication(10L);
     }
 
     private void login(Long userId, String memberFlag, String userName, Set<String> permissions)

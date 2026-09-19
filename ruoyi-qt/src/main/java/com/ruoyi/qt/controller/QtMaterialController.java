@@ -145,6 +145,7 @@ public class QtMaterialController extends BaseController
         for (QtMaterial material : list)
         {
             material.setDownloadUrl("/qt/materials/" + material.getMaterialId() + "/download");
+            material.setFilePath(null);
         }
     }
 }

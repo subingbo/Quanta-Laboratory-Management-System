@@ -28,7 +28,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <select id="selectLabMemberList" parameterType="QtLabMember" resultMap="QtLabMemberResult">
-        select u.user_id, u.nick_name, u.user_name, u.avatar, u.phonenumber, u.sex,
+        select u.user_id, u.nick_name, u.user_name, u.avatar, u.sex,
                u.member_no, u.member_department, u.member_title, u.member_cohort,
                u.student_no, u.class_name, u.is_quanta_member
         from sys_user u

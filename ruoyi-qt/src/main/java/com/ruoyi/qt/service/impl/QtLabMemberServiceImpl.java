@@ -61,7 +61,15 @@ public class QtLabMemberServiceImpl implements IQtLabMemberService
     @Override
     public List<QtLabMember> selectLabMemberList(QtLabMember query)
     {
-        return qtLabMemberMapper.selectLabMemberList(query);
+        List<QtLabMember> list = qtLabMemberMapper.selectLabMemberList(query);
+        if (list != null)
+        {
+            for (QtLabMember member : list)
+            {
+                member.setPhonenumber(null);
+            }
+        }
+        return list;
     }
 
     @Override

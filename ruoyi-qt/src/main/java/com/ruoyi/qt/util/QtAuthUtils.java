@@ -117,6 +117,14 @@ public final class QtAuthUtils
     }
 
     /**
+     * 门户「我的服务」：始终只查当前登录用户，忽略客户端传入的 userId。
+     */
+    public static void restrictToSelf(Consumer<Long> setUserId)
+    {
+        setUserId.accept(SecurityUtils.getUserId());
+    }
+
+    /**
      * 活动报名管理：后台管理身份可查看全量，新生端只能查看本人。
      */
     public static void restrictSignupToSelfIfNoBackoffice(Consumer<Long> setUserId)

@@ -47,6 +47,7 @@ public class QtInterviewAdminController extends BaseController
     @Autowired
     private ProfileAccessSigner profileAccessSigner;
 
+    @PreAuthorize("@ss.hasPermi('qt:interview:admin:list')")
     @GetMapping("/applications")
     public TableDataInfo applications(QtInterviewApplication query,
             @RequestParam(value = "round", required = false) Long round,
@@ -61,6 +62,7 @@ public class QtInterviewAdminController extends BaseController
         return getDataTable(list);
     }
 
+    @PreAuthorize("@ss.hasPermi('qt:interview:admin:list')")
     @GetMapping("/applications/{id:\\d+}")
     public AjaxResult application(@PathVariable("id") Long id)
     {
@@ -74,6 +76,7 @@ public class QtInterviewAdminController extends BaseController
         return success(data);
     }
 
+    @PreAuthorize("@ss.hasPermi('qt:interview:admin:list')")
     @GetMapping("/applications/{id:\\d+}/results")
     public AjaxResult results(@PathVariable("id") Long id)
     {
@@ -81,6 +84,7 @@ public class QtInterviewAdminController extends BaseController
         return success(qtInterviewAdminService.selectResults(id));
     }
 
+    @PreAuthorize("@ss.hasPermi('qt:interview:admin:list')")
     @GetMapping("/evaluations")
     public AjaxResult evaluations(QtInterviewEvaluation query)
     {
@@ -88,6 +92,7 @@ public class QtInterviewAdminController extends BaseController
         return success(qtInterviewAdminService.selectEvaluations(query));
     }
 
+    @PreAuthorize("@ss.hasPermi('qt:interview:admin:evaluate')")
     @Log(title = "招新面评", businessType = BusinessType.INSERT)
     @PostMapping("/evaluations")
     public AjaxResult addEvaluation(@RequestBody QtInterviewEvaluation evaluation)
@@ -96,6 +101,7 @@ public class QtInterviewAdminController extends BaseController
         return success(qtInterviewAdminService.saveEvaluation(evaluation, getUserId(), getUsername()));
     }
 
+    @PreAuthorize("@ss.hasPermi('qt:interview:admin:evaluate')")
     @Log(title = "招新面评", businessType = BusinessType.UPDATE)
     @PutMapping("/evaluations/{evaluationId}")
     public AjaxResult editEvaluation(@PathVariable Long evaluationId, @RequestBody QtInterviewEvaluation evaluation)
@@ -149,6 +155,7 @@ public class QtInterviewAdminController extends BaseController
         return success(qtInterviewAdminService.sendNotice(applicationId, qrCode, getUsername()));
     }
 
+    @PreAuthorize("@ss.hasPermi('qt:interview:admin:list')")
     @GetMapping("/statistics")
     public AjaxResult statistics()
     {
