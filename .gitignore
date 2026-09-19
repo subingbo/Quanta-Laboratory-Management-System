@@ -18,6 +18,8 @@ target/
 .mimosa/
 .zcode/
 .claude/settings.local.json
+.code_deploy/
+tmp_import_titles.json
 cloudrun/**/*.jar
 node_modules/
 .pnpm-store/
