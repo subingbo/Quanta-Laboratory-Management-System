@@ -312,6 +312,7 @@
 .application-form__photo-rules span { padding: 6px 10px; border-radius: 999px; background: var(--portal-orange-soft); color: var(--portal-orange-strong); font-size: 11px; font-weight: 750; }
 .application-form__photo-name { display: flex; max-width: 100%; margin: 16px 0 0; color: var(--portal-ink-soft); font-size: 12px; font-weight: 650; align-items: center; gap: 8px; overflow-wrap: anywhere; }
 .application-form__photo-name i { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; background: #b7bac1; }
+.application-form__photo-name.is-ready i { background: #18a957; box-shadow: 0 0 0 3px rgb(24 169 87 / 12%); }
 .application-form__photo-error { margin: 9px 0 0; color: #b63a2b; font-size: 12px; font-weight: 650; }
 .application-form__photo-button { display: inline-flex; min-height: 42px; margin-top: 18px; padding: 0 17px; border: 1px solid var(--portal-orange); border-radius: 12px; background: var(--portal-orange); color: #fff; cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; align-items: center; gap: 6px; box-shadow: 0 9px 22px rgb(255 103 0 / 20%); transition: transform .18s ease, box-shadow .18s ease; }
 .application-form__photo-button:hover { box-shadow: 0 12px 26px rgb(255 103 0 / 28%); transform: translateY(-1px); }

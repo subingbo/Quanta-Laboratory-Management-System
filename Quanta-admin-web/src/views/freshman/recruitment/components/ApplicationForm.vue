@@ -50,6 +50,15 @@ const maxPhotoSize = 5 * 1024 * 1024
 const maxResumeSize = 10 * 1024 * 1024
 const maxLongTextLength = 500
 const hasPhotoPreview = computed(() => Boolean(model.photoUrl) && !photoPreviewFailed.value)
+const hasPhotoFile = computed(() => Boolean(
+  (model.photoFile || model.photoUrl || model.storedPhotoUrl)
+  && !photoError.value
+  && !photoPreviewFailed.value,
+))
+const hasResumeFile = computed(() => Boolean(
+  (model.resumeFile || model.resumeUrl || model.storedResumeUrl)
+  && !resumeError.value,
+))
 const photoFileName = computed(() => {
   if (model.photoFile?.name) return model.photoFile.name
   if (photoPreviewFailed.value) return '原证件照暂时无法预览，请重新选择'
@@ -272,7 +281,7 @@ function handleSubmit() {
             <span>JPG / PNG</span>
             <span>最大 5 MB</span>
           </div>
-          <p class="application-form__photo-name" data-testid="photo-file-name">
+          <p class="application-form__photo-name" :class="{ 'is-ready': hasPhotoFile }" data-testid="photo-file-name">
             <i aria-hidden="true"></i>{{ photoFileName }}
           </p>
           <p v-if="photoError" class="application-form__photo-error" data-testid="photo-error" role="alert">
@@ -313,7 +322,7 @@ function handleSubmit() {
             <span>仅 PDF</span>
             <span>最大 10 MB</span>
           </div>
-          <p class="application-form__photo-name" data-testid="resume-file-name">
+          <p class="application-form__photo-name" :class="{ 'is-ready': hasResumeFile }" data-testid="resume-file-name">
             <i aria-hidden="true"></i>{{ resumeFileName }}
           </p>
           <p v-if="resumeError" class="application-form__photo-error" data-testid="resume-error" role="alert">

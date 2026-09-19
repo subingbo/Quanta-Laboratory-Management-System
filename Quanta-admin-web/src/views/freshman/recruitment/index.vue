@@ -41,6 +41,8 @@ function friendlySubmissionError(error) {
   const message = String(error?.message || '')
   if (message.includes('两个志愿不能相同')) return message
   if (/网络|timeout|超时|Network/i.test(message)) return '网络连接异常，请稍后重试'
+  const backendMessage = String(error?.payload?.msg || error?.payload?.message || '').trim()
+  if (backendMessage) return backendMessage
   return '报名提交失败，请检查填写内容后重试'
 }
 

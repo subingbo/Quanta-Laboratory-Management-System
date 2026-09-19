@@ -217,11 +217,13 @@ describe('freshman recruitment components', () => {
 
     expect(wrapper.get('[data-testid="photo-upload-card"]').text()).toContain('选择照片')
     expect(input.classes()).toContain('sr-only')
+    expect(wrapper.get('[data-testid="photo-file-name"]').classes()).not.toContain('is-ready')
     Object.defineProperty(input.element, 'files', { configurable: true, value: [photo] })
     await input.trigger('change')
 
     expect(createObjectURL).toHaveBeenCalledWith(photo)
     expect(wrapper.get('[data-testid="photo-file-name"]').text()).toBe('quanta-photo.png')
+    expect(wrapper.get('[data-testid="photo-file-name"]').classes()).toContain('is-ready')
     expect(wrapper.get('img[alt="证件照预览"]').attributes('src')).toBe('blob:photo-preview')
   })
 
@@ -272,6 +274,7 @@ describe('freshman recruitment components', () => {
     Object.defineProperty(input.element, 'files', { configurable: true, value: [resume] })
     await input.trigger('change')
     expect(wrapper.get('[data-testid="resume-file-name"]').text()).toContain('quanta-resume.pdf')
+    expect(wrapper.get('[data-testid="resume-file-name"]').classes()).toContain('is-ready')
 
     await wrapper.find('form').trigger('submit')
     expect(wrapper.emitted('submit').at(-1)[0].resumeFile).toBe(resume)
@@ -364,6 +367,29 @@ describe('freshman recruitment components', () => {
       message: '网络连接异常，请稍后重试',
       type: 'error',
     }))
+  })
+
+  it('shows an explicit backend submission message when one is provided', async () => {
+    const error = Object.assign(new Error('请求失败'), { payload: { msg: 'PDF 文件上传失败，请重新选择' } })
+    recruitmentApi.submitApplication.mockRejectedValueOnce(error)
+    const wrapper = mount(RecruitmentPage)
+    await flushPromises()
+
+    wrapper.findComponent(ApplicationForm).vm.$emit('submit', emptyApplication())
+    await flushPromises()
+
+    expect(wrapper.findComponent(PortalNoticeDialog).props('message')).toBe('PDF 文件上传失败，请重新选择')
+  })
+
+  it('keeps the generic submission message when the backend gives no explicit reason', async () => {
+    recruitmentApi.submitApplication.mockRejectedValueOnce(new Error('Request failed with status code 500'))
+    const wrapper = mount(RecruitmentPage)
+    await flushPromises()
+
+    wrapper.findComponent(ApplicationForm).vm.$emit('submit', emptyApplication())
+    await flushPromises()
+
+    expect(wrapper.findComponent(PortalNoticeDialog).props('message')).toBe('报名提交失败，请检查填写内容后重试')
   })
 
   it('restores a newer local draft over the last server application', async () => {
