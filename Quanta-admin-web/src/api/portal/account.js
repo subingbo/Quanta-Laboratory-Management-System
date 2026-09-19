@@ -8,10 +8,18 @@ export function changePassword({ oldPassword, newPassword }) {
   })
 }
 
-export function updateFreshmanEmail(email) {
+export function sendFreshmanEmailCode(email) {
+  return request({
+    url: '/system/user/profile/emailCode',
+    method: 'post',
+    data: { email },
+  })
+}
+
+export function updateFreshmanEmail({ email, emailCode }) {
   return request({
     url: '/system/user/profile/updateEmail',
     method: 'put',
-    data: { email },
+    data: { email, emailCode },
   })
 }

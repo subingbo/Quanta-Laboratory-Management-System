@@ -4,8 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getCaptcha, registerFreshman, sendRegisterEmailCode } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
-import { homePathFor } from '@/utils/session-audience'
-import { safeInternalRedirect } from '@/utils/redirect'
+import { safeAudienceRedirect } from '@/utils/redirect'
 import quantaLogoUrl from '@/assets/quanta-logo.jpg'
 
 const route = useRoute()
@@ -150,7 +149,7 @@ async function submit() {
   try {
     await userStore.login({ ...form }, audience.value)
     await userStore.fetchUserInfo()
-    const intended = safeInternalRedirect(route.query.redirect, homePathFor(audience.value))
+    const intended = safeAudienceRedirect(route.query.redirect, audience.value)
     await router.replace(intended)
     ElMessage.success('登录成功')
   } catch (error) {

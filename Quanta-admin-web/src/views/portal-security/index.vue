@@ -1,9 +1,9 @@
 <script setup>
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Hide, View } from '@element-plus/icons-vue'
-import { changePassword, updateFreshmanEmail } from '@/api/portal/account'
+import { changePassword, sendFreshmanEmailCode, updateFreshmanEmail } from '@/api/portal/account'
 import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
@@ -11,15 +11,61 @@ const userStore = useUserStore()
 const isFreshman = computed(() => route.meta.portalAudience === 'freshman')
 const form = reactive({ oldPassword: '', newPassword: '', confirmPassword: '' })
 const passwordVisible = reactive({ oldPassword: false, newPassword: false, confirmPassword: false })
-const emailForm = reactive({ email: '' })
+const emailForm = reactive({ email: '', emailCode: '' })
 const submitting = ref(false)
 const emailSubmitting = ref(false)
+const emailCodeSending = ref(false)
+const emailCodeCooldown = ref(0)
+const emailCodeTarget = ref('')
 const errorMessage = ref('')
 const emailError = ref('')
+const emailCodeError = ref('')
 const currentEmail = computed(() => userStore.user?.email || '')
 const emailPattern = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
+let emailCodeTimer
 
 watch(currentEmail, (value) => { emailForm.email = value }, { immediate: true })
+
+function validateNewEmail(email) {
+  if (!email) return '请输入邮箱'
+  if (email.length > 50 || !emailPattern.test(email)) return '请输入正确的邮箱'
+  if (email === currentEmail.value) return '新邮箱与当前邮箱相同'
+  return ''
+}
+
+function startEmailCodeCooldown() {
+  emailCodeCooldown.value = 60
+  clearInterval(emailCodeTimer)
+  emailCodeTimer = setInterval(() => {
+    if (emailCodeCooldown.value <= 1) {
+      emailCodeCooldown.value = 0
+      clearInterval(emailCodeTimer)
+      emailCodeTimer = undefined
+    } else {
+      emailCodeCooldown.value -= 1
+    }
+  }, 1000)
+}
+
+async function sendEmailCode() {
+  if (emailCodeSending.value || emailCodeCooldown.value > 0) return
+  const email = emailForm.email.trim()
+  emailError.value = validateNewEmail(email)
+  if (emailError.value) return
+
+  emailCodeSending.value = true
+  try {
+    await sendFreshmanEmailCode(email)
+    emailCodeTarget.value = email
+    emailCodeError.value = ''
+    startEmailCodeCooldown()
+    ElMessage.success('验证码已发送，5 分钟内有效')
+  } catch (error) {
+    ElMessage.error(error.message || '验证码发送失败')
+  } finally {
+    emailCodeSending.value = false
+  }
+}
 
 function validate() {
   if (!form.oldPassword || !form.newPassword || !form.confirmPassword) return '请完整填写密码信息'
@@ -51,16 +97,21 @@ async function submit() {
 async function submitEmail() {
   if (emailSubmitting.value) return
   const email = emailForm.email.trim()
-  if (!email) emailError.value = '请输入邮箱'
-  else if (email.length > 50 || !emailPattern.test(email)) emailError.value = '请输入正确的邮箱'
-  else if (email === currentEmail.value) emailError.value = '新邮箱与当前邮箱相同'
-  else emailError.value = ''
-  if (emailError.value) return
+  const emailCode = emailForm.emailCode.trim()
+  emailError.value = validateNewEmail(email)
+  emailCodeError.value = /^\d{6}$/.test(emailCode) ? '' : '请输入6位邮箱验证码'
+  if (!emailCodeError.value && emailCodeTarget.value !== email) emailCodeError.value = '请先向该邮箱发送验证码'
+  if (emailError.value || emailCodeError.value) return
 
   emailSubmitting.value = true
   try {
-    await updateFreshmanEmail(email)
+    await updateFreshmanEmail({ email, emailCode })
     await userStore.fetchUserInfo()
+    emailForm.emailCode = ''
+    emailCodeTarget.value = ''
+    emailCodeCooldown.value = 0
+    clearInterval(emailCodeTimer)
+    emailCodeTimer = undefined
     ElMessage.success('邮箱修改成功')
   } catch (error) {
     emailError.value = error.message || '邮箱修改失败'
@@ -69,6 +120,8 @@ async function submitEmail() {
     emailSubmitting.value = false
   }
 }
+
+onBeforeUnmount(() => clearInterval(emailCodeTimer))
 </script>
 
 <template>
@@ -104,6 +157,23 @@ async function submitEmail() {
         </div>
         <p v-if="emailError" class="portal-security__error" role="alert">{{ emailError }}</p>
         <label>新邮箱<input v-model.trim="emailForm.email" name="email" type="email" autocomplete="email" maxlength="50" placeholder="name@example.com" required /></label>
+        <label>
+          新邮箱验证码
+          <span class="portal-security__email-code-row">
+            <input v-model.trim="emailForm.emailCode" name="emailCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="请输入 6 位验证码" required />
+            <button
+              data-testid="send-new-email-code"
+              class="portal-security__email-code-button"
+              type="button"
+              :disabled="emailCodeSending || emailCodeCooldown > 0"
+              @click="sendEmailCode"
+            >
+              {{ emailCodeCooldown > 0 ? `${emailCodeCooldown} 秒后重新发送` : (emailCodeSending ? '发送中…' : '发送验证码') }}
+            </button>
+          </span>
+          <small v-if="emailCodeError" class="portal-security__field-error">{{ emailCodeError }}</small>
+          <small v-else class="portal-security__field-help">验证码 5 分钟内有效</small>
+        </label>
         <button data-testid="email-submit" class="portal-security__submit" type="submit" :disabled="emailSubmitting">
           {{ emailSubmitting ? '提交中…' : '保存邮箱' }}
         </button>

@@ -156,9 +156,52 @@
   cursor: wait;
 }
 
+.portal-security__email-code-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 146px;
+  gap: 10px;
+}
+
+.portal-security__email-code-button {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--portal-line);
+  border-radius: 12px;
+  background: var(--portal-ink);
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.portal-security__email-code-button:disabled {
+  background: var(--portal-canvas);
+  color: var(--portal-muted);
+  cursor: not-allowed;
+}
+
+.portal-security__field-error,
+.portal-security__field-help {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.portal-security__field-error {
+  color: #b42318;
+}
+
+.portal-security__field-help {
+  color: var(--portal-muted);
+}
+
 @media (max-width: 620px) {
   .portal-security__card {
     padding: 22px;
+  }
+
+  .portal-security__email-code-row {
+    grid-template-columns: 1fr;
   }
 }
 

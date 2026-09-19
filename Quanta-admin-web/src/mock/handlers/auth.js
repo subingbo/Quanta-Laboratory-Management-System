@@ -62,5 +62,29 @@ export const authHandlers = [
       return { code: 200, msg: '操作成功', captchaEnabled: false }
     },
   },
+  {
+    method: 'post',
+    path: '/system/user/profile/emailCode',
+    handle(config) {
+      if (!requireAccount(config)) return { code: 401, msg: '登录状态已失效' }
+      const email = String(config.data?.email || '').trim()
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { code: 400, msg: '请输入正确的邮箱' }
+      return { code: 200, msg: '验证码已发送' }
+    },
+  },
+  {
+    method: 'put',
+    path: '/system/user/profile/updateEmail',
+    handle(config) {
+      const account = requireAccount(config)
+      if (!account) return { code: 401, msg: '登录状态已失效' }
+      const email = String(config.data?.email || '').trim()
+      const emailCode = String(config.data?.emailCode || '').trim()
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { code: 400, msg: '请输入正确的邮箱' }
+      if (!/^\d{6}$/.test(emailCode)) return { code: 400, msg: '请输入6位邮箱验证码' }
+      account.user.email = email
+      return { code: 200, msg: '邮箱修改成功' }
+    },
+  },
 ]
 

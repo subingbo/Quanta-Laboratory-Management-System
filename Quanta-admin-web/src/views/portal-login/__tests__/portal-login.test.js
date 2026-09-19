@@ -24,6 +24,7 @@ async function mountLogin(audience = 'freshman', redirect = '') {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
+      { path: '/', component: { template: '<div>身份选择</div>' } },
       { path, component: PortalLogin, meta: { portalAudience: audience } },
       { path: '/freshman/home', component: { template: '<div />' } },
       { path: '/member/home', component: { template: '<div />' } },
@@ -172,6 +173,19 @@ describe('portal login', () => {
 
   it('rejects an external redirect and enters the audience home', async () => {
     const { wrapper, router, store } = await mountLogin('member', '//evil.example')
+    vi.spyOn(store, 'login').mockResolvedValue({ token: 'token' })
+    vi.spyOn(store, 'fetchUserInfo').mockResolvedValue({})
+
+    await wrapper.get('input[autocomplete="username"]').setValue('qt_member')
+    await wrapper.get('input[autocomplete="current-password"]').setValue('admin123')
+    await wrapper.get('.el-button').trigger('click')
+    await flushPromises()
+
+    expect(router.currentRoute.value.path).toBe('/member/home')
+  })
+
+  it('ignores a restored identity-page redirect on first member login', async () => {
+    const { wrapper, router, store } = await mountLogin('member', '/')
     vi.spyOn(store, 'login').mockResolvedValue({ token: 'token' })
     vi.spyOn(store, 'fetchUserInfo').mockResolvedValue({})
 

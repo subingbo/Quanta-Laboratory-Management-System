@@ -5,11 +5,15 @@ import { join } from 'node:path'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { changePassword, updateFreshmanEmail } from '@/api/portal/account'
+import { changePassword, sendFreshmanEmailCode, updateFreshmanEmail } from '@/api/portal/account'
 import PortalSecurity from '../index.vue'
 import { useUserStore } from '@/stores/user'
 
-vi.mock('@/api/portal/account', () => ({ changePassword: vi.fn(), updateFreshmanEmail: vi.fn() }))
+vi.mock('@/api/portal/account', () => ({
+  changePassword: vi.fn(),
+  sendFreshmanEmailCode: vi.fn(),
+  updateFreshmanEmail: vi.fn(),
+}))
 vi.mock('element-plus', () => ({ ElMessage: { success: vi.fn(), error: vi.fn() } }))
 
 async function mountSecurity(audience = 'freshman') {
@@ -98,15 +102,53 @@ describe('portal account security', () => {
     }
   })
 
-  it('updates a valid freshman email through the real API adapter', async () => {
+  it('locks new-email code sending for 60 seconds', async () => {
+    vi.useFakeTimers()
+    let wrapper
+    try {
+      sendFreshmanEmailCode.mockResolvedValue({ code: 200 })
+      ;({ wrapper } = await mountSecurity('freshman'))
+      await wrapper.get('input[name="email"]').setValue('new@example.com')
+      await wrapper.get('[data-testid="send-new-email-code"]').trigger('click')
+      await flushPromises()
+
+      expect(sendFreshmanEmailCode).toHaveBeenCalledWith('new@example.com')
+      expect(wrapper.get('[data-testid="send-new-email-code"]').attributes('disabled')).toBeDefined()
+      expect(wrapper.get('[data-testid="send-new-email-code"]').text()).toContain('60 秒后重新发送')
+
+      vi.advanceTimersByTime(60_000)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.get('[data-testid="send-new-email-code"]').attributes('disabled')).toBeUndefined()
+    } finally {
+      wrapper?.unmount()
+      vi.useRealTimers()
+    }
+  })
+
+  it('requires a six-digit code before updating the freshman email', async () => {
+    const { wrapper } = await mountSecurity('freshman')
+    await wrapper.get('input[name="email"]').setValue('new@example.com')
+    await wrapper.get('input[name="emailCode"]').setValue('12345')
+    await wrapper.get('[data-testid="email-card"]').trigger('submit')
+    await flushPromises()
+
+    expect(updateFreshmanEmail).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('请输入6位邮箱验证码')
+  })
+
+  it('updates a verified freshman email through the real API adapter', async () => {
+    sendFreshmanEmailCode.mockResolvedValue({ code: 200 })
     updateFreshmanEmail.mockResolvedValue({ code: 200 })
     const { wrapper, store } = await mountSecurity('freshman')
     vi.spyOn(store, 'fetchUserInfo').mockResolvedValue({})
     await wrapper.get('input[name="email"]').setValue('new@example.com')
+    await wrapper.get('[data-testid="send-new-email-code"]').trigger('click')
+    await flushPromises()
+    await wrapper.get('input[name="emailCode"]').setValue('123456')
     await wrapper.get('[data-testid="email-card"]').trigger('submit')
     await flushPromises()
 
-    expect(updateFreshmanEmail).toHaveBeenCalledWith('new@example.com')
+    expect(updateFreshmanEmail).toHaveBeenCalledWith({ email: 'new@example.com', emailCode: '123456' })
     expect(store.fetchUserInfo).toHaveBeenCalledOnce()
     expect(ElMessage.success).toHaveBeenCalledWith('邮箱修改成功')
   })

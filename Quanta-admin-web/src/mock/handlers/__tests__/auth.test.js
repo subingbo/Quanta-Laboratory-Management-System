@@ -26,6 +26,20 @@ describe('auth mock handlers', () => {
       'BookBorrows',
     ])
   })
+
+  it('supports the new-email verification flow in explicit full mock mode', () => {
+    const sendResponse = handler('post', '/system/user/profile/emailCode').handle({
+      ...config('mock-token-admin'),
+      data: { email: 'new@example.com' },
+    })
+    const updateResponse = handler('put', '/system/user/profile/updateEmail').handle({
+      ...config('mock-token-admin'),
+      data: { email: 'new@example.com', emailCode: '123456' },
+    })
+
+    expect(sendResponse.code).toBe(200)
+    expect(updateResponse.code).toBe(200)
+  })
 })
 
 describe('partial Web mock', () => {
