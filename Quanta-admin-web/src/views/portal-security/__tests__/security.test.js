@@ -1,5 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { createPinia, setActivePinia } from 'pinia'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -27,6 +29,13 @@ async function mountSecurity(audience = 'freshman') {
 
 describe('portal account security', () => {
   beforeEach(() => vi.clearAllMocks())
+
+  it('centers the member password card and hides the native password reveal control', () => {
+    const css = readFileSync(join(process.cwd(), 'src/views/portal-security/security.css'), 'utf8')
+    expect(css).toContain('.portal-security__grid:not(.has-email-card)')
+    expect(css).toContain('justify-content: center')
+    expect(css).toContain('::-ms-reveal')
+  })
 
   it('validates confirmation before calling the backend', async () => {
     const { wrapper } = await mountSecurity()

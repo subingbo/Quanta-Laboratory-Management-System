@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import 'element-plus/es/components/message/style/css'
+import 'element-plus/es/components/message-box/style/css'
 import 'nprogress/nprogress.css'
 
 import App from './App.vue'

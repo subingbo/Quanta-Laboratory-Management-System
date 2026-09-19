@@ -30,6 +30,10 @@
   align-items: start;
 }
 
+.portal-security__grid:not(.has-email-card) {
+  justify-content: center;
+}
+
 .portal-security__grid.has-email-card {
   grid-template-columns: repeat(2, minmax(0, 560px));
 }
@@ -170,6 +174,11 @@
 
 .portal-security__password-field input {
   padding-right: 48px;
+}
+
+.portal-security__password-field input::-ms-reveal,
+.portal-security__password-field input::-ms-clear {
+  display: none;
 }
 
 .portal-security__password-field button {
