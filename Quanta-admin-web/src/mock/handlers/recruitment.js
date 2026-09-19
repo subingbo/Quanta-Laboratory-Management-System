@@ -117,11 +117,13 @@ function listApplications(config) {
   const params = config.params || {}
   const roundId = Number(params.roundId) || 1
   const keyword = String(params.keyword || '').trim().toLowerCase()
+  const department = String(params.department || '').trim()
   const pageNum = Math.max(1, Number(params.pageNum) || 1)
   const pageSize = Math.max(1, Number(params.pageSize) || 20)
   const rows = mockRecruitmentApplications.filter((application) => {
     if (!visibleApplication(account, application, roundId)) return false
     if (roundId === 2 && !application.tracks.some((track) => track.rounds[2].advanced)) return false
+    if (department && !application.tracks.some((track) => track.department === department)) return false
     if (keyword && !`${application.realName}${application.studentNo}`.toLowerCase().includes(keyword)) {
       return false
     }

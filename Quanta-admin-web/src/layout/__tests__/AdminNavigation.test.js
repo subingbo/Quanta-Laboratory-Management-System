@@ -30,4 +30,23 @@ describe('admin navigation', () => {
     expect(sidebar).toContain('alt="Quanta 社团 Logo"')
   })
 
+  it('keeps brand marks non-selectable without locking ordinary page text', () => {
+    const sources = [
+      ['src/views/entry/index.vue', 'entry-page__brand'],
+      ['src/styles/portal.css', 'portal-header__brand'],
+      ['src/views/portal-login/portal-login.css', 'portal-login__brand'],
+      ['src/views/login/login.css', 'login-page__brand'],
+      ['src/views/login/login.css', 'login-card__mobile-brand'],
+      ['src/styles/layout.css', 'app-sidebar__brand'],
+    ]
+
+    sources.forEach(([file, className]) => {
+      const source = readFileSync(join(process.cwd(), file), 'utf8')
+      expect(source).toMatch(new RegExp(`\\.${className}[^{]*\\{[^}]*user-select:\\s*none`, 's'))
+    })
+
+    const globalCss = readFileSync(join(process.cwd(), 'src/styles/global.css'), 'utf8')
+    expect(globalCss).not.toMatch(/(?:html|body|\*)[^{]*\{[^}]*user-select:\s*none/s)
+  })
+
 })

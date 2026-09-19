@@ -278,6 +278,31 @@
   white-space: nowrap;
 }
 
+.recruitment-pagination {
+  display: flex;
+  min-height: 72px;
+  padding: 16px 28px;
+  border-top: 1px solid var(--quanta-border);
+  background: #fff;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.recruitment-pagination > span {
+  color: #9198a8;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.recruitment-pagination .el-pagination.is-background .el-pager li.is-active {
+  background: var(--quanta-primary);
+}
+
+.recruitment-pagination .el-pagination__sizes .el-select {
+  width: 112px;
+}
+
 .resume-dialog__grid {
   display: grid;
   margin-bottom: 18px;

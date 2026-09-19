@@ -17,6 +17,7 @@ import FeedbackDialog from './components/FeedbackDialog.vue'
 import NoticeDialog from './components/NoticeDialog.vue'
 import RecruitmentBoard from './components/RecruitmentBoard.vue'
 import RecruitmentFilters from './components/RecruitmentFilters.vue'
+import RecruitmentPagination from './components/RecruitmentPagination.vue'
 import RecruitmentTabs from './components/RecruitmentTabs.vue'
 import ResumeDialog from './components/ResumeDialog.vue'
 import ScoreDialog from './components/ScoreDialog.vue'
@@ -35,6 +36,10 @@ const loadFailed = ref(false)
 const pendingAction = ref('')
 const filterDraft = reactive({ department: '', keyword: '' })
 const filters = reactive({ department: '', keyword: '' })
+const paginationByRound = reactive({
+  1: { page: 1, pageSize: 10 },
+  2: { page: 1, pageSize: 10 },
+})
 let requestSequence = 0
 
 const hasPermission = (permission) => permissions.value.includes('*:*:*') || permissions.value.includes(permission)
@@ -44,15 +49,8 @@ const canViewAllDepartments = computed(
 )
 const currentDepartment = departmentCode
 const roundId = computed(() => Number(activeTab.value) || 1)
+const pagination = computed(() => paginationByRound[roundId.value])
 const departmentOptions = computed(() => Object.entries(departmentLabels).map(([value, label]) => ({ value, label })))
-const filteredRows = computed(() => {
-  const keyword = filters.keyword.trim().toLocaleLowerCase()
-  return rows.value.filter((row) => {
-    const matchesDepartment = !filters.department || row.choices?.some((choice) => choice.department === filters.department)
-    const searchable = `${row.studentNo || ''} ${row.name || row.realName || ''}`.toLocaleLowerCase()
-    return matchesDepartment && (!keyword || searchable.includes(keyword))
-  })
-})
 
 const resume = reactive({ visible: false, loading: false, application: null })
 const feedback = reactive({ visible: false, mode: 'view', loading: false, submitting: false, row: null, department: '', options: [], content: '', evaluations: [] })
@@ -81,12 +79,50 @@ async function loadStatistics() {
 async function loadList() {
   if (activeTab.value === 'board') return
   const currentRequest = ++requestSequence
+  const targetRound = roundId.value
+  const targetPagination = paginationByRound[targetRound]
+  const keyword = filters.keyword.trim().toLocaleLowerCase()
+  const baseQuery = {
+    roundId: targetRound,
+    department: filters.department || undefined,
+  }
   loading.value = true
   loadFailed.value = false
   try {
-    const result = await getRecruitmentApplications({ roundId: roundId.value, pageNum: 1, pageSize: 50 })
+    let result
+    if (!keyword) {
+      result = await getRecruitmentApplications({
+        ...baseQuery,
+        pageNum: targetPagination.page,
+        pageSize: targetPagination.pageSize,
+      })
+    } else {
+      const batchSize = 100
+      const firstBatch = await getRecruitmentApplications({ ...baseQuery, pageNum: 1, pageSize: batchSize })
+      const pageCount = Math.ceil(firstBatch.total / batchSize)
+      const remainingBatches = pageCount > 1
+        ? await Promise.all(
+          Array.from({ length: pageCount - 1 }, (_, index) =>
+            getRecruitmentApplications({ ...baseQuery, pageNum: index + 2, pageSize: batchSize }),
+          ),
+        )
+        : []
+      const matchedRows = [firstBatch, ...remainingBatches]
+        .flatMap((batch) => batch.rows)
+        .filter((row) => `${row.studentNo || ''} ${row.name || row.realName || ''}`.toLocaleLowerCase().includes(keyword))
+      const start = (targetPagination.page - 1) * targetPagination.pageSize
+      result = {
+        rows: matchedRows.slice(start, start + targetPagination.pageSize),
+        total: matchedRows.length,
+      }
+    }
     if (currentRequest !== requestSequence) return
-    rows.value = roundId.value === 2 ? result.rows.filter((row) => row.choices?.some((track) => track.rounds?.[2]?.advanced)) : result.rows
+    const maxPage = Math.max(1, Math.ceil(result.total / targetPagination.pageSize))
+    if (targetPagination.page > maxPage) {
+      targetPagination.page = maxPage
+      return loadList()
+    }
+    rows.value = targetRound === 2 ? result.rows.filter((row) => row.choices?.some((track) => track.rounds?.[2]?.advanced)) : result.rows
     total.value = result.total
   } catch (error) {
     if (currentRequest !== requestSequence) return
@@ -95,8 +131,15 @@ async function loadList() {
   } finally { if (currentRequest === requestSequence) loading.value = false }
 }
 async function refreshAll() { await Promise.all([loadStatistics(), loadList()]) }
-function applyFilters() { filters.department = filterDraft.department; filters.keyword = filterDraft.keyword }
+function applyFilters() {
+  filters.department = filterDraft.department
+  filters.keyword = filterDraft.keyword
+  pagination.value.page = 1
+  loadList()
+}
 function resetFilters() { filterDraft.department = ''; filterDraft.keyword = ''; applyFilters() }
+function changePage(page) { pagination.value.page = page; loadList() }
+function changePageSize(pageSize) { pagination.value.pageSize = pageSize; pagination.value.page = 1; loadList() }
 
 async function openResume(row) {
   resume.visible = true; resume.loading = true; resume.application = row
@@ -221,8 +264,9 @@ onMounted(refreshAll)
       <RecruitmentBoard v-if="activeTab === 'board'" :statistics="statistics" :loading="statisticsLoading" />
       <div v-else-if="loadFailed && !loading" class="recruitment-card__error"><span>招新名单暂时无法加载。</span><ElButton type="primary" link @click="loadList">重新加载</ElButton></div>
       <template v-else>
-        <RecruitmentFilters v-model:department="filterDraft.department" v-model:keyword="filterDraft.keyword" :departments="departmentOptions" :visible-count="filteredRows.length" :total-count="rows.length" @search="applyFilters" @reset="resetFilters" />
-        <CandidateTable :rows="filteredRows" :loading="loading" :round-id="roundId" :pending-action="pendingAction" @resume="openResume" @view-feedback="openViewFeedback" @edit-feedback="openEditFeedback" @select-result="openResultDecision" @score="openScore" @notice="openNotice" />
+        <RecruitmentFilters v-model:department="filterDraft.department" v-model:keyword="filterDraft.keyword" :departments="departmentOptions" :visible-count="rows.length" :total-count="total" @search="applyFilters" @reset="resetFilters" />
+        <CandidateTable :rows="rows" :loading="loading" :round-id="roundId" :pending-action="pendingAction" @resume="openResume" @view-feedback="openViewFeedback" @edit-feedback="openEditFeedback" @select-result="openResultDecision" @score="openScore" @notice="openNotice" />
+        <RecruitmentPagination :page="pagination.page" :page-size="pagination.pageSize" :total="total" :disabled="loading" @update:page="changePage" @update:page-size="changePageSize" />
       </template>
     </section>
     <ResumeDialog v-model="resume.visible" :application="resume.application" :loading="resume.loading" />

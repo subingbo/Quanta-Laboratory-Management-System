@@ -37,6 +37,7 @@
   display: flex;
   align-items: center;
   gap: 15px;
+  user-select: none;
 }
 
 .login-page__logo {
@@ -56,6 +57,7 @@
   height: 100%;
   border-radius: 13px;
   object-fit: cover;
+  -webkit-user-drag: none;
 }
 
 .login-page__brand strong,
@@ -232,6 +234,7 @@
 
 .login-card__mobile-brand {
   display: none;
+  user-select: none;
 }
 
 .login-card__environment {

@@ -41,7 +41,10 @@
   gap: 13px;
   color: #fff;
   text-decoration: none;
+  user-select: none;
 }
+
+.portal-login__brand img { -webkit-user-drag: none; }
 
 .portal-login__brand img { width: 52px; height: 52px; border-radius: 15px; object-fit: cover; }
 .portal-login__brand span { display: grid; }

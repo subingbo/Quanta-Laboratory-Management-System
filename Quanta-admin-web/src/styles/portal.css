@@ -51,8 +51,8 @@ body.portal-scroll-active {
   gap: 28px;
 }
 
-.portal-header__brand { display: flex; align-items: center; gap: 10px; color: var(--portal-ink); text-decoration: none; }
-.portal-header__brand img { width: 42px; height: 42px; border-radius: 12px; object-fit: cover; }
+.portal-header__brand { display: flex; align-items: center; gap: 10px; color: var(--portal-ink); text-decoration: none; user-select: none; }
+.portal-header__brand img { width: 42px; height: 42px; border-radius: 12px; object-fit: cover; -webkit-user-drag: none; }
 .portal-header__brand > span { display: grid; }
 .portal-header__brand strong { font-size: 20px; line-height: 1.05; }
 .portal-header__brand small { margin-top: 4px; color: var(--portal-muted); font-size: 9px; font-weight: 700; letter-spacing: .12em; }

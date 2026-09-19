@@ -98,8 +98,8 @@ const entries = [
 }
 
 .entry-page__header { padding-block: 28px; }
-.entry-page__brand { display: flex; align-items: center; gap: 12px; }
-.entry-page__brand img { width: 46px; height: 46px; border-radius: 13px; object-fit: cover; }
+.entry-page__brand { display: flex; align-items: center; gap: 12px; user-select: none; }
+.entry-page__brand img { width: 46px; height: 46px; border-radius: 13px; object-fit: cover; -webkit-user-drag: none; }
 .entry-page__brand span { display: grid; }
 .entry-page__brand strong { font-size: 22px; letter-spacing: -.02em; }
 .entry-page__brand small, .entry-page__system { color: #aeb2b8; font-size: 10px; letter-spacing: .14em; }
