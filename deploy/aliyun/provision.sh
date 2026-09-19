@@ -11,7 +11,7 @@ apt-get update
 echo "==> install base tools"
 DEBIAN_FRONTEND=noninteractive apt-get install -y curl ca-certificates gnupg rsync unzip nginx
 
-# ---- swap：2C2G 小机器跑 MySQL + JVM 必须有，幂等 ----
+# ---- swap：2G 保险垫（4G 已够用，仍保留；swappiness=10），幂等 ----
 if ! swapon --show=TYPE | grep -q partition; then
   if [ ! -f /swapfile ]; then
     echo "==> create 2G swapfile"

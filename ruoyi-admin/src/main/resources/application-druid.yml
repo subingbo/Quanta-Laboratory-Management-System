@@ -20,7 +20,7 @@ spring:
             initialSize: 5
             # 最小连接池数量
             minIdle: 10
-            # 最大连接池数量（Tomcat 200 线程下的合理上限；再高 2C2G 的 MySQL 也扛不住）
+            # 最大连接池数量（Tomcat 200 线程下的合理上限；瓶颈是 2 核 CPU，再高只会加剧连接争抢）
             maxActive: 50
             # 配置获取连接等待超时的时间
             maxWait: 10000

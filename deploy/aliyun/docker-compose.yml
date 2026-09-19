@@ -24,8 +24,8 @@ services:
       - --collation-server=utf8mb4_general_ci
       - --default-authentication-plugin=mysql_native_password
       - --log-bin-trust-function-creators=1
-      # 小内存机器(2C2G)专用：缓冲池 128M + 关掉 performance_schema(可省 200~400M)
-      - --innodb-buffer-pool-size=128M
+      # 2C4G：缓冲池 512M；继续关 performance_schema（可省 200~400M，留给缓冲池更划算）
+      - --innodb-buffer-pool-size=512M
       - --performance-schema=OFF
       - --max-connections=100
       - --skip-name-resolve
