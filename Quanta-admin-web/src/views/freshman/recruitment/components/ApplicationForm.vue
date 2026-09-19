@@ -24,6 +24,7 @@ export function emptyApplication() {
 <script setup>
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { recruitmentDepartments } from '@/api/portal/recruitment'
+import RecruitmentDepartmentSelect from './RecruitmentDepartmentSelect.vue'
 
 const props = defineProps({
   initialValue: {
@@ -209,26 +210,26 @@ function handleSubmit() {
       <input v-model.trim="model.className" name="className" placeholder="例如：软工2402" required />
       <small v-if="fieldErrors.className" class="application-form__field-error">请填写班级</small>
     </label>
-    <label :class="{ 'is-invalid': fieldErrors.firstChoice }">
+    <div class="application-form__field" :class="{ 'is-invalid': fieldErrors.firstChoice }">
       <span>第一志愿</span>
-      <select v-model="model.firstChoice" name="firstChoice" required>
-        <option value="" disabled>请选择</option>
-        <option v-for="department in recruitmentDepartments" :key="department.value" :value="department.value">
-          {{ department.label }}
-        </option>
-      </select>
+      <RecruitmentDepartmentSelect
+        v-model="model.firstChoice"
+        name="firstChoice"
+        :options="recruitmentDepartments"
+        :invalid="Boolean(fieldErrors.firstChoice)"
+      />
       <small v-if="fieldErrors.firstChoice" class="application-form__field-error">{{ fieldErrors.firstChoice }}</small>
-    </label>
-    <label :class="{ 'is-invalid': fieldErrors.secondChoice }">
+    </div>
+    <div class="application-form__field" :class="{ 'is-invalid': fieldErrors.secondChoice }">
       <span>第二志愿</span>
-      <select v-model="model.secondChoice" name="secondChoice" required>
-        <option value="" disabled>请选择</option>
-        <option v-for="department in recruitmentDepartments" :key="department.value" :value="department.value">
-          {{ department.label }}
-        </option>
-      </select>
+      <RecruitmentDepartmentSelect
+        v-model="model.secondChoice"
+        name="secondChoice"
+        :options="recruitmentDepartments"
+        :invalid="Boolean(fieldErrors.secondChoice)"
+      />
       <small v-if="fieldErrors.secondChoice" class="application-form__field-error">{{ fieldErrors.secondChoice }}</small>
-    </label>
+    </div>
     <div class="application-grid__wide application-form__photo-field" :class="{ 'is-invalid': fieldErrors.photo }">
       <span class="application-form__field-label">证件照 <em>必填</em></span>
       <div class="application-form__photo-card" data-testid="photo-upload-card">

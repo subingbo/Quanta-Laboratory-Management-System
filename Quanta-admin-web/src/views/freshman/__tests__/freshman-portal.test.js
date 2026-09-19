@@ -6,6 +6,7 @@ import * as draftStorage from '@/utils/recruitment-draft'
 import ApplicationForm, {
   emptyApplication,
 } from '@/views/freshman/recruitment/components/ApplicationForm.vue'
+import RecruitmentDepartmentSelect from '@/views/freshman/recruitment/components/RecruitmentDepartmentSelect.vue'
 import InterviewTimeline from '@/views/freshman/recruitment/components/InterviewTimeline.vue'
 import RecruitmentPage from '@/views/freshman/recruitment/index.vue'
 import EventsPage from '@/views/freshman/events/index.vue'
@@ -78,12 +79,44 @@ describe('freshman recruitment components', () => {
     expect(wrapper.text()).toContain('全栈（后端）')
     expect(wrapper.text()).not.toContain('安卓')
     expect(wrapper.findAll('select[name="gender"] option:not([disabled])')).toHaveLength(2)
-    expect(wrapper.findAll('select[name$="Choice"] option:not([disabled])')).toHaveLength(8)
+    const choiceSelectors = wrapper.findAllComponents(RecruitmentDepartmentSelect)
+    expect(choiceSelectors).toHaveLength(2)
+    await choiceSelectors[0].vm.$emit('update:modelValue', 'PRODUCT')
+    await choiceSelectors[1].vm.$emit('update:modelValue', 'DESIGN')
     await wrapper.find('input[name="realName"]').setValue('新生小李')
     await wrapper.find('form').trigger('submit')
 
     expect(wrapper.emitted('submit')).toHaveLength(1)
     expect(wrapper.emitted('submit')[0][0].realName).toBe('新生小李')
+    expect(wrapper.emitted('submit')[0][0]).toEqual(expect.objectContaining({
+      firstChoice: 'PRODUCT',
+      secondChoice: 'DESIGN',
+    }))
+  })
+
+  it('keeps the existing duplicate-choice validation with custom selectors', async () => {
+    const wrapper = mount(ApplicationForm, {
+      props: {
+        initialValue: {
+          ...emptyApplication(),
+          realName: '新生小李',
+          gender: '男',
+          className: '软工2402',
+          firstChoice: 'DESIGN',
+          secondChoice: 'DESIGN',
+          storedPhotoUrl: '/profile/photo.jpg',
+          storedResumeUrl: '/profile/resume.pdf',
+          selfIntro: '自我介绍',
+          codingExperience: '0',
+          quantaUnderstanding: '开放与创造',
+        },
+      },
+    })
+
+    await wrapper.find('form').trigger('submit')
+
+    expect(wrapper.emitted('submit')).toBeUndefined()
+    expect(wrapper.emitted('invalid')[0][0]).toContain('第一、第二志愿不能相同')
   })
 
   it('blocks incomplete applications and reports every missing required field', async () => {

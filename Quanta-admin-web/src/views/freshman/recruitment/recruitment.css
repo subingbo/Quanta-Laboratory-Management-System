@@ -81,7 +81,8 @@
   gap: 22px;
 }
 
-.application-grid > label {
+.application-grid > label,
+.application-grid > .application-form__field {
   display: grid;
   gap: 9px;
   color: var(--portal-ink);
@@ -114,6 +115,138 @@
 .application-form textarea:focus {
   border-color: var(--portal-orange);
   outline: 3px solid rgb(255 103 0 / 12%);
+}
+
+.department-select {
+  position: relative;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.department-select__trigger {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 14px 11px 16px;
+  border: 1px solid var(--portal-line);
+  border-radius: 13px;
+  background: #fff;
+  color: var(--portal-ink);
+  font: inherit;
+  text-align: left;
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.department-select__trigger:hover {
+  border-color: #ffc39b;
+  background: #fffdfb;
+}
+
+.department-select__trigger:focus-visible,
+.department-select.is-open .department-select__trigger {
+  border-color: var(--portal-orange);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(255 103 0 / 12%);
+}
+
+.department-select__trigger .is-placeholder {
+  color: #84878d;
+  font-weight: 500;
+}
+
+.department-select__trigger svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  transition: transform .18s ease;
+}
+
+.department-select.is-open .department-select__trigger svg {
+  color: var(--portal-orange);
+  transform: rotate(180deg);
+}
+
+.department-select__menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  right: 0;
+  left: 0;
+  display: grid;
+  overflow: hidden;
+  padding: 7px;
+  border: 1px solid rgb(255 103 0 / 13%);
+  border-radius: 16px;
+  background: rgb(255 255 255 / 98%);
+  box-shadow: 0 20px 48px rgb(32 33 36 / 16%), 0 5px 14px rgb(255 103 0 / 8%);
+  backdrop-filter: blur(12px);
+  gap: 3px;
+}
+
+.department-select__option {
+  display: flex;
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--portal-ink);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.department-select__option:hover,
+.department-select__option.is-active {
+  background: var(--portal-orange-soft);
+  color: var(--portal-orange-strong);
+}
+
+.department-select__option.is-selected {
+  color: var(--portal-orange-strong);
+  font-weight: 800;
+}
+
+.department-select__option svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+}
+
+.department-select.is-invalid .department-select__trigger {
+  border-color: #dc4c4c;
+  box-shadow: 0 0 0 3px rgb(220 76 76 / 9%);
+}
+
+.department-select-menu-enter-active,
+.department-select-menu-leave-active {
+  transition: opacity .16s ease, transform .16s ease;
+  transform-origin: top center;
+}
+
+.department-select-menu-enter-from,
+.department-select-menu-leave-to {
+  opacity: 0;
+  transform: translateY(-5px) scale(.985);
 }
 
 .application-form small {
