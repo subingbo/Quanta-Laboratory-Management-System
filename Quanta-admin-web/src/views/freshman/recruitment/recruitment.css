@@ -93,6 +93,25 @@
   grid-column: 1 / -1;
 }
 
+.application-form__text-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.application-form__text-label small,
+.application-form__text-count {
+  color: var(--portal-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.application-form__text-count {
+  justify-self: end;
+  margin-top: -3px;
+}
+
 .application-form input:not([type='radio']):not([type='file']),
 .application-form select,
 .application-form textarea {

@@ -48,6 +48,7 @@ const allowedPhotoTypes = new Set(['image/jpeg', 'image/png'])
 const allowedPhotoExtensions = new Set(['jpg', 'jpeg', 'png'])
 const maxPhotoSize = 5 * 1024 * 1024
 const maxResumeSize = 10 * 1024 * 1024
+const maxLongTextLength = 500
 const hasPhotoPreview = computed(() => Boolean(model.photoUrl) && !photoPreviewFailed.value)
 const photoFileName = computed(() => {
   if (model.photoFile?.name) return model.photoFile.name
@@ -143,6 +144,10 @@ function snapshot() {
   return { ...model }
 }
 
+function textLength(value) {
+  return String(value || '').length
+}
+
 function validateApplication() {
   const errors = {}
   const requiredText = [
@@ -166,6 +171,14 @@ function validateApplication() {
   if (model.codingExperience === '1' && !model.codingExperienceDesc.trim()) {
     errors.codingExperienceDesc = '编程经历说明'
   }
+  const limitedFields = [
+    ['selfIntro', '自我介绍'],
+    ['quantaUnderstanding', '对 Quanta 的了解'],
+  ]
+  if (model.codingExperience === '1') limitedFields.push(['codingExperienceDesc', '编程经验'])
+  limitedFields.forEach(([field, label]) => {
+    if (textLength(model[field]) > maxLongTextLength) errors[field] = `${label}请控制在 500 字以内`
+  })
   return errors
 }
 
@@ -322,9 +335,10 @@ function handleSubmit() {
       <small v-if="fieldErrors.resume" class="application-form__field-error">请上传 PDF 简历</small>
     </div>
     <label class="application-grid__wide" :class="{ 'is-invalid': fieldErrors.selfIntro }">
-      <span>自我介绍</span>
-      <textarea v-model.trim="model.selfIntro" name="selfIntro" rows="5" required></textarea>
-      <small v-if="fieldErrors.selfIntro" class="application-form__field-error">请填写自我介绍</small>
+      <span class="application-form__text-label">自我介绍 <small>500 字以内</small></span>
+      <textarea v-model.trim="model.selfIntro" name="selfIntro" rows="5" :maxlength="maxLongTextLength" required></textarea>
+      <small class="application-form__text-count" data-testid="selfIntro-count">{{ textLength(model.selfIntro) }} / 500</small>
+      <small v-if="fieldErrors.selfIntro" class="application-form__field-error">{{ fieldErrors.selfIntro === '自我介绍' ? '请填写自我介绍' : fieldErrors.selfIntro }}</small>
     </label>
     <fieldset class="application-grid__wide" :class="{ 'is-invalid': fieldErrors.codingExperience }">
       <legend>是否有编程经验</legend>
@@ -333,14 +347,16 @@ function handleSubmit() {
       <small v-if="fieldErrors.codingExperience" class="application-form__field-error">请选择是否有编程经验</small>
     </fieldset>
     <label v-if="model.codingExperience === '1'" class="application-grid__wide" :class="{ 'is-invalid': fieldErrors.codingExperienceDesc }">
-      <span>编程经验</span>
-      <textarea v-model.trim="model.codingExperienceDesc" name="codingExperienceDesc" rows="4"></textarea>
-      <small v-if="fieldErrors.codingExperienceDesc" class="application-form__field-error">请填写编程经历说明</small>
+      <span class="application-form__text-label">编程经验 <small>500 字以内</small></span>
+      <textarea v-model.trim="model.codingExperienceDesc" name="codingExperienceDesc" rows="4" :maxlength="maxLongTextLength"></textarea>
+      <small class="application-form__text-count" data-testid="codingExperienceDesc-count">{{ textLength(model.codingExperienceDesc) }} / 500</small>
+      <small v-if="fieldErrors.codingExperienceDesc" class="application-form__field-error">{{ fieldErrors.codingExperienceDesc === '编程经历说明' ? '请填写编程经历说明' : fieldErrors.codingExperienceDesc }}</small>
     </label>
     <label class="application-grid__wide" :class="{ 'is-invalid': fieldErrors.quantaUnderstanding }">
-      <span>你对 Quanta 的了解</span>
-      <textarea v-model.trim="model.quantaUnderstanding" name="quantaUnderstanding" rows="4" required></textarea>
-      <small v-if="fieldErrors.quantaUnderstanding" class="application-form__field-error">请填写对 Quanta 的了解</small>
+      <span class="application-form__text-label">你对 Quanta 的了解 <small>500 字以内</small></span>
+      <textarea v-model.trim="model.quantaUnderstanding" name="quantaUnderstanding" rows="4" :maxlength="maxLongTextLength" required></textarea>
+      <small class="application-form__text-count" data-testid="quantaUnderstanding-count">{{ textLength(model.quantaUnderstanding) }} / 500</small>
+      <small v-if="fieldErrors.quantaUnderstanding" class="application-form__field-error">{{ fieldErrors.quantaUnderstanding === '对 Quanta 的了解' ? '请填写对 Quanta 的了解' : fieldErrors.quantaUnderstanding }}</small>
     </label>
     <div class="application-form__actions application-grid__wide">
       <button type="button" class="portal-secondary-button" :disabled="submitting" @click="emit('save-draft', snapshot())">

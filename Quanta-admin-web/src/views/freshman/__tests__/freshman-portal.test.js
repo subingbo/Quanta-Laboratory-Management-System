@@ -158,6 +158,54 @@ describe('freshman recruitment components', () => {
     expect(wrapper.emitted('invalid')[0][0]).toContain('编程经历说明')
   })
 
+  it('limits resume long-text fields to 500 characters and shows live counters', async () => {
+    const wrapper = mount(ApplicationForm, {
+      props: {
+        initialValue: {
+          ...emptyApplication(),
+          selfIntro: '你好',
+          codingExperience: '1',
+          codingExperienceDesc: 'Vue',
+          quantaUnderstanding: '开放与创造',
+        },
+      },
+    })
+
+    const textareas = wrapper.findAll('textarea')
+    expect(textareas).toHaveLength(3)
+    textareas.forEach((textarea) => expect(textarea.attributes('maxlength')).toBe('500'))
+    expect(wrapper.text().match(/500 字以内/g)).toHaveLength(3)
+    expect(wrapper.get('[data-testid="selfIntro-count"]').text()).toBe('2 / 500')
+    expect(wrapper.get('[data-testid="codingExperienceDesc-count"]').text()).toBe('3 / 500')
+    expect(wrapper.get('[data-testid="quantaUnderstanding-count"]').text()).toBe('5 / 500')
+  })
+
+  it('blocks an oversized value restored from historical data', async () => {
+    const wrapper = mount(ApplicationForm, {
+      props: {
+        initialValue: {
+          ...emptyApplication(),
+          realName: '新生小李',
+          gender: '男',
+          className: '软工2402',
+          firstChoice: 'FRONTEND',
+          secondChoice: 'BACKEND',
+          storedPhotoUrl: '/profile/photo.jpg',
+          storedResumeUrl: '/profile/resume.pdf',
+          selfIntro: '测'.repeat(501),
+          codingExperience: '0',
+          quantaUnderstanding: '开放与创造',
+        },
+      },
+    })
+
+    await wrapper.find('form').trigger('submit')
+
+    expect(wrapper.emitted('submit')).toBeUndefined()
+    expect(wrapper.emitted('invalid')[0][0]).toContain('自我介绍请控制在 500 字以内')
+    expect(wrapper.text()).toContain('自我介绍请控制在 500 字以内')
+  })
+
   it('renders a branded photo picker and previews a valid image', async () => {
     const createObjectURL = vi.fn(() => 'blob:photo-preview')
     Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: createObjectURL })
