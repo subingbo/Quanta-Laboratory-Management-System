@@ -20,6 +20,7 @@ import RecruitmentFilters from './components/RecruitmentFilters.vue'
 import RecruitmentTabs from './components/RecruitmentTabs.vue'
 import ResumeDialog from './components/ResumeDialog.vue'
 import ScoreDialog from './components/ScoreDialog.vue'
+import { createDepartmentFileCache } from './department-file-cache'
 import './recruitment.css'
 
 const userStore = useUserStore()
@@ -57,7 +58,8 @@ const resume = reactive({ visible: false, loading: false, application: null })
 const feedback = reactive({ visible: false, mode: 'view', loading: false, submitting: false, row: null, department: '', options: [], content: '', evaluations: [] })
 const decision = reactive({ visible: false, submitting: false, row: null, department: '', options: [], result: 'PASS' })
 const score = reactive({ visible: false, submitting: false, row: null, department: '', options: [], value: null, updatedBy: '', updatedTime: '' })
-const notice = reactive({ visible: false, loading: false, submitting: false, row: null, preview: {} })
+const notice = reactive({ visible: false, loading: false, submitting: false, row: null, preview: {}, cachedFile: null })
+const noticeQrCache = createDepartmentFileCache()
 
 function eligibleTracks(row, targetRound = roundId.value) {
   return (row?.choices || []).filter((track) => {
@@ -177,10 +179,20 @@ async function submitScore(value) {
 }
 
 async function openNotice(row) {
-  notice.row = row; notice.preview = {}; notice.visible = true; notice.loading = true
-  try { notice.preview = await getNoticePreview(row.applicationId) }
+  notice.row = row; notice.preview = {}; notice.cachedFile = null; notice.visible = true; notice.loading = true
+  try {
+    notice.preview = await getNoticePreview(row.applicationId)
+    notice.cachedFile = noticeQrCache.get(notice.preview.offeredDepartment)
+  }
   catch (error) { ElMessage.error(error.message || '邮件模板加载失败'); notice.visible = false }
   finally { notice.loading = false }
+}
+function updateNoticeQrCache(file) {
+  const department = notice.preview.offeredDepartment
+  if (!department) return
+  if (file) noticeQrCache.set(department, file)
+  else noticeQrCache.clear(department)
+  notice.cachedFile = file
 }
 async function submitNotice(qrCode) {
   notice.submitting = true; pendingAction.value = `notice-${notice.row.applicationId}`
@@ -217,6 +229,6 @@ onMounted(refreshAll)
     <FeedbackDialog v-model="feedback.visible" :mode="feedback.mode" :candidate-name="feedback.row?.name" :round-id="1" :department="feedback.department" :options="feedback.options" :content="feedback.content" :evaluations="feedback.evaluations" :loading="feedback.loading" :submitting="feedback.submitting" :can-switch="canViewAllDepartments && feedback.mode === 'view'" @update:department="changeFeedbackDepartment" @update:content="feedback.content = $event" @submit="submitFeedback" />
     <DecisionDialog v-model="decision.visible" :candidate-name="decision.row?.name" :round-id="roundId" :result="decision.result" :department="decision.department" :options="decision.options" :submitting="decision.submitting" @update:department="decision.department = $event" @confirm="submitDecision" />
     <ScoreDialog v-model="score.visible" :candidate-name="score.row?.name" :department="score.department" :options="score.options" :score="score.value" :can-edit="canEditScore" :updated-by="score.updatedBy" :updated-time="score.updatedTime" :submitting="score.submitting" @update:department="changeScoreDepartment" @submit="submitScore" />
-    <NoticeDialog v-model="notice.visible" :preview="notice.preview" :loading="notice.loading" :submitting="notice.submitting" @submit="submitNotice" />
+    <NoticeDialog v-model="notice.visible" :preview="notice.preview" :cached-file="notice.cachedFile" :loading="notice.loading" :submitting="notice.submitting" @update:cached-file="updateNoticeQrCache" @submit="submitNotice" />
   </div>
 </template>
