@@ -21,6 +21,19 @@ const publicPaths = new Set([
   '/403',
 ])
 
+const audienceTitles = {
+  freshman: '新生门户 - Quanta',
+  member: '塔员中心 - Quanta',
+  admin: '管理后台 - Quanta',
+}
+
+export function buildDocumentTitle(route) {
+  if (route.path === '/') return 'Quanta 社团门户'
+  const audience = route.meta?.portalAudience || audienceForPath(route.path)
+  if (audienceTitles[audience]) return audienceTitles[audience]
+  return route.meta?.title ? `${route.meta.title} - Quanta` : 'Quanta 社团门户'
+}
+
 export function setupRouterGuard(router) {
   NProgress.configure({ showSpinner: false })
 
@@ -116,10 +129,7 @@ export function setupRouterGuard(router) {
   })
 
   router.afterEach((to) => {
-    const title = to.meta?.title
-    document.title = title
-      ? `${title} - Quanta 后台管理系统`
-      : 'Quanta 后台管理系统'
+    document.title = buildDocumentTitle(to)
     NProgress.done()
   })
 
