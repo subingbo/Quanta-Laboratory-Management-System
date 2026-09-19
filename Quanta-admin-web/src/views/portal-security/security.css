@@ -196,13 +196,23 @@
 }
 
 @media (max-width: 620px) {
+  .portal-security { gap: 18px; }
+  .portal-security > header h1 { font-size: 32px; }
+  .portal-security > header span { line-height: 1.7; }
   .portal-security__card {
-    padding: 22px;
+    padding: 22px 18px;
+    gap: 16px;
   }
 
   .portal-security__email-code-row {
     grid-template-columns: 1fr;
   }
+
+  .portal-security__email-code-button,
+  .portal-security__submit { min-height: 46px; }
+
+  .portal-security__intro { align-items: flex-start; gap: 12px; }
+  .portal-security__intro > span { width: 46px; height: 46px; flex: 0 0 auto; }
 }
 
 @media (max-width: 1080px) {

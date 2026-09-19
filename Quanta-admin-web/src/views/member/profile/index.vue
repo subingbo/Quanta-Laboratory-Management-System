@@ -84,4 +84,5 @@ onMounted(load)
 .member-profile__local-note strong { color: var(--portal-orange-strong); }
 .member-profile__local-note span { color: var(--portal-muted); font-size: 12px; line-height: 1.6; }
 @media (max-width: 900px) { .member-profile__card-grid { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .member-profile__identity { padding: 20px 18px; align-items: flex-start; } .member-profile__avatar { width: 58px; height: 58px; border-radius: 17px; font-size: 23px; flex: 0 0 auto; } .member-profile__identity h2 { font-size: 22px; overflow-wrap: anywhere; } .member-profile__identity span { overflow-wrap: anywhere; } .member-profile__editor { padding: 20px 18px; } }
 </style>

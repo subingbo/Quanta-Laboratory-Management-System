@@ -342,11 +342,16 @@
   .freshman-tabs {
     width: 100%;
     overflow-x: auto;
+    scroll-snap-type: x proximity;
   }
 
   .freshman-tabs button {
     flex: 1 0 auto;
+    scroll-snap-align: start;
   }
+
+  .freshman-form-shell,
+  .freshman-about { padding: 24px 20px; }
 
   .application-grid {
     grid-template-columns: 1fr;
@@ -367,12 +372,21 @@
 }
 
 @media (max-width: 520px) {
+  .freshman-recruitment__step { width: 100%; padding: 10px 14px; border-radius: 14px; white-space: normal; }
+  .freshman-tabs { padding: 4px; border-radius: 14px; }
+  .freshman-tabs button { padding: 10px 14px; }
+  .application-grid { gap: 18px; }
+  .application-form fieldset { padding: 15px; }
+  .application-form__radio { margin-right: 18px; }
   .application-form__photo-card { padding: 16px; grid-template-columns: 1fr; }
-  .application-form__photo-preview { width: 132px; min-height: 176px; }
+  .application-form__photo-preview { width: min(152px, 100%); min-height: 176px; justify-self: center; }
   .application-form__photo-copy { align-items: stretch; }
   .application-form__photo-button { justify-content: center; }
   .application-form__resume-card { padding: 16px; grid-template-columns: 1fr; }
-  .application-form__resume-icon { width: 120px; min-height: 112px; }
+  .application-form__resume-icon { width: min(132px, 100%); min-height: 112px; justify-self: center; }
   .application-form__resume-copy { align-items: stretch; }
   .application-form__resume-button { justify-content: center; }
+  .freshman-about h2 { margin-bottom: 22px; font-size: 28px; }
+  .freshman-about article,
+  .interview-process { padding: 20px; }
 }

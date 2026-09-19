@@ -213,9 +213,15 @@ onMounted(load)
   color: var(--portal-muted);
   font-size: 11px;
 }
-@media (max-width: 700px) {
-  .member-recruitment__filters {
-    grid-template-columns: 1fr;
-  }
-}
+@media (max-width: 700px) {
+  .member-recruitment__filters {
+    grid-template-columns: 1fr;
+  }
+  .member-recruitment__table {
+    max-width: calc(100vw - 28px);
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .member-recruitment__table table { min-width: 1180px; }
+}
 </style>

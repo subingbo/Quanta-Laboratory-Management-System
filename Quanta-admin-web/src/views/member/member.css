@@ -10,4 +10,15 @@
 .member-feedback.is-error { background: #fff0ee; color: #b42318; }
 .member-loading { padding: 38px; color: var(--portal-muted); text-align: center; }
 .member-empty { padding: 44px 24px; color: var(--portal-muted); text-align: center; }
-@media (max-width: 700px) { .member-page__heading { align-items: start; flex-direction: column; } }
+@media (max-width: 700px) {
+  .member-page { gap: 18px; }
+  .member-page__heading { align-items: start; flex-direction: column; gap: 14px; }
+  .member-page__heading h1 { font-size: 32px; }
+  .member-page__heading span { line-height: 1.65; }
+  .member-primary-button,
+  .member-secondary-button { min-height: 44px; }
+  .member-feedback,
+  .member-empty { overflow-wrap: anywhere; }
+  .member-loading,
+  .member-empty { padding: 30px 18px; }
+}

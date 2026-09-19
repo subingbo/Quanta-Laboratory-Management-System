@@ -101,4 +101,5 @@ onMounted(load)
 .member-home__quick a { display: flex; padding: 14px 15px; border-radius: 12px; background: #f7f7f8; color: var(--portal-ink-soft); font-size: 13px; font-weight: 700; text-decoration: none; justify-content: space-between; }
 .member-home__quick a:hover { background: var(--portal-orange-soft); color: var(--portal-orange-strong); }
 @media (max-width: 800px) { .member-home__grid { grid-template-columns: 1fr; } .member-home__hero { padding: 30px 26px; } .member-home__avatar { width: 76px; height: 76px; border-radius: 24px; font-size: 30px; } }
+@media (max-width: 520px) { .member-home__hero { min-height: 0; padding: 28px 22px; align-items: flex-start; flex-direction: column-reverse; gap: 24px; } .member-home__hero h1 { font-size: 34px; } .member-home__avatar { width: 62px; height: 62px; border-width: 6px; border-radius: 20px; font-size: 25px; } .member-home__notices, .member-home__quick { padding: 22px 18px; } .member-home__notices header { align-items: flex-start; gap: 12px; } .member-home__notice-list button { grid-template-columns: 8px minmax(0, 1fr) auto; gap: 10px; } .member-home__notice-list strong { overflow-wrap: anywhere; } }
 </style>

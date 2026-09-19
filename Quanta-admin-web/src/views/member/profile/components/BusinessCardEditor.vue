@@ -32,5 +32,5 @@ watch(form, (value) => emit('update:modelValue', { ...value }), { deep: true })
 .business-card-editor input:focus, .business-card-editor textarea:focus { border-color: var(--portal-orange); outline: 3px solid rgb(255 103 0 / 12%); }
 .business-card-editor__wide { grid-column: 1 / -1; }
 .business-card-editor small { justify-self: end; color: var(--portal-muted); font-weight: 500; }
-@media (max-width: 700px) { .business-card-editor { grid-template-columns: 1fr; } .business-card-editor__wide { grid-column: auto; } }
+@media (max-width: 700px) { .business-card-editor { grid-template-columns: 1fr; } .business-card-editor__wide { grid-column: auto; } .business-card-editor button { width: 100%; } }
 </style>

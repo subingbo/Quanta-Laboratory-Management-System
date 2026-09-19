@@ -70,5 +70,5 @@ onBeforeUnmount(() => document.removeEventListener('keydown', handleKeydown))
 .portal-notice-dialog__confirm:hover { background: #ff6700; transform: translateY(-1px); }
 .portal-notice-dialog__confirm:focus-visible { outline: 3px solid rgb(255 103 0 / 22%); outline-offset: 3px; }
 @keyframes notice-enter { from { opacity: 0; transform: translateY(12px) scale(.98); } }
-@media (max-width: 520px) { .portal-notice-dialog { padding: 16px; } .portal-notice-dialog__panel { padding: 26px 22px; grid-template-columns: 46px 1fr; } .portal-notice-dialog__icon { width: 46px; height: 46px; border-radius: 14px; } .portal-notice-dialog h2 { font-size: 21px; } }
+@media (max-width: 520px) { .portal-notice-dialog { padding: 14px; } .portal-notice-dialog__panel { width: calc(100vw - 28px); max-height: calc(100dvh - 28px); padding: 24px 20px; overflow-y: auto; grid-template-columns: 44px minmax(0, 1fr); gap: 14px; } .portal-notice-dialog__icon { width: 44px; height: 44px; border-radius: 14px; } .portal-notice-dialog h2 { font-size: 20px; } .portal-notice-dialog__copy > p:last-child { font-size: 13px; } .portal-notice-dialog__confirm { min-height: 48px; } }
 </style>

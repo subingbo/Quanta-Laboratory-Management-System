@@ -382,13 +382,38 @@
   .member-service-tabs {
     width: 100%;
     overflow-x: auto;
+    scroll-snap-type: x proximity;
   }
 
   .member-service-tabs button {
     white-space: nowrap;
+    scroll-snap-align: start;
   }
 
   .member-status-tag {
     width: fit-content;
   }
+
+  .member-service-heading { gap: 12px; }
+  .member-service-heading h1 { font-size: 32px; }
+  .member-service-state { padding: 30px 18px; }
+  .member-filter-bar,
+  .member-reservation-form { padding: 16px; }
+  .member-filter-bar > button,
+  .member-reservation-form > button { width: 100%; }
+  .member-book-card,
+  .member-workstation-card,
+  .member-record-card,
+  .member-confirm-panel,
+  .member-order-panel { padding: 20px 18px; }
+  .member-confirm-panel__actions { display: grid; width: 100%; grid-template-columns: 1fr 1fr; }
+  .member-confirm-panel__actions button { width: 100%; }
+  .member-clothing-card img,
+  .member-clothing-card__placeholder { aspect-ratio: 16 / 10; }
+}
+
+@media (max-width: 420px) {
+  .member-book-card dl { grid-template-columns: 1fr; }
+  .member-workstation-card { grid-template-columns: auto minmax(0, 1fr); }
+  .member-order-panel__price { align-items: flex-start; flex-direction: column; gap: 5px; }
 }

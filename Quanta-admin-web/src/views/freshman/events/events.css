@@ -64,3 +64,12 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 520px) {
+  .freshman-event-card { padding: 24px 20px; }
+  .freshman-event-card h2 { margin-top: 18px; font-size: 26px; overflow-wrap: anywhere; }
+  .freshman-event-card > p { min-height: 0; }
+  .freshman-event-card dl { margin-block: 20px 24px; }
+  .freshman-event-card dl div { grid-template-columns: 48px minmax(0, 1fr); gap: 8px; }
+  .freshman-event-card dd { overflow-wrap: anywhere; }
+}

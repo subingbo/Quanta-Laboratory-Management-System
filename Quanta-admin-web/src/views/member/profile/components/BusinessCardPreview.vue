@@ -33,4 +33,5 @@ defineProps({ card: { type: Object, required: true } })
 .business-card-preview dl div { display: grid; gap: 3px; }
 .business-card-preview dt { color: #92969f; font-size: 9px; letter-spacing: .13em; }
 .business-card-preview dd { margin: 0; font-size: 12px; }
+@media (max-width: 520px) { .business-card-preview { min-height: 280px; padding: 24px 20px; border-radius: 20px; } .business-card-preview__identity { margin-top: 34px; } .business-card-preview__identity h2 { font-size: 28px; overflow-wrap: anywhere; } .business-card-preview__bio { max-width: 82%; } .business-card-preview dl { align-items: flex-start; flex-direction: column; gap: 10px; } .business-card-preview dd { overflow-wrap: anywhere; } .business-card-preview::after { right: -105px; bottom: -125px; } }
 </style>

@@ -84,8 +84,31 @@
 }
 
 @media (max-width: 700px) {
+  .freshman-recruitment,
+  .freshman-events,
+  .freshman-home {
+    gap: 18px;
+  }
+
   .freshman-page-heading {
     align-items: start;
     flex-direction: column;
+    gap: 14px;
+    padding: 8px 2px 2px;
   }
+
+  .freshman-page-heading h1 { margin-block: 5px 8px; font-size: clamp(30px, 10vw, 42px); }
+  .freshman-page-heading span { line-height: 1.7; }
+
+  .freshman-feedback,
+  .freshman-loading,
+  .portal-empty { overflow-wrap: anywhere; }
+
+  .freshman-loading,
+  .portal-empty { padding: 30px 18px; }
+}
+
+@media (max-width: 420px) {
+  .portal-primary-button,
+  .portal-secondary-button { min-height: 46px; padding-inline: 18px; }
 }

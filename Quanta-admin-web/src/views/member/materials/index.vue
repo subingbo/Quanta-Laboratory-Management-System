@@ -85,5 +85,6 @@ onMounted(load)
 .member-materials__list h2 { overflow: hidden; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
 .member-materials__list p, .member-materials__list time { margin-top: 5px; color: var(--portal-muted); font-size: 11px; }
 .member-materials__list footer { padding: 17px 0; color: var(--portal-muted); font-size: 12px; text-align: right; }
-@media (max-width: 700px) { .member-materials__list article { grid-template-columns: auto 1fr auto; } .member-materials__list time { display: none; } }
+@media (max-width: 700px) { .member-materials__search { width: 100%; } .member-materials__list { padding-inline: 16px; } .member-materials__list article { grid-template-columns: auto minmax(0, 1fr) auto; gap: 11px; } .member-materials__list time { display: none; } }
+@media (max-width: 480px) { .member-materials__search { display: grid; grid-template-columns: 1fr; } .member-materials__search button { width: 100%; } .member-materials__list article { grid-template-columns: auto minmax(0, 1fr); } .member-materials__list article > button { width: 100%; grid-column: 1 / -1; } .member-materials__list h2 { white-space: normal; overflow-wrap: anywhere; } }
 </style>

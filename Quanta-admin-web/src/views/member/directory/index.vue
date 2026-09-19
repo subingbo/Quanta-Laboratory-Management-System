@@ -72,5 +72,5 @@ onMounted(load)
 .member-directory__card dt { color: var(--portal-muted); font-size: 10px; }
 .member-directory__card dd { margin: 0; font-size: 12px; font-weight: 700; }
 @media (max-width: 940px) { .member-directory__grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 700px) { .member-directory__filters, .member-directory__grid { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .member-directory__filters, .member-directory__grid { grid-template-columns: 1fr; } .member-directory__filters { padding: 14px; } .member-directory__card { padding: 20px 18px; } .member-directory__department { position: static; width: fit-content; grid-column: 1 / -1; grid-row: 1; } .member-directory__card dl { grid-template-columns: 1fr; gap: 12px; } .member-directory__card dd { overflow-wrap: anywhere; } }
 </style>
