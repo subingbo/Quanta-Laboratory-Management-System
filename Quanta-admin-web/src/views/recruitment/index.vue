@@ -37,7 +37,6 @@ const filters = reactive({ department: '', keyword: '' })
 let requestSequence = 0
 
 const hasPermission = (permission) => permissions.value.includes('*:*:*') || permissions.value.includes(permission)
-const canDecide = computed(() => hasPermission('qt:interview:admin:offer'))
 const canEvaluate = computed(() => hasPermission('qt:interview:admin:evaluate'))
 const canViewAllDepartments = computed(
   () => hasPermission('*:*:*') || (roles.value || []).some((role) => role === 'ceo' || role === 'admin'),
