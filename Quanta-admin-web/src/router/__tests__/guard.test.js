@@ -4,7 +4,7 @@ import { pinia } from '@/stores'
 import { usePermissionStore } from '@/stores/permission'
 import { useUserStore } from '@/stores/user'
 import { staticRoutes } from '../routes'
-import { setupRouterGuard } from '../guard'
+import { buildDocumentTitle, setupRouterGuard } from '../guard'
 import { setAudience } from '@/utils/session-audience'
 import { setToken } from '@/utils/token'
 
@@ -30,6 +30,13 @@ describe('global route guard', () => {
     permissionStore = usePermissionStore(pinia)
     userStore.reset()
     permissionStore.resetRoutes()
+  })
+
+  it('uses concise titles for each portal audience', () => {
+    expect(buildDocumentTitle({ path: '/', meta: {} })).toBe('Quanta 社团门户')
+    expect(buildDocumentTitle({ path: '/freshman/home', meta: { portalAudience: 'freshman' } })).toBe('新生门户 - Quanta')
+    expect(buildDocumentTitle({ path: '/member/home', meta: { portalAudience: 'member' } })).toBe('塔员中心 - Quanta')
+    expect(buildDocumentTitle({ path: '/admin/dashboard', meta: {} })).toBe('管理后台 - Quanta')
   })
 
   it('redirects unauthenticated visitors and keeps the intended path', async () => {
