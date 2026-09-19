@@ -53,6 +53,11 @@ public class CacheConstants
     public static final String RESET_EMAIL_CODE_KEY = "reset_email_codes:";
 
     /**
+     * 新生修改邮箱验证码 redis key
+     */
+    public static final String PROFILE_EMAIL_CODE_KEY = "profile_email_codes:";
+
+    /**
      * 业务缓存统一键前缀（与若依自身手写缓存的裸键区隔开）
      */
     public static final String CACHE_KEY_PREFIX = "cache:";
