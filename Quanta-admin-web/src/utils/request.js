@@ -3,6 +3,7 @@ import { getToken } from './token'
 import { notifyUnauthorized } from './unauthorized'
 import { mockRequest } from '@/mock'
 import { isFullMockEnabled, shouldUseMock } from '@/config/mock-api'
+import { getTraceId, withTraceId } from './trace-id'
 
 const service = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '',
@@ -10,11 +11,12 @@ const service = axios.create({
 })
 
 service.interceptors.request.use((config) => {
+  const tracedConfig = withTraceId(config)
   const token = getToken()
-  if (token && config.headers?.isToken !== false) {
-    config.headers.Authorization = `Bearer ${token}`
+  if (token && tracedConfig.headers?.isToken !== false) {
+    tracedConfig.headers.Authorization = `Bearer ${token}`
   }
-  return config
+  return tracedConfig
 })
 
 function createRequestError(message, code, payload) {
@@ -37,15 +39,16 @@ export function normalizeRuoYiResponse(payload) {
 export const isMockEnabled = isFullMockEnabled
 
 export async function request(config) {
+  const requestConfig = withTraceId(config)
   const fullMockEnabled = isMockEnabled()
-  const useMock = shouldUseMock(config, fullMockEnabled)
+  const useMock = shouldUseMock(requestConfig, fullMockEnabled)
   try {
     if (useMock && !fullMockEnabled && import.meta.env.DEV) {
-      console.warn(`[Quanta Web] 使用 Mock 接口：${String(config.method || 'get').toUpperCase()} ${config.url}`)
+      console.warn(`[Quanta Web] 使用 Mock 接口：${String(requestConfig.method || 'get').toUpperCase()} ${requestConfig.url}`)
     }
     const response = useMock
-      ? await mockRequest({ ...config, __partialMock: !fullMockEnabled })
-      : await service.request(config)
+      ? await mockRequest({ ...requestConfig, __partialMock: !fullMockEnabled })
+      : await service.request(requestConfig)
     const payload = useMock ? response : response.data
     return normalizeRuoYiResponse(payload)
   } catch (rawError) {
@@ -61,6 +64,10 @@ export async function request(config) {
           rawError?.response?.data,
         )
 
+    error.traceId =
+      getTraceId(rawError?.config) ||
+      getTraceId(rawError?.response?.config) ||
+      getTraceId(requestConfig)
     if (Number(error.code) === 401) {
       await notifyUnauthorized(error)
     }

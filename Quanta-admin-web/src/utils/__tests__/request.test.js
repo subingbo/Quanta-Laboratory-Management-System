@@ -19,6 +19,7 @@ describe('request and mock adapter', () => {
     await expect(login({ username: 'admin', password: 'wrong' })).rejects.toMatchObject({
       code: 500,
       message: '用户名或密码错误',
+      traceId: expect.stringMatching(/^[a-f0-9]{32}$/),
     })
   })
 
