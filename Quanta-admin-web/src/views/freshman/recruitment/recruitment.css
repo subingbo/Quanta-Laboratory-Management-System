@@ -93,6 +93,58 @@
   grid-column: 1 / -1;
 }
 
+.application-form__deadline {
+  display: flex;
+  min-width: 0;
+  padding: 17px 20px;
+  color: var(--portal-ink);
+  background: linear-gradient(135deg, #fff7ef 0%, #fffaf6 100%);
+  border: 1px solid #ffd2b3;
+  border-radius: 16px;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 10px 28px rgb(255 103 0 / 8%);
+}
+
+.application-form__deadline-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  color: #fff;
+  background: var(--portal-orange);
+  border-radius: 13px;
+  flex: 0 0 auto;
+  place-items: center;
+}
+
+.application-form__deadline-icon svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.application-form__deadline > div:last-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.application-form__deadline strong {
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.application-form__deadline span {
+  color: var(--portal-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .application-form__text-label {
   display: flex;
   align-items: baseline;
@@ -529,6 +581,8 @@
   .freshman-tabs { padding: 4px; border-radius: 14px; }
   .freshman-tabs button { padding: 10px 14px; }
   .application-grid { gap: 18px; }
+  .application-form__deadline { padding: 15px; align-items: flex-start; }
+  .application-form__deadline-icon { width: 38px; height: 38px; border-radius: 11px; }
   .application-form fieldset { padding: 15px; }
   .application-form__radio { margin-right: 18px; }
   .application-form__photo-card { padding: 16px; grid-template-columns: 1fr; }

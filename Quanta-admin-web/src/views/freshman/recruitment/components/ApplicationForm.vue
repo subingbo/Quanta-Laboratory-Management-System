@@ -213,6 +213,23 @@ function handleSubmit() {
 
 <template>
   <form ref="formRef" class="application-form application-grid" novalidate @submit.prevent="handleSubmit">
+    <aside
+      class="application-form__deadline application-grid__wide"
+      data-testid="application-deadline-notice"
+      role="note"
+      aria-label="报名截止时间提醒"
+    >
+      <div class="application-form__deadline-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M12 7.5v5l3.5 2" />
+        </svg>
+      </div>
+      <div>
+        <strong>报名截止时间：2026年9月21日 24:00</strong>
+        <span>请尽早填写并提交，保存草稿不代表报名成功。</span>
+      </div>
+    </aside>
     <label :class="{ 'is-invalid': fieldErrors.realName }">
       <span>姓名</span>
       <input v-model.trim="model.realName" name="realName" autocomplete="name" required />
