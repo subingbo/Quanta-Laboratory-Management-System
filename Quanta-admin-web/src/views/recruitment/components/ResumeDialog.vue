@@ -1,14 +1,30 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { departmentLabels } from '@/api/recruitment'
+
+const interviewSlots = [
+  { value: '2026-09-22 18:30:00', date: '9月22日', time: '18:30–22:30' },
+  { value: '2026-09-23 18:30:00', date: '9月23日', time: '18:30–22:30' },
+]
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   application: { type: Object, default: null },
   loading: { type: Boolean, default: false },
+  roundId: { type: Number, default: 1 },
+  submitting: { type: Boolean, default: false },
 })
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'save-interview-time'])
 const visible = computed({ get: () => props.modelValue, set: (value) => emit('update:modelValue', value) })
+const selectedInterviewTime = ref('')
+
+watch(
+  [() => props.modelValue, () => props.application?.firstRoundInterviewTime],
+  ([isVisible, interviewTime]) => {
+    if (isVisible) selectedInterviewTime.value = interviewTime || ''
+  },
+  { immediate: true },
+)
 
 function choice(order) {
   return props.application?.choices?.find((item) => item.choiceOrder === order)
@@ -25,6 +41,11 @@ const resumeFileName = computed(() => {
     .join('-')
   return `${identity || '候选人'}-简历.pdf`
 })
+
+function saveInterviewTime() {
+  if (!selectedInterviewTime.value || props.submitting) return
+  emit('save-interview-time', selectedInterviewTime.value)
+}
 </script>
 
 <template>
@@ -64,6 +85,31 @@ const resumeFileName = computed(() => {
           </div>
         </div>
         <p v-else class="resume-dialog__pdf-empty">暂无 PDF 简历</p>
+      </section>
+      <section v-if="roundId === 1" class="resume-dialog__interview-time" data-test="interview-time-picker">
+        <div class="resume-dialog__interview-heading">
+          <div>
+            <span>一面安排</span>
+            <strong>选择面试时间</strong>
+          </div>
+          <small>两个志愿部门共用同一个面试时间</small>
+        </div>
+        <ElRadioGroup v-model="selectedInterviewTime" class="resume-dialog__slot-list">
+          <ElRadio v-for="slot in interviewSlots" :key="slot.value" :value="slot.value" class="resume-dialog__slot">
+            <strong>{{ slot.date }}</strong>
+            <span>{{ slot.time }}</span>
+          </ElRadio>
+        </ElRadioGroup>
+        <ElButton
+          type="primary"
+          class="resume-dialog__save-time"
+          data-test="save-interview-time"
+          :disabled="!selectedInterviewTime"
+          :loading="submitting"
+          @click="saveInterviewTime"
+        >
+          保存面试时间
+        </ElButton>
       </section>
     </div>
   </ElDialog>

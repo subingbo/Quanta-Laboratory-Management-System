@@ -12,6 +12,7 @@ const candidate = {
   major: '软件工程',
   className: '2026级1班',
   appliedAt: '2026-08-26 10:00',
+  firstRoundInterviewTime: '2026-09-22 18:30:00',
   choices: [
     {
       choiceOrder: 1,
@@ -47,8 +48,9 @@ function mountTable({ roles, permissions, roundId = 1, rows = [candidate], user 
       stubs: {
         ElTable: { template: '<div><slot /></div>' },
         ElTableColumn: {
+          props: ['label'],
           data: () => ({ testRow: rows[0] }),
-          template: '<div><slot name="header" /><slot :row="testRow" /></div>',
+          template: '<div><span>{{ label }}</span><slot name="header" /><slot :row="testRow" /></div>',
         },
       },
     },
@@ -167,5 +169,22 @@ describe('CandidateTable', () => {
     expect(wrapper.get('[data-test="candidate-result-out"]').text()).toBe('Out')
     await wrapper.get('[data-test="candidate-result-pass"]').trigger('click')
     expect(wrapper.emitted('select-result')).toEqual([[candidate, 'PASS']])
+  })
+
+  it('shows the shared interview time only in the first-round table', () => {
+    const firstRoundTable = mountTable({
+      roles: ['qt_manager'],
+      permissions: ['qt:interview:admin:list'],
+      roundId: 1,
+    })
+    const secondRoundTable = mountTable({
+      roles: ['qt_manager'],
+      permissions: ['qt:interview:admin:list'],
+      roundId: 2,
+    })
+
+    expect(firstRoundTable.text()).toContain('面试时间')
+    expect(firstRoundTable.text()).toContain('09月22日 18:30–22:30')
+    expect(secondRoundTable.text()).not.toContain('面试时间')
   })
 })

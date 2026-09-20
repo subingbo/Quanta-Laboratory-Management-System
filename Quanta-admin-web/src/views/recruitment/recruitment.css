@@ -204,6 +204,8 @@
 .recruitment-action.is-mail { color: #fff; border-color: #202124; background: #202124; }
 .recruitment-action.is-mail.is-disabled { color: #9b9b9b; border-color: #e3e2df; background: #f3f2f0; }
 .candidate-choice__score { display: block; margin-top: 5px; color: #7b8494; }
+.candidate-interview-time { color: #30343b; font-size: 12px; font-weight: 650; white-space: nowrap; }
+.candidate-interview-time.is-pending { color: #a5adbd; font-weight: 500; }
 
 .recruitment-table__link.el-button {
   padding: 0;
@@ -415,6 +417,88 @@
 
 .resume-dialog__pdf-empty {
   color: #959dad;
+}
+
+.resume-dialog .resume-dialog__interview-time {
+  padding: 16px;
+  margin-top: 18px;
+  background: #fff8f3;
+  border: 1px solid #ffd7bb;
+  border-radius: 16px;
+  gap: 14px;
+}
+
+.resume-dialog__interview-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.resume-dialog__interview-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.resume-dialog__interview-heading strong {
+  color: var(--quanta-text);
+  font-size: 15px;
+}
+
+.resume-dialog__interview-heading small {
+  color: #8c94a3;
+}
+
+.resume-dialog__slot-list {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.resume-dialog__slot.el-radio {
+  width: 100%;
+  height: auto;
+  padding: 13px 14px;
+  margin: 0;
+  background: #fff;
+  border: 1px solid #e3e5e9;
+  border-radius: 12px;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.resume-dialog__slot.el-radio.is-checked {
+  background: #fff3e9;
+  border-color: var(--quanta-primary);
+  box-shadow: 0 8px 22px rgb(255 103 0 / 12%);
+}
+
+.resume-dialog__slot .el-radio__label {
+  display: flex;
+  min-width: 0;
+  padding-left: 9px;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.resume-dialog__slot .el-radio__label strong {
+  color: #25282d;
+  font-size: 13px;
+}
+
+.resume-dialog__slot .el-radio__label span {
+  color: #737b8b;
+  font-size: 12px;
+}
+
+.resume-dialog__save-time.el-button {
+  align-self: flex-end;
+  min-width: 136px;
+  color: #fff;
+  background: var(--quanta-primary);
+  border-color: var(--quanta-primary);
+  border-radius: 10px;
 }
 
 .feedback-dialog .el-textarea__inner {
@@ -643,5 +727,21 @@
 @media (max-width: 1280px) {
   .recruitment-board {
     grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .resume-dialog__interview-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .resume-dialog__slot-list {
+    grid-template-columns: 1fr;
+  }
+
+  .resume-dialog__save-time.el-button {
+    width: 100%;
   }
 }
