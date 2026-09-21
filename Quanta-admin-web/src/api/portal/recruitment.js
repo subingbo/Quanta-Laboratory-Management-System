@@ -76,7 +76,7 @@ function resultStageStatus(result, round, unlocked) {
   if (result.resultStatus === 'PASS') return 'passed'
   if (result.resultStatus === 'WAITING') {
     if (round === 2) return 'invited'
-    return result.interviewTime ? 'scheduled' : 'pending'
+    return 'pending'
   }
   return 'pending'
 }
@@ -86,7 +86,6 @@ function mapResultStage(key, title, status, result) {
     key,
     title,
     status,
-    interviewTime: result?.interviewTime || '',
     feedback: result?.feedback || '',
   }
 }

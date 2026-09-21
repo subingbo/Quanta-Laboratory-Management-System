@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 完整移除 Web 后台招新管理的一面预约时间功能。
+**Goal:** 完整移除 Web 后台招新管理和新生端的面试时间功能。
 
-**Architecture:** 从 API、页面编排、弹窗、表格、样式和测试六个位置同时清理该功能，保留其他招新业务及新生端进度展示。删除旧功能文档，避免接口契约继续被误用。
+**Architecture:** 从后台 API、页面编排、弹窗、表格以及新生端进度映射和展示中同时清理该功能，保留其他招新业务和不含时间的进度状态。删除旧功能文档，避免接口契约继续被误用。
 
 **Tech Stack:** Vue 3、Element Plus、Vitest、Vite
 
@@ -14,7 +14,7 @@
 
 - 只修改 `Quanta-admin-web` 中后台一面预约时间相关代码。
 - 不修改后端代码。
-- 不修改新生端面试进度展示。
+- 新生端保留面试结果进度，但不读取或展示具体时间。
 - 不影响简历、面评、录用、评分和邮件功能。
 
 ---
@@ -50,6 +50,17 @@
 - [ ] 删除表格预约时间测试数据与断言。
 
 ### Task 4: 验证与提交
+
+**Files:**
+- Modify: `Quanta-admin-web/src/api/portal/recruitment.js`
+- Modify: `Quanta-admin-web/src/api/portal/__tests__/recruitment.test.js`
+- Modify: `Quanta-admin-web/src/views/freshman/recruitment/components/InterviewTimeline.vue`
+- Modify: `Quanta-admin-web/src/views/freshman/recruitment/recruitment.css`
+
+- [ ] 删除新生端 `interviewTime` 映射、时间标签和 `scheduled` 状态。
+- [ ] 验证后端返回时间字段时，新生端仍只显示普通进度状态。
+
+### Task 5: 验证与提交
 
 - [ ] 运行招新相关单元测试。
 - [ ] 运行完整测试、构建、lint 和 `git diff --check`。

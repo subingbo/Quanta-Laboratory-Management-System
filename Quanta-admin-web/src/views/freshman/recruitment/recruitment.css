@@ -511,7 +511,6 @@
 }
 
 .interview-process li.is-invited i,
-.interview-process li.is-scheduled i,
 .interview-process li.is-pending i {
   background: var(--portal-orange);
 }

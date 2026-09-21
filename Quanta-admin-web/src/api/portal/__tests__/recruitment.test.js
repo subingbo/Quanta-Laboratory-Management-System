@@ -93,6 +93,7 @@ describe('freshman recruitment API', () => {
         ]),
       }),
     )
+    expect(JSON.stringify(processes)).not.toContain('interviewTime')
     expect(JSON.stringify(processes)).not.toMatch(/accept|rejectAction/i)
   })
 
@@ -140,6 +141,20 @@ describe('freshman recruitment API', () => {
 })
 
 describe('interview status mapping', () => {
+  it('ignores backend interview times and keeps first-round waiting results pending', () => {
+    const processes = mapInterviewProcess(application, [
+      {
+        roundId: 1,
+        department: 'FRONTEND',
+        resultStatus: 'WAITING',
+        interviewTime: '2026-09-22 18:30:00',
+      },
+    ])
+
+    expect(processes[0].stages[0]).toMatchObject({ key: 'first', status: 'pending' })
+    expect(processes[0].stages[0]).not.toHaveProperty('interviewTime')
+  })
+
   it('keeps invitations read-only and maps final offers', () => {
     const processes = mapInterviewProcess(
       { ...application, applyStatus: 'OFFERED', offeredDepartment: 'BACKEND' },

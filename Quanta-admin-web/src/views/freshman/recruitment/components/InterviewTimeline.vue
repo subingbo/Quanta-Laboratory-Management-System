@@ -9,7 +9,6 @@ defineProps({
 const statusLabels = {
   pending: '待安排',
   locked: '尚未开始',
-  scheduled: '已安排面试',
   invited: '等待面试',
   passed: '已通过',
   rejected: '未通过',
@@ -30,7 +29,6 @@ const statusLabels = {
           <div>
             <strong>{{ stage.title }}</strong>
             <span>{{ statusLabels[stage.status] || stage.status }}</span>
-            <time v-if="stage.interviewTime">{{ stage.interviewTime }}</time>
             <small v-if="stage.feedback">{{ stage.feedback }}</small>
           </div>
         </li>
