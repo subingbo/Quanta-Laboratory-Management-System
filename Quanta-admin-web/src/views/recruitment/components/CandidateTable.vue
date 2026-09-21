@@ -32,13 +32,6 @@ function noticeReady(row) {
   const tracks = (row.choices || []).filter((track) => track.rounds?.[2]?.advanced)
   return tracks.length > 0 && tracks.every((track) => ['PASS', 'OUT'].includes(track.rounds?.[2]?.status)) && row.noticeStatus !== 'SENT'
 }
-function formatInterviewTime(value) {
-  if (!value) return '待安排'
-  const normalized = String(value).replace('T', ' ')
-  if (normalized.startsWith('2026-09-22')) return '09月22日 18:30–22:30'
-  if (normalized.startsWith('2026-09-23')) return '09月23日 18:30–22:30'
-  return normalized
-}
 </script>
 
 <template>
@@ -53,13 +46,6 @@ function formatInterviewTime(value) {
           <span v-else class="candidate-choice__inactive">未晋级</span>
           <small v-if="roundId === 2 && roundState(choice(row, order))" class="candidate-choice__score">{{ roundState(choice(row, order)).score == null ? '未评分' : `${roundState(choice(row, order)).score} 分` }}</small>
         </div>
-      </template>
-    </ElTableColumn>
-    <ElTableColumn v-if="roundId === 1" label="面试时间" min-width="175">
-      <template #default="{ row }">
-        <span class="candidate-interview-time" :class="{ 'is-pending': !row.firstRoundInterviewTime }">
-          {{ formatInterviewTime(row.firstRoundInterviewTime) }}
-        </span>
       </template>
     </ElTableColumn>
     <ElTableColumn prop="appliedAt" label="投递时间" min-width="155" />

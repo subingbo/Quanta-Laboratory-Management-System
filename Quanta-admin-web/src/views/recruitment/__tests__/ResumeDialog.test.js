@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import ElementPlus from 'element-plus'
 import ResumeDialog from '../components/ResumeDialog.vue'
 
 const ElDialogStub = {
@@ -9,18 +8,6 @@ const ElDialogStub = {
 }
 
 describe('ResumeDialog', () => {
-  function mountDialog(props = {}) {
-    return mount(ResumeDialog, {
-      props: {
-        modelValue: true,
-        roundId: 1,
-        application: { applicationId: 8, realName: '陈思思', choices: [] },
-        ...props,
-      },
-      global: { plugins: [ElementPlus], stubs: { ElDialog: ElDialogStub } },
-    })
-  }
-
   it('renders normalized choices and existing contact fields', () => {
     const wrapper = mount(ResumeDialog, {
       props: {
@@ -65,37 +52,4 @@ describe('ResumeDialog', () => {
     expect(wrapper.text()).toContain('暂无 PDF 简历')
   })
 
-  it('shows the interview-time picker only in the first round', () => {
-    const firstRoundWrapper = mountDialog({ roundId: 1 })
-    const secondRoundWrapper = mountDialog({ roundId: 2 })
-
-    expect(firstRoundWrapper.find('[data-test="interview-time-picker"]').exists()).toBe(true)
-    expect(secondRoundWrapper.find('[data-test="interview-time-picker"]').exists()).toBe(false)
-  })
-
-  it('emits the selected first-round interview time', async () => {
-    const wrapper = mountDialog()
-    const radioGroup = wrapper.findComponent({ name: 'ElRadioGroup' })
-
-    radioGroup.vm.$emit('update:modelValue', '2026-09-22 18:30:00')
-    await wrapper.vm.$nextTick()
-    await wrapper.get('[data-test="save-interview-time"]').trigger('click')
-
-    expect(wrapper.emitted('save-interview-time')).toEqual([['2026-09-22 18:30:00']])
-  })
-
-  it('restores the saved first-round interview time when reopened', () => {
-    const wrapper = mountDialog({
-      application: {
-        applicationId: 8,
-        realName: '陈思思',
-        choices: [],
-        firstRoundInterviewTime: '2026-09-23 18:30:00',
-      },
-    })
-
-    expect(wrapper.findComponent({ name: 'ElRadioGroup' }).props('modelValue')).toBe(
-      '2026-09-23 18:30:00',
-    )
-  })
 })

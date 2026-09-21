@@ -70,12 +70,6 @@ export function mapApplication(application = {}) {
   const choices = application.tracks?.length
     ? application.tracks.map(normalizeTrack)
     : applyDefaultAdvancement([buildChoice(application, 1), buildChoice(application, 2)].filter(Boolean))
-  const firstRoundInterviewTime =
-    application.firstRoundInterviewTime ||
-    application.interviewTime ||
-    application.tracks?.find((track) => track.rounds?.[1]?.interviewTime)?.rounds?.[1]
-      ?.interviewTime ||
-    ''
   return {
     ...application,
     id: application.applicationId,
@@ -85,7 +79,6 @@ export function mapApplication(application = {}) {
     resumeFileName: application.resumeFileName || '',
     appliedAt: application.createTime || application.appliedAt || '-',
     applicationStatus: application.applyStatus || application.applicationStatus,
-    firstRoundInterviewTime,
     choices,
   }
 }
@@ -184,14 +177,6 @@ export function saveInterviewScore(applicationId, department, score) {
     url: `/qt/interview/admin/applications/${applicationId}/round2/departments/${department}/score`,
     method: 'put',
     data: { score },
-  })
-}
-
-export function saveFirstRoundInterviewTime(applicationId, interviewTime) {
-  return request({
-    url: `/qt/interview/admin/applications/${applicationId}/rounds/1/interview-time`,
-    method: 'put',
-    data: { interviewTime },
   })
 }
 

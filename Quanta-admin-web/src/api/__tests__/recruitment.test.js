@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import * as requestModule from '@/utils/request'
 import {
   createOfferPayload,
   departmentLabels,
@@ -9,7 +8,6 @@ import {
   mapEvaluation,
   mergeApplicationDetail,
   normalizeEvaluation,
-  saveFirstRoundInterviewTime,
   sendOffer,
 } from '../recruitment'
 import { findMockApplication, resetMockRecruitment } from '@/mock/data/recruitment'
@@ -66,47 +64,6 @@ describe('recruitment api', () => {
     expect(result.appliedAt).toBe('2026-08-30 10:00:00')
     expect(result.resumeUrl).toBe('https://example.com/resume.pdf?token=x')
     expect(result.resumeFileName).toBe('吴晓萌-简历.pdf')
-  })
-
-  it('normalizes first-round interview time from current and legacy response fields', () => {
-    expect(
-      mapApplication({
-        applicationId: 8,
-        firstRoundInterviewTime: '2026-09-22 18:30:00',
-        interviewTime: '2026-09-23 18:30:00',
-      }).firstRoundInterviewTime,
-    ).toBe('2026-09-22 18:30:00')
-
-    expect(
-      mapApplication({
-        applicationId: 9,
-        interviewTime: '2026-09-23 18:30:00',
-      }).firstRoundInterviewTime,
-    ).toBe('2026-09-23 18:30:00')
-
-    expect(
-      mapApplication({
-        applicationId: 10,
-        tracks: [
-          {
-            department: 'PRODUCT',
-            rounds: { 1: { interviewTime: '2026-09-22 18:30:00' } },
-          },
-        ],
-      }).firstRoundInterviewTime,
-    ).toBe('2026-09-22 18:30:00')
-  })
-
-  it('saves the shared first-round interview time using the agreed endpoint', async () => {
-    const requestSpy = vi.spyOn(requestModule, 'request').mockResolvedValue({ code: 200 })
-
-    await saveFirstRoundInterviewTime(8, '2026-09-22 18:30:00')
-
-    expect(requestSpy).toHaveBeenCalledWith({
-      url: '/qt/interview/admin/applications/8/rounds/1/interview-time',
-      method: 'put',
-      data: { interviewTime: '2026-09-22 18:30:00' },
-    })
   })
 
   it('maps evaluation login names onto interviewer fields', () => {

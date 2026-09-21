@@ -7,7 +7,7 @@ import PermissionButton from '@/components/PermissionButton.vue'
 import {
   departmentLabels, exportRecruitmentList, getEvaluations, getNoticePreview,
   getRecruitmentApplication, getRecruitmentApplications, getRecruitmentStatistics,
-  saveEvaluation, saveFirstRoundInterviewTime, saveInterviewDecision, saveInterviewScore, sendResultNotice,
+  saveEvaluation, saveInterviewDecision, saveInterviewScore, sendResultNotice,
 } from '@/api/recruitment'
 import { saveBlob } from '@/utils/download'
 import { useUserStore } from '@/stores/user'
@@ -52,7 +52,7 @@ const roundId = computed(() => Number(activeTab.value) || 1)
 const pagination = computed(() => paginationByRound[roundId.value])
 const departmentOptions = computed(() => Object.entries(departmentLabels).map(([value, label]) => ({ value, label })))
 
-const resume = reactive({ visible: false, loading: false, submitting: false, application: null })
+const resume = reactive({ visible: false, loading: false, application: null })
 const feedback = reactive({ visible: false, mode: 'view', loading: false, submitting: false, row: null, department: '', options: [], content: '', evaluations: [] })
 const decision = reactive({ visible: false, submitting: false, row: null, department: '', options: [], result: 'PASS' })
 const score = reactive({ visible: false, submitting: false, row: null, department: '', options: [], value: null, updatedBy: '', updatedTime: '' })
@@ -142,24 +142,10 @@ function changePage(page) { pagination.value.page = page; loadList() }
 function changePageSize(pageSize) { pagination.value.pageSize = pageSize; pagination.value.page = 1; loadList() }
 
 async function openResume(row) {
-  resume.visible = true; resume.loading = true; resume.submitting = false; resume.application = row
+  resume.visible = true; resume.loading = true; resume.application = row
   try { resume.application = await getRecruitmentApplication(row.applicationId) }
   catch (error) { ElMessage.error(error.message || '简历加载失败') }
   finally { resume.loading = false }
-}
-async function saveResumeInterviewTime(interviewTime) {
-  if (!resume.application?.applicationId) return
-  resume.submitting = true
-  try {
-    await saveFirstRoundInterviewTime(resume.application.applicationId, interviewTime)
-    ElMessage.success('面试时间已保存')
-    resume.visible = false
-    await loadList()
-  } catch (error) {
-    ElMessage.error(error.message || '面试时间保存失败，请稍后重试')
-  } finally {
-    resume.submitting = false
-  }
 }
 async function loadFeedback() {
   feedback.loading = true
@@ -283,7 +269,7 @@ onMounted(refreshAll)
         <RecruitmentPagination :page="pagination.page" :page-size="pagination.pageSize" :total="total" :disabled="loading" @update:page="changePage" @update:page-size="changePageSize" />
       </template>
     </section>
-    <ResumeDialog v-model="resume.visible" :application="resume.application" :loading="resume.loading" :round-id="roundId" :submitting="resume.submitting" @save-interview-time="saveResumeInterviewTime" />
+    <ResumeDialog v-model="resume.visible" :application="resume.application" :loading="resume.loading" />
     <FeedbackDialog v-model="feedback.visible" :mode="feedback.mode" :candidate-name="feedback.row?.name" :round-id="1" :department="feedback.department" :options="feedback.options" :content="feedback.content" :evaluations="feedback.evaluations" :loading="feedback.loading" :submitting="feedback.submitting" :can-switch="canViewAllDepartments && feedback.mode === 'view'" @update:department="changeFeedbackDepartment" @update:content="feedback.content = $event" @submit="submitFeedback" />
     <DecisionDialog v-model="decision.visible" :candidate-name="decision.row?.name" :round-id="roundId" :result="decision.result" :department="decision.department" :options="decision.options" :submitting="decision.submitting" @update:department="decision.department = $event" @confirm="submitDecision" />
     <ScoreDialog v-model="score.visible" :candidate-name="score.row?.name" :department="score.department" :options="score.options" :score="score.value" :can-edit="canEditScore" :updated-by="score.updatedBy" :updated-time="score.updatedTime" :submitting="score.submitting" @update:department="changeScoreDepartment" @submit="submitScore" />

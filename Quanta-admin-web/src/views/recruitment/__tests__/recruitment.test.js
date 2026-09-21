@@ -3,9 +3,6 @@ import { createPinia, setActivePinia } from 'pinia'
 import { flushPromises, mount } from '@vue/test-utils'
 import ElementPlus, { ElPagination, ElSelect, ElTooltip } from 'element-plus'
 import RecruitmentView from '../index.vue'
-import CandidateTable from '../components/CandidateTable.vue'
-import ResumeDialog from '../components/ResumeDialog.vue'
-import { getRecruitmentApplications, saveFirstRoundInterviewTime } from '@/api/recruitment'
 import { mockRecruitmentApplications, resetMockRecruitment } from '@/mock/data/recruitment'
 import { useUserStore } from '@/stores/user'
 import { setToken } from '@/utils/token'
@@ -15,14 +12,12 @@ vi.mock('@/api/recruitment', async (importOriginal) => {
   return {
     ...actual,
     getRecruitmentApplications: vi.fn(actual.getRecruitmentApplications),
-    saveFirstRoundInterviewTime: vi.fn(),
   }
 })
 
 describe('recruitment view', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    saveFirstRoundInterviewTime.mockResolvedValue({})
     resetMockRecruitment()
     setToken('mock-token-product-manager')
   })
@@ -136,59 +131,4 @@ describe('recruitment view', () => {
     expect(wrapper.text()).toContain('当前显示 1 / 1 人')
   })
 
-  it('saves a shared first-round interview time and refreshes the list', async () => {
-    const pinia = createPinia()
-    setActivePinia(pinia)
-    const store = useUserStore()
-    store.user = { userId: 1, deptCode: 'PRODUCT' }
-    store.roles = ['ceo']
-    store.permissions = ['qt:interview:admin:list', 'qt:interview:admin:evaluate']
-    const wrapper = mount(RecruitmentView, { global: { plugins: [pinia, ElementPlus] } })
-    await flushPromises()
-
-    await wrapper.get('[role="tablist"] button:nth-child(2)').trigger('click')
-    await flushPromises()
-    const table = wrapper.findComponent(CandidateTable)
-    const application = table.props('rows')[0]
-    table.vm.$emit('resume', application)
-    await flushPromises()
-
-    const dialog = wrapper.findComponent(ResumeDialog)
-    expect(dialog.props('roundId')).toBe(1)
-    expect(dialog.props('modelValue')).toBe(true)
-    const listCallsBeforeSave = getRecruitmentApplications.mock.calls.length
-
-    dialog.vm.$emit('save-interview-time', '2026-09-22 18:30:00')
-    await flushPromises()
-
-    expect(saveFirstRoundInterviewTime).toHaveBeenCalledWith(application.applicationId, '2026-09-22 18:30:00')
-    expect(dialog.props('modelValue')).toBe(false)
-    expect(getRecruitmentApplications.mock.calls.length).toBeGreaterThan(listCallsBeforeSave)
-  })
-
-  it('keeps the resume dialog open when saving the first-round interview time fails', async () => {
-    saveFirstRoundInterviewTime.mockRejectedValueOnce(new Error('保存接口暂不可用'))
-    const pinia = createPinia()
-    setActivePinia(pinia)
-    const store = useUserStore()
-    store.user = { userId: 1, deptCode: 'PRODUCT' }
-    store.roles = ['ceo']
-    store.permissions = ['qt:interview:admin:list', 'qt:interview:admin:evaluate']
-    const wrapper = mount(RecruitmentView, { global: { plugins: [pinia, ElementPlus] } })
-    await flushPromises()
-
-    await wrapper.get('[role="tablist"] button:nth-child(2)').trigger('click')
-    await flushPromises()
-    const table = wrapper.findComponent(CandidateTable)
-    table.vm.$emit('resume', table.props('rows')[0])
-    await flushPromises()
-
-    const dialog = wrapper.findComponent(ResumeDialog)
-    dialog.vm.$emit('save-interview-time', '2026-09-23 18:30:00')
-    await flushPromises()
-
-    expect(saveFirstRoundInterviewTime).toHaveBeenCalledOnce()
-    expect(dialog.props('modelValue')).toBe(true)
-    expect(dialog.props('submitting')).toBe(false)
-  })
 })
