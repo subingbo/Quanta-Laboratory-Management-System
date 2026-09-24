@@ -132,8 +132,25 @@ async function getMyApplicationBundle() {
   return response.data || { application: null, profile: null }
 }
 
+export function mapApplyWindow(data) {
+  const newApplicationsOpen = data?.newApplicationsOpen === true
+  const hasApplication = Boolean(data?.application)
+  return {
+    newApplicationsOpen,
+    canUpdate: data?.canUpdate === true || newApplicationsOpen || hasApplication,
+  }
+}
+
 export async function getMyApplication() {
   return mapApplication(await getMyApplicationBundle())
+}
+
+export async function getMyRecruitmentState() {
+  const bundle = await getMyApplicationBundle()
+  return {
+    application: mapApplication(bundle),
+    ...mapApplyWindow(bundle),
+  }
 }
 
 export async function getMyInterviewProcess() {

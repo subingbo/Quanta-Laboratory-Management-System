@@ -56,6 +56,8 @@ export interface InterviewResultDto {
 interface MyApplicationData {
   application: InterviewApplicationDto | null
   profile: InterviewProfileDto | null
+  newApplicationsOpen?: boolean
+  canUpdate?: boolean
 }
 
 const DEPARTMENT_CODES: Record<string, string> = {
@@ -106,6 +108,15 @@ export const mapApplication = (data: MyApplicationData): RecruitmentForm | null 
   }
 }
 
+export const mapApplyWindow = (data?: MyApplicationData | null) => {
+  const newApplicationsOpen = data?.newApplicationsOpen === true
+  const hasApplication = Boolean(data?.application)
+  return {
+    newApplicationsOpen,
+    canUpdate: data?.canUpdate === true || newApplicationsOpen || hasApplication,
+  }
+}
+
 const scheduleDetail = (result?: InterviewResultDto) => result?.interviewTime
   ? { interviewTime: result.interviewTime, reminder: result.feedback || '' }
   : {}
@@ -149,10 +160,18 @@ export const mapInterviewProcess = (
 
 export const getMyApplicationBundle = async () => {
   const response = await request<AjaxResponse<MyApplicationData>>({ url: '/qt/interview/my' })
-  return response.data
+  return response.data || { application: null, profile: null }
 }
 
 export const getMyApplication = async () => mapApplication(await getMyApplicationBundle())
+
+export const getMyRecruitmentState = async () => {
+  const bundle = await getMyApplicationBundle()
+  return {
+    application: mapApplication(bundle),
+    ...mapApplyWindow(bundle),
+  }
+}
 
 export const getMyInterviewProcess = async () => {
   const [bundle, resultResponse] = await Promise.all([

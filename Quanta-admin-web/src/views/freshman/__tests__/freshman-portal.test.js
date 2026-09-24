@@ -20,6 +20,7 @@ vi.mock('@/api/portal/recruitment', () => ({
     { value: 'BACKEND', label: '全栈（后端）' },
   ],
   getMyApplication: vi.fn(),
+  getMyRecruitmentState: vi.fn(),
   getMyInterviewProcess: vi.fn(),
   submitApplication: vi.fn(),
 }))
@@ -46,6 +47,11 @@ describe('freshman recruitment components', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     recruitmentApi.getMyApplication.mockResolvedValue(null)
+    recruitmentApi.getMyRecruitmentState.mockResolvedValue({
+      application: { ...emptyApplication(), applicationId: 1, realName: '新生小李' },
+      newApplicationsOpen: false,
+      canUpdate: true,
+    })
     recruitmentApi.getMyInterviewProcess.mockResolvedValue([])
     recruitmentApi.submitApplication.mockResolvedValue({ code: 200 })
     draftStorage.loadRecruitmentDraft.mockReturnValue(null)
@@ -236,19 +242,19 @@ describe('freshman recruitment components', () => {
 
     Object.defineProperty(input.element, 'files', { configurable: true, value: [unsupported] })
     await input.trigger('change')
-    expect(wrapper.get('[data-testid="photo-error"]').text()).toContain('JPG 或 PNG')
+    expect(wrapper.get('[data-testid="photo-error"]').text()).toContain('JPG、PNG 或 WebP')
 
-    const webp = new File(['photo'], 'photo.webp', { type: 'image/webp' })
-    Object.defineProperty(input.element, 'files', { configurable: true, value: [webp] })
+    const gif = new File(['photo'], 'photo.gif', { type: 'image/gif' })
+    Object.defineProperty(input.element, 'files', { configurable: true, value: [gif] })
     await input.trigger('change')
-    expect(wrapper.get('[data-testid="photo-error"]').text()).toContain('JPG 或 PNG')
+    expect(wrapper.get('[data-testid="photo-error"]').text()).toContain('JPG、PNG 或 WebP')
 
-    const oversized = new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'large.jpg', {
+    const oversized = new File([new Uint8Array(10 * 1024 * 1024 + 1)], 'large.jpg', {
       type: 'image/jpeg',
     })
     Object.defineProperty(input.element, 'files', { configurable: true, value: [oversized] })
     await input.trigger('change')
-    expect(wrapper.get('[data-testid="photo-error"]').text()).toContain('不能超过 5 MB')
+    expect(wrapper.get('[data-testid="photo-error"]').text()).toContain('不能超过 10 MB')
   })
 
   it('accepts only PDF resumes up to 10 MB and includes the file in the form snapshot', async () => {
@@ -381,6 +387,28 @@ describe('freshman recruitment components', () => {
     expect(wrapper.findComponent(PortalNoticeDialog).props('message')).toBe('PDF 文件上传失败，请重新选择')
   })
 
+  it('shows backend photo, resume and length limit messages from error.message', async () => {
+    const cases = [
+      '证件照不能超过 10 MB，请压缩后重试',
+      'PDF 简历不能超过 10 MB，请压缩后重试',
+      '编程经历说明过长，请控制在 2000 字以内',
+    ]
+    for (const message of cases) {
+      recruitmentApi.submitApplication.mockRejectedValueOnce(new Error(message))
+      const wrapper = mount(RecruitmentPage)
+      await flushPromises()
+      wrapper.findComponent(ApplicationForm).vm.$emit('submit', { ...emptyApplication(), realName: '新生小李' })
+      await flushPromises()
+      expect(wrapper.findComponent(PortalNoticeDialog).props()).toEqual(expect.objectContaining({
+        modelValue: true,
+        title: '提交失败',
+        message,
+        type: 'error',
+      }))
+      wrapper.unmount()
+    }
+  })
+
   it('keeps the generic submission message when the backend gives no explicit reason', async () => {
     recruitmentApi.submitApplication.mockRejectedValueOnce(new Error('Request failed with status code 500'))
     const wrapper = mount(RecruitmentPage)
@@ -393,10 +421,14 @@ describe('freshman recruitment components', () => {
   })
 
   it('restores a newer local draft over the last server application', async () => {
-    recruitmentApi.getMyApplication.mockResolvedValueOnce({
-      ...emptyApplication(),
-      realName: '服务端旧姓名',
-      firstChoice: 'PRODUCT',
+    recruitmentApi.getMyRecruitmentState.mockResolvedValueOnce({
+      application: {
+        ...emptyApplication(),
+        realName: '服务端旧姓名',
+        firstChoice: 'PRODUCT',
+      },
+      newApplicationsOpen: false,
+      canUpdate: true,
     })
     draftStorage.loadRecruitmentDraft.mockReturnValueOnce({
       realName: '草稿新姓名',
@@ -460,6 +492,29 @@ describe('freshman recruitment components', () => {
       title: '草稿已保存',
       message: '报名信息、证件照和 PDF 简历已保存在当前浏览器。',
     }))
+  })
+
+  it('hides the application form when new submissions are closed', async () => {
+    recruitmentApi.getMyRecruitmentState.mockResolvedValueOnce({
+      application: null,
+      newApplicationsOpen: false,
+      canUpdate: false,
+    })
+
+    const wrapper = mount(RecruitmentPage)
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('已截止')
+    expect(wrapper.get('[data-testid="recruitment-closed-notice"]').text()).toContain('不再接受新投递')
+    expect(wrapper.findComponent(ApplicationForm).exists()).toBe(false)
+  })
+
+  it('keeps the form for existing applicants after the window closes', async () => {
+    const wrapper = mount(RecruitmentPage)
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('已截止（已报名可修改）')
+    expect(wrapper.findComponent(ApplicationForm).exists()).toBe(true)
   })
 })
 

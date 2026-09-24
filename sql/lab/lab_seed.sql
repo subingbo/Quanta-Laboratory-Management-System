@@ -14,6 +14,17 @@ UPDATE sys_config
 SET config_value = 'true', update_by = 'lab_seed', update_time = NOW()
 WHERE config_key = 'sys.account.registerUser';
 
+-- Close new interview applications; existing applicants may still update
+INSERT INTO sys_config (config_name, config_key, config_value, config_type, create_by, create_time, remark)
+SELECT '招新面试-是否接受新投递', 'qt.interview.applyOpen', 'false', 'Y', 'lab_seed', NOW(),
+       'true 允许新投递；false 仅已报名同学可修改'
+FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM sys_config WHERE config_key = 'qt.interview.applyOpen');
+
+UPDATE sys_config
+SET config_value = 'false', update_by = 'lab_seed', update_time = NOW()
+WHERE config_key = 'qt.interview.applyOpen';
+
 SET FOREIGN_KEY_CHECKS = 0;
 SET @pwd = '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2';
 

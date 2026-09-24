@@ -3,6 +3,8 @@ import { request } from '@/utils/request'
 import {
   getMyApplication,
   getMyInterviewProcess,
+  getMyRecruitmentState,
+  mapApplyWindow,
   mapInterviewProcess,
   recruitmentDepartments,
   submitApplication,
@@ -62,6 +64,27 @@ describe('freshman recruitment API', () => {
       }),
     )
     expect(request).toHaveBeenCalledWith({ url: '/qt/interview/my', method: 'get' })
+  })
+
+  it('maps the apply window from GET /qt/interview/my', async () => {
+    request.mockResolvedValue({
+      data: {
+        application: null,
+        profile: null,
+        newApplicationsOpen: false,
+        canUpdate: false,
+      },
+    })
+
+    await expect(getMyRecruitmentState()).resolves.toEqual({
+      application: null,
+      newApplicationsOpen: false,
+      canUpdate: false,
+    })
+    expect(mapApplyWindow({ application, newApplicationsOpen: false })).toEqual({
+      newApplicationsOpen: false,
+      canUpdate: true,
+    })
   })
 
   it('loads interview results as read-only process data', async () => {

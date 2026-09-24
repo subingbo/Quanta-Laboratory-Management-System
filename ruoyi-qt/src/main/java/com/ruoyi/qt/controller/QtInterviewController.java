@@ -113,9 +113,12 @@ public class QtInterviewController extends BaseController
         {
             com.ruoyi.qt.util.QtInterviewAccessUrls.fill(application, profileAccessSigner, serverConfig);
         }
+        boolean newApplicationsOpen = qtInterviewService.isNewApplicationsOpen();
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("application", application);
         data.put("profile", profile);
+        data.put("newApplicationsOpen", newApplicationsOpen);
+        data.put("canUpdate", newApplicationsOpen || application != null);
         return success(data);
     }
 

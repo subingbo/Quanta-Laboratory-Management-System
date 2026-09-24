@@ -9,6 +9,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.ruoyi.common.constant.CacheConstants;
+import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.qt.domain.QtInterviewApplication;
 import com.ruoyi.qt.domain.QtInterviewProfile;
 import com.ruoyi.qt.domain.QtInterviewResult;
@@ -16,15 +18,29 @@ import com.ruoyi.qt.domain.QtInterviewRound;
 import com.ruoyi.qt.mapper.QtInterviewMapper;
 import com.ruoyi.qt.service.IQtInterviewService;
 import com.ruoyi.qt.util.QtInterviewRounds;
+import com.ruoyi.system.service.ISysConfigService;
 
 @Service
 public class QtInterviewServiceImpl implements IQtInterviewService
 {
+    public static final String APPLY_OPEN_CONFIG_KEY = "qt.interview.applyOpen";
+
+    public static final String APPLY_CLOSED_MESSAGE = "报名已截止，暂不接受新投递";
+
     @Autowired
     private QtInterviewMapper qtInterviewMapper;
 
     @Autowired
     private QtInterviewNotifier interviewNotifier;
+
+    @Autowired
+    private ISysConfigService configService;
+
+    @Override
+    public boolean isNewApplicationsOpen()
+    {
+        return "true".equalsIgnoreCase(StringUtils.trim(configService.selectConfigByKey(APPLY_OPEN_CONFIG_KEY)));
+    }
 
     @Override
     @Transactional
@@ -33,6 +49,10 @@ public class QtInterviewServiceImpl implements IQtInterviewService
     public int saveMyApplication(QtInterviewApplication application, QtInterviewProfile profile)
     {
         QtInterviewApplication oldApplication = qtInterviewMapper.selectApplicationByUserId(application.getUserId());
+        if (oldApplication == null && !isNewApplicationsOpen())
+        {
+            throw new ServiceException(APPLY_CLOSED_MESSAGE);
+        }
         int rows;
         if (oldApplication == null)
         {
@@ -63,21 +83,21 @@ public class QtInterviewServiceImpl implements IQtInterviewService
      * 30 秒的展示延迟可接受，而投递本身会主动清自己的缓存。
      */
     @Override
-    @Cacheable(cacheNames = CacheConstants.CACHE_QT_MY_APPLICATION, key = "#userId")
+    @Cacheable(cacheNames = CacheConstants.CACHE_QT_MY_APPLICATION, key = "#userId", unless = "#result == null")
     public QtInterviewApplication selectMyApplication(Long userId)
     {
         return qtInterviewMapper.selectApplicationByUserId(userId);
     }
 
     @Override
-    @Cacheable(cacheNames = CacheConstants.CACHE_QT_MY_PROFILE, key = "#userId")
+    @Cacheable(cacheNames = CacheConstants.CACHE_QT_MY_PROFILE, key = "#userId", unless = "#result == null")
     public QtInterviewProfile selectMyProfile(Long userId)
     {
         return qtInterviewMapper.selectProfileByUserId(userId);
     }
 
     @Override
-    @Cacheable(cacheNames = CacheConstants.CACHE_QT_MY_RESULTS, key = "#userId")
+    @Cacheable(cacheNames = CacheConstants.CACHE_QT_MY_RESULTS, key = "#userId", unless = "#result == null")
     public List<QtInterviewResult> selectMyResultList(Long userId)
     {
         return qtInterviewMapper.selectResultsByUserId(userId);

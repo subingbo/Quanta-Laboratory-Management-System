@@ -1,6 +1,10 @@
 <template>
 	<view class="submit-page">
-		<scroll-view scroll-y class="form-scroll" :show-scrollbar="false">
+		<view v-if="!canUpdate" class="closed-banner">
+			<text class="closed-title">报名已截止</text>
+			<text class="closed-desc">本轮招新不再接受新投递。已报名同学仍可修改后再投递。</text>
+		</view>
+		<scroll-view v-else scroll-y class="form-scroll" :show-scrollbar="false">
 			<view class="form-body">
 				<view class="profile-row">
 					<view class="photo-upload" :class="{ 'photo-upload--filled': form.photo }" @click="handleUploadPhoto">
@@ -22,19 +26,20 @@
 				<view class="section-block section-block-last"><text class="section-title">对Quanta的了解</text><textarea class="textarea-field textarea-medium" v-model="form.quantaUnderstanding" placeholder="请谈谈你对 Quanta 的了解..." placeholder-class="textarea-placeholder" maxlength="200" :disabled="!isEditing" /></view>
 			</view>
 		</scroll-view>
-		<view class="footer-bar"><view class="footer-actions"><view class="footer-btn btn-save" @click="handleSave"><text class="footer-btn-text">{{ isEditing ? '保存' : '编辑' }}</text></view><view class="footer-btn btn-submit" :class="{ 'btn-submit--disabled': submitted || submitting }" @click="handleSubmit"><text class="footer-btn-text">{{ submitting ? '投递中' : submitted ? '已投递' : '投递' }}</text></view></view></view>
+		<view v-if="canUpdate" class="footer-bar"><view class="footer-actions"><view class="footer-btn btn-save" @click="handleSave"><text class="footer-btn-text">{{ isEditing ? '保存' : '编辑' }}</text></view><view class="footer-btn btn-submit" :class="{ 'btn-submit--disabled': submitted || submitting }" @click="handleSubmit"><text class="footer-btn-text">{{ submitting ? '投递中' : submitted ? '已投递' : '投递' }}</text></view></view></view>
 	</view>
 </template>
 
 <script setup lang="js">
 import { onMounted, reactive, ref, watch } from 'vue'
 import { departmentOptions, genderOptions, createEmptyApplication } from '../../../utils/mockRecruitment'
-import { getMyApplication, submitApplication } from '../../../api/recruitment'
+import { getMyApplication, getMyApplicationBundle, mapApplication, mapApplyWindow, submitApplication } from '../../../api/recruitment'
 
 const deptOptions = departmentOptions
 const form = reactive(createEmptyApplication())
 const isEditing = ref(true)
 const submitted = ref(false)
+const canUpdate = ref(false)
 const dirty = ref(false)
 const submitting = ref(false)
 let restoring = false
@@ -53,11 +58,53 @@ const validateForm = () => { for (const key in requiredFields) { if (!form[key])
 const buildPayload = () => ({ ...form, codingExperience: form.codingExperienceDesc.trim() ? '1' : '0' })
 const doSave = ({ silent = false } = {}) => { if (!isEditing.value) return true; if (!validateForm()) return false; isEditing.value = false; dirty.value = false; if (!silent) uni.showToast({ title: '已暂存当前编辑', icon: 'success' }); return true }
 const handleSave = () => { if (isEditing.value) doSave(); else { isEditing.value = true; submitted.value = false; uni.showToast({ title: '已进入编辑状态', icon: 'none' }) } }
-const handleSubmit = async () => { if (submitting.value || !validateForm()) return; submitting.value = true; try { await submitApplication(buildPayload()); const saved = await getMyApplication(); if (saved) Object.assign(form, saved); submitted.value = true; isEditing.value = false; dirty.value = false; uni.showToast({ title: '投递成功', icon: 'success' }) } catch (error) { uni.showToast({ title: error?.message || '投递失败，请稍后重试', icon: 'none' }) } finally { submitting.value = false } }
-onMounted(async () => { restoring = true; try { const saved = await getMyApplication(); if (saved) { Object.assign(form, { ...createEmptyApplication(), ...saved }); submitted.value = true; isEditing.value = false } } catch (error) { uni.showToast({ title: error?.message || '简历加载失败', icon: 'none' }) } finally { restoring = false; dirty.value = false } })
+const handleSubmit = async () => {
+	if (!canUpdate.value) {
+		uni.showToast({ title: '报名已截止，暂不接受新投递', icon: 'none' })
+		return
+	}
+	if (submitting.value || !validateForm()) return
+	submitting.value = true
+	try {
+		await submitApplication(buildPayload())
+		const saved = await getMyApplication()
+		if (saved) Object.assign(form, saved)
+		submitted.value = true
+		isEditing.value = false
+		dirty.value = false
+		uni.showToast({ title: '投递成功', icon: 'success' })
+	} catch (error) {
+		uni.showToast({ title: error?.message || '投递失败，请稍后重试', icon: 'none' })
+	} finally {
+		submitting.value = false
+	}
+}
+onMounted(async () => {
+	restoring = true
+	try {
+		const bundle = await getMyApplicationBundle()
+		const windowState = mapApplyWindow(bundle)
+		canUpdate.value = windowState.canUpdate
+		const saved = mapApplication(bundle || { application: null, profile: null })
+		if (saved) {
+			Object.assign(form, { ...createEmptyApplication(), ...saved })
+			submitted.value = true
+			isEditing.value = false
+		} else if (!canUpdate.value) {
+			isEditing.value = false
+		}
+	} catch (error) {
+		canUpdate.value = false
+		isEditing.value = false
+		uni.showToast({ title: error?.message || '简历加载失败', icon: 'none' })
+	} finally {
+		restoring = false
+		dirty.value = false
+	}
+})
 defineExpose({ hasUnsavedChanges: () => dirty.value, doSave })
 </script>
 
 <style scoped>
-.submit-page{width:100%;height:100%;position:relative;background:#fff;display:flex;flex-direction:column}.form-scroll{flex:1;height:0}.form-body{padding:24rpx 24rpx calc(188rpx + env(safe-area-inset-bottom));box-sizing:border-box}.profile-row{width:calc(100% - 32rpx);margin:0 auto;display:flex;align-items:flex-start;gap:20rpx}.photo-upload{width:210rpx;height:264rpx;flex-shrink:0;border:2rpx solid #e5e7eb;border-radius:32rpx;background:#f8f9fa;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24rpx;overflow:hidden;box-sizing:border-box}.photo-upload--filled{background:#fff}.photo-preview{width:100%;height:100%}.camera-circle{width:80rpx;height:80rpx;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3rpx 8rpx rgba(16,24,40,.12)}.camera-icon{width:40rpx;height:40rpx}.photo-upload-text{font-size:22rpx;color:#99a1af}.basic-fields{flex:1;height:264rpx;display:flex;flex-direction:column;justify-content:space-between;min-width:0}.inline-field{display:flex;align-items:center;min-width:0}.inline-label{flex-shrink:0;font-size:28rpx;font-weight:700;color:#1e2939}.inline-input,.picker-shell{height:72rpx;border:2rpx solid #e5e7eb;border-radius:16rpx;background:#f8f9fa;box-sizing:border-box;font-size:28rpx;color:#101828}.inline-input{flex:1;width:100%;padding:0 16rpx}.inline-picker,.choice-picker{flex:1;min-width:0}.picker-shell{display:flex;align-items:center;justify-content:space-between;padding:0 12rpx 0 16rpx}.picker-value{flex:1}.chevron-icon{width:24rpx;height:24rpx}.choice-row{width:calc(100% - 32rpx);margin:36rpx auto 0;display:flex;gap:16rpx}.choice-field{flex:1;display:flex;align-items:center;min-width:0}.section-block{width:calc(100% - 32rpx);margin:32rpx auto 0}.section-block-intro{margin-top:52rpx}.section-block-last{margin-bottom:16rpx}.section-title{display:block;margin-bottom:16rpx;font-size:30rpx;line-height:45rpx;font-weight:700;color:#101828}.textarea-field{width:100%;padding:32rpx;border:2rpx solid #e5e7eb;border-radius:24rpx;background:#f8f9fa;box-sizing:border-box;font-size:28rpx;line-height:42rpx;color:#101828}.textarea-large{height:296rpx}.textarea-medium{height:160rpx}.textarea-placeholder{color:#99a1af}.footer-bar{position:fixed;left:0;right:0;bottom:24rpx;height:calc(104rpx + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);z-index:20}.footer-actions{width:calc(100% - 80rpx);height:104rpx;margin:0 auto;display:flex}.footer-btn{height:104rpx;display:flex;align-items:center;justify-content:center}.btn-save{flex:0 0 235rpx;background:#101828;border-radius:24rpx 0 0 24rpx}.btn-submit{flex:1;background:#ff6600;border-radius:0 24rpx 24rpx 0}.btn-submit--disabled{background:#d0d5dd}.footer-btn-text{font-size:32rpx;font-weight:600;color:#fff}
+.submit-page{width:100%;height:100%;position:relative;background:#fff;display:flex;flex-direction:column}.closed-banner{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16rpx;padding:48rpx}.closed-title{font-size:36rpx;font-weight:700;color:#101828}.closed-desc{font-size:28rpx;line-height:42rpx;color:#667085;text-align:center}.form-scroll{flex:1;height:0}.form-body{padding:24rpx 24rpx calc(188rpx + env(safe-area-inset-bottom));box-sizing:border-box}.profile-row{width:calc(100% - 32rpx);margin:0 auto;display:flex;align-items:flex-start;gap:20rpx}.photo-upload{width:210rpx;height:264rpx;flex-shrink:0;border:2rpx solid #e5e7eb;border-radius:32rpx;background:#f8f9fa;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24rpx;overflow:hidden;box-sizing:border-box}.photo-upload--filled{background:#fff}.photo-preview{width:100%;height:100%}.camera-circle{width:80rpx;height:80rpx;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3rpx 8rpx rgba(16,24,40,.12)}.camera-icon{width:40rpx;height:40rpx}.photo-upload-text{font-size:22rpx;color:#99a1af}.basic-fields{flex:1;height:264rpx;display:flex;flex-direction:column;justify-content:space-between;min-width:0}.inline-field{display:flex;align-items:center;min-width:0}.inline-label{flex-shrink:0;font-size:28rpx;font-weight:700;color:#1e2939}.inline-input,.picker-shell{height:72rpx;border:2rpx solid #e5e7eb;border-radius:16rpx;background:#f8f9fa;box-sizing:border-box;font-size:28rpx;color:#101828}.inline-input{flex:1;width:100%;padding:0 16rpx}.inline-picker,.choice-picker{flex:1;min-width:0}.picker-shell{display:flex;align-items:center;justify-content:space-between;padding:0 12rpx 0 16rpx}.picker-value{flex:1}.chevron-icon{width:24rpx;height:24rpx}.choice-row{width:calc(100% - 32rpx);margin:36rpx auto 0;display:flex;gap:16rpx}.choice-field{flex:1;display:flex;align-items:center;min-width:0}.section-block{width:calc(100% - 32rpx);margin:32rpx auto 0}.section-block-intro{margin-top:52rpx}.section-block-last{margin-bottom:16rpx}.section-title{display:block;margin-bottom:16rpx;font-size:30rpx;line-height:45rpx;font-weight:700;color:#101828}.textarea-field{width:100%;padding:32rpx;border:2rpx solid #e5e7eb;border-radius:24rpx;background:#f8f9fa;box-sizing:border-box;font-size:28rpx;line-height:42rpx;color:#101828}.textarea-large{height:296rpx}.textarea-medium{height:160rpx}.textarea-placeholder{color:#99a1af}.footer-bar{position:fixed;left:0;right:0;bottom:24rpx;height:calc(104rpx + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);z-index:20}.footer-actions{width:calc(100% - 80rpx);height:104rpx;margin:0 auto;display:flex}.footer-btn{height:104rpx;display:flex;align-items:center;justify-content:center}.btn-save{flex:0 0 235rpx;background:#101828;border-radius:24rpx 0 0 24rpx}.btn-submit{flex:1;background:#ff6600;border-radius:0 24rpx 24rpx 0}.btn-submit--disabled{background:#d0d5dd}.footer-btn-text{font-size:32rpx;font-weight:600;color:#fff}
 </style>

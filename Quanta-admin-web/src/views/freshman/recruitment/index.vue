@@ -1,8 +1,8 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import {
-  getMyApplication,
   getMyInterviewProcess,
+  getMyRecruitmentState,
   submitApplication,
 } from '@/api/portal/recruitment'
 import {
@@ -24,10 +24,17 @@ const activeTab = ref('application')
 const loading = ref(true)
 const submitting = ref(false)
 const application = ref(emptyApplication())
+const newApplicationsOpen = ref(false)
+const canUpdate = ref(false)
 const processes = ref([])
 const notice = ref('')
 const errorMessage = ref('')
 const noticeDialog = reactive({ visible: false, title: '', message: '', type: 'success' })
+const channelLabel = computed(() => {
+  if (newApplicationsOpen.value) return '已开放'
+  if (canUpdate.value) return '已截止（已报名可修改）'
+  return '已截止'
+})
 
 function showResult(title, message, type = 'success') {
   Object.assign(noticeDialog, { visible: true, title, message, type })
@@ -38,43 +45,45 @@ function showValidationErrors(fields) {
 }
 
 function friendlySubmissionError(error) {
-  const message = String(error?.message || '')
-  if (message.includes('两个志愿不能相同')) return message
-  if (/网络|timeout|超时|Network/i.test(message)) return '网络连接异常，请稍后重试'
   const backendMessage = String(error?.payload?.msg || error?.payload?.message || '').trim()
   if (backendMessage) return backendMessage
-  return '报名提交失败，请检查填写内容后重试'
+  const message = String(error?.message || '').trim()
+  if (/网络|timeout|超时|Network|ECONNABORTED/i.test(message)) return '网络连接异常，请稍后重试'
+  if (!message || /Request failed with status code/i.test(message)) {
+    return '报名提交失败，请检查填写内容后重试'
+  }
+  return message
 }
 
 async function loadRecruitment() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const [serverApplication, interviewProcesses, draftPhoto, draftResume] = await Promise.all([
-      getMyApplication(),
+    const [state, interviewProcesses, draftPhoto, draftResume] = await Promise.all([
+      getMyRecruitmentState(),
       getMyInterviewProcess(),
       loadRecruitmentPhotoDraft().catch(() => null),
       loadRecruitmentResumeDraft().catch(() => null),
     ])
-    application.value = {
-      ...emptyApplication(),
-      ...(serverApplication || {}),
-      ...(loadRecruitmentDraft() || {}),
-      ...(draftPhoto ? { photoFile: draftPhoto, photoUrl: '' } : {}),
-      ...(draftResume ? { resumeFile: draftResume, resumeFileName: draftResume.name } : {}),
-    }
+    newApplicationsOpen.value = state.newApplicationsOpen
+    canUpdate.value = state.canUpdate
+    application.value = canUpdate.value
+      ? {
+          ...emptyApplication(),
+          ...(state.application || {}),
+          ...(loadRecruitmentDraft() || {}),
+          ...(draftPhoto ? { photoFile: draftPhoto, photoUrl: '' } : {}),
+          ...(draftResume ? { resumeFile: draftResume, resumeFileName: draftResume.name } : {}),
+        }
+      : {
+          ...emptyApplication(),
+          ...(state.application || {}),
+        }
     processes.value = interviewProcesses
   } catch {
-    const [draftPhoto, draftResume] = await Promise.all([
-      loadRecruitmentPhotoDraft().catch(() => null),
-      loadRecruitmentResumeDraft().catch(() => null),
-    ])
-    application.value = {
-      ...emptyApplication(),
-      ...(loadRecruitmentDraft() || {}),
-      ...(draftPhoto ? { photoFile: draftPhoto, photoUrl: '' } : {}),
-      ...(draftResume ? { resumeFile: draftResume, resumeFileName: draftResume.name } : {}),
-    }
+    newApplicationsOpen.value = false
+    canUpdate.value = false
+    application.value = emptyApplication()
     errorMessage.value = '招新信息加载失败，请刷新页面重试'
   } finally {
     loading.value = false
@@ -99,6 +108,10 @@ async function saveDraft(form) {
 
 async function submit(form) {
   if (submitting.value) return
+  if (!canUpdate.value) {
+    await showResult('报名已截止', '暂不接受新投递', 'error')
+    return
+  }
   submitting.value = true
   notice.value = ''
   errorMessage.value = ''
@@ -141,7 +154,12 @@ onMounted(loadRecruitment)
         <h1>加入我们</h1>
         <span>找到你感兴趣的方向，与一群认真的人共同创造。</span>
       </div>
-      <div class="freshman-recruitment__step">招新通道 <strong>已开放</strong></div>
+      <div
+        class="freshman-recruitment__step"
+        :class="{ 'is-closed': !newApplicationsOpen }"
+      >
+        招新通道 <strong>{{ channelLabel }}</strong>
+      </div>
     </header>
 
     <nav class="freshman-tabs" aria-label="招新功能">
@@ -167,6 +185,14 @@ onMounted(loadRecruitment)
 
     <div v-else-if="activeTab === 'application'" class="freshman-form-shell portal-card">
       <div v-if="loading" class="freshman-loading">正在加载报名信息…</div>
+      <div
+        v-else-if="!canUpdate"
+        class="freshman-recruitment__closed"
+        data-testid="recruitment-closed-notice"
+      >
+        <h2>报名已截止</h2>
+        <p>本轮招新不再接受新投递。已报名同学可登录后继续修改资料；进度请到「查看进度」查看。</p>
+      </div>
       <ApplicationForm
         v-else
         :initial-value="application"

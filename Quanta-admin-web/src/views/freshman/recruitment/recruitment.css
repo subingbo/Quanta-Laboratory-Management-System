@@ -44,6 +44,32 @@
   color: var(--portal-orange);
 }
 
+.freshman-recruitment__step.is-closed {
+  background: #f3f4f6;
+}
+
+.freshman-recruitment__step.is-closed strong {
+  color: var(--portal-ink);
+}
+
+.freshman-recruitment__closed {
+  display: grid;
+  gap: 8px;
+  padding: 28px 8px 12px;
+}
+
+.freshman-recruitment__closed h2 {
+  margin: 0;
+  color: var(--portal-ink);
+  font-size: 22px;
+}
+
+.freshman-recruitment__closed p {
+  margin: 0;
+  color: var(--portal-muted);
+  line-height: 1.6;
+}
+
 .freshman-tabs {
   display: flex;
   gap: 8px;

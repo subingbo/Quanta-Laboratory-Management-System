@@ -9,6 +9,8 @@
 | [`lab_full.sql`](lab_full.sql) | `lab_init` + `lab_seed` 一键合并脚本 |
 | [`lab_patch_sys_user.sql`](lab_patch_sys_user.sql) | 仅补跑 `sys_user` 扩展字段（旧库兼容） |
 | [`lab_patch_register.sql`](lab_patch_register.sql) | 开启新生自助注册开关 `sys.account.registerUser=true` |
+| [`lab_patch_interview_apply_open.sql`](lab_patch_interview_apply_open.sql) | 关闭招新新投递 `qt.interview.applyOpen=false`（已报名仍可改） |
+| [`lab_ops_metrics_readonly.sql`](lab_ops_metrics_readonly.sql) | 生产只读 COUNT / GROUP BY，不导出个人信息 |
 
 ## 执行顺序（新库）
 
@@ -63,6 +65,7 @@ mysql -uroot -p --default-character-set=utf8mb4 ry-vue < sql/lab/lab_patch_sys_u
 | `qt_fresh` | 新生 | 有活动报名 + 面试投递/一面通过种子 |
 
 `lab_seed.sql` / `lab_patch_register.sql` 会将 `sys.account.registerUser` 设为 `true`，允许新生在小程序端自助注册（塔员仍需后台开通）。
+`lab_seed.sql` / `lab_patch_interview_apply_open.sql` 会将 `qt.interview.applyOpen` 设为 `false`，拦住从未投递过的新生；已报名同学仍可修改。
 
 ## 种子数据覆盖
 

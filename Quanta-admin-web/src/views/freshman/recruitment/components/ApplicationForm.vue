@@ -226,8 +226,8 @@ function handleSubmit() {
         </svg>
       </div>
       <div>
-        <strong>报名截止时间：2026年9月21日 24:00</strong>
-        <span>请尽早填写并提交，保存草稿不代表报名成功。</span>
+        <strong>报名已截止</strong>
+        <span>已投递同学仍可修改资料后再次提交。保存草稿不代表报名成功。</span>
       </div>
     </aside>
     <label :class="{ 'is-invalid': fieldErrors.realName }">
