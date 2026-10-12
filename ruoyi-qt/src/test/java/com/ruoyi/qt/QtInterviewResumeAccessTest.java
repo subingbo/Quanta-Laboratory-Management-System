@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.utils.file.FileUploadUtils;
 import com.ruoyi.common.utils.file.FileValidator;
 import com.ruoyi.common.utils.file.MimeTypeUtils;
 import com.ruoyi.framework.config.ServerConfig;
@@ -46,6 +47,7 @@ class QtInterviewResumeAccessTest
     void resumeSizeCapIsTenMegabytes()
     {
         assertEquals(10L * 1024 * 1024, FileValidator.SIZE_RESUME);
+        assertEquals(10L * 1024 * 1024, FileValidator.SIZE_INTERVIEW_PHOTO);
     }
 
     @Test
@@ -59,6 +61,64 @@ class QtInterviewResumeAccessTest
                 new byte[] { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 0x00 });
         assertThrows(ServiceException.class,
                 () -> FileValidator.validate(fake, MimeTypeUtils.PDF_EXTENSION, FileValidator.SIZE_RESUME));
+    }
+
+    @Test
+    void wechatJpegNamedWebpPhotoIsAccepted() throws Exception
+    {
+        MockMultipartFile file = new MockMultipartFile("photoFile", "photo.jpg", "image/jpeg", webpHeader());
+        FileValidator.validate(file, MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE);
+        FileUploadUtils.assertAllowed(file, MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE);
+    }
+
+    @Test
+    void webpPhotoExtensionIsAccepted() throws Exception
+    {
+        MockMultipartFile file = new MockMultipartFile("photoFile", "photo.webp", "image/webp", webpHeader());
+        FileValidator.validate(file, MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE);
+        FileUploadUtils.assertAllowed(file, MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE);
+    }
+
+    @Test
+    void htmlRenamedAsJpegIsStillRejected()
+    {
+        MockMultipartFile fake = new MockMultipartFile("photoFile", "photo.jpg", "image/jpeg",
+                "<html><body>nope</body>".getBytes(StandardCharsets.US_ASCII));
+        assertThrows(ServiceException.class,
+                () -> FileValidator.validate(fake, MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE));
+    }
+
+    @Test
+    void photoErrorMessagesAreUserFacing()
+    {
+        QtInterviewController controller = new QtInterviewController();
+        Exception tooBig = new ServiceException("文件大小超出限制，最大允许 10MB");
+        assertEquals("证件照不能超过 10 MB，请压缩后重试",
+                org.springframework.test.util.ReflectionTestUtils.invokeMethod(controller, "photoUploadMessage",
+                        tooBig));
+        Exception resumeTooBig = new ServiceException("文件大小超出限制，最大允许 10MB");
+        assertEquals("PDF 简历不能超过 10 MB，请压缩后重试",
+                org.springframework.test.util.ReflectionTestUtils.invokeMethod(controller, "resumeUploadMessage",
+                        resumeTooBig));
+        Exception notPdf = new com.ruoyi.common.exception.file.InvalidExtensionException(
+                MimeTypeUtils.PDF_EXTENSION, "docx", "cv.docx");
+        assertEquals("简历必须是 PDF 文件",
+                org.springframework.test.util.ReflectionTestUtils.invokeMethod(controller, "resumeUploadMessage",
+                        notPdf));
+    }
+
+    private static byte[] webpHeader()
+    {
+        byte[] webp = new byte[16];
+        webp[0] = 'R';
+        webp[1] = 'I';
+        webp[2] = 'F';
+        webp[3] = 'F';
+        webp[8] = 'W';
+        webp[9] = 'E';
+        webp[10] = 'B';
+        webp[11] = 'P';
+        return webp;
     }
 
     @Test

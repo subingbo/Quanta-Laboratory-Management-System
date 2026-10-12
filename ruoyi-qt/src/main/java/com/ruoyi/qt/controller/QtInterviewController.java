@@ -17,6 +17,7 @@ import com.ruoyi.common.config.RuoYiConfig;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.LimitType;
+import com.ruoyi.common.exception.file.InvalidExtensionException;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.file.FileUploadUtils;
 import com.ruoyi.common.utils.file.FileValidator;
@@ -80,6 +81,14 @@ public class QtInterviewController extends BaseController
             {
                 return AjaxResult.error("请上传证件照");
             }
+        }
+        catch (Exception e)
+        {
+            return AjaxResult.error(photoUploadMessage(e));
+        }
+
+        try
+        {
             if (resumeFile != null && !resumeFile.isEmpty())
             {
                 application.setResumeUrl(uploadResume(resumeFile));
@@ -88,7 +97,7 @@ public class QtInterviewController extends BaseController
         }
         catch (Exception e)
         {
-            return AjaxResult.error(e.getMessage());
+            return AjaxResult.error(resumeUploadMessage(e));
         }
 
         profile.setUserId(getUserId());
@@ -186,7 +195,8 @@ public class QtInterviewController extends BaseController
     private String uploadPhoto(MultipartFile photoFile) throws Exception
     {
         String uploadPath = RuoYiConfig.getUploadPath() + "/qt/interview-photo";
-        return FileUploadUtils.upload(uploadPath, photoFile, MimeTypeUtils.IMAGE_EXTENSION, FileValidator.SIZE_IMAGE);
+        return FileUploadUtils.upload(uploadPath, photoFile, MimeTypeUtils.IMAGE_EXTENSION,
+                FileValidator.SIZE_INTERVIEW_PHOTO);
     }
 
     private String uploadResume(MultipartFile resumeFile) throws Exception
@@ -194,6 +204,39 @@ public class QtInterviewController extends BaseController
         String uploadPath = RuoYiConfig.getUploadPath() + "/qt/interview-resume";
         return FileUploadUtils.upload(uploadPath, resumeFile, MimeTypeUtils.PDF_EXTENSION, true,
                 FileValidator.SIZE_RESUME);
+    }
+
+    /** 上传异常面向学生，去掉后端术语，直接说清楚该怎么改。 */
+    private String photoUploadMessage(Exception e)
+    {
+        if (isSizeExceeded(e))
+        {
+            return "证件照不能超过 " + FileValidator.SIZE_INTERVIEW_PHOTO / 1024 / 1024 + " MB，请压缩后重试";
+        }
+        return fallback(e, "证件照上传失败，请重试");
+    }
+
+    private String resumeUploadMessage(Exception e)
+    {
+        if (e instanceof InvalidExtensionException)
+        {
+            return "简历必须是 PDF 文件";
+        }
+        if (isSizeExceeded(e))
+        {
+            return "PDF 简历不能超过 " + FileValidator.SIZE_RESUME / 1024 / 1024 + " MB，请压缩后重试";
+        }
+        return fallback(e, "简历上传失败，请重试");
+    }
+
+    private static boolean isSizeExceeded(Exception e)
+    {
+        return e.getMessage() != null && e.getMessage().contains("文件大小超出限制");
+    }
+
+    private static String fallback(Exception e, String message)
+    {
+        return StringUtils.isEmpty(e.getMessage()) ? message : e.getMessage();
     }
 
     private String originalFileName(MultipartFile file)

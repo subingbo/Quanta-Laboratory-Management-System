@@ -286,7 +286,7 @@ CREATE TABLE IF NOT EXISTS qt_interview_profile (
     application_id BIGINT NOT NULL COMMENT '投递ID(qt_interview_application.application_id)',
     self_intro TEXT NULL COMMENT '个人介绍',
     coding_experience CHAR(1) NOT NULL DEFAULT '0' COMMENT '是否接触过编程(0否 1是)',
-    coding_experience_desc VARCHAR(500) NULL COMMENT '编程经历补充说明',
+    coding_experience_desc TEXT NULL COMMENT '编程经历补充说明',
     quanta_understanding TEXT NULL COMMENT '对Quanta的了解',
     create_by VARCHAR(64) NULL,
     create_time DATETIME NULL DEFAULT CURRENT_TIMESTAMP,

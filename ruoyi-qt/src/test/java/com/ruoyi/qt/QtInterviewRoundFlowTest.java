@@ -37,6 +37,7 @@ import com.ruoyi.qt.domain.QtInterviewDecisionBody;
 import com.ruoyi.qt.domain.QtInterviewResult;
 import com.ruoyi.qt.domain.QtInterviewRound;
 import com.ruoyi.qt.domain.QtInterviewScoreBody;
+import com.ruoyi.qt.domain.QtInterviewTimeBody;
 import com.ruoyi.qt.mapper.QtCohortMapper;
 import com.ruoyi.qt.mapper.QtInterviewMapper;
 import com.ruoyi.qt.service.impl.QtInterviewAdminServiceImpl;
@@ -471,6 +472,7 @@ class QtInterviewRoundFlowTest
         assertTrue(sql.contains("roundId == 2"));
         assertTrue(sql.contains("r.result_status = 'PASS'"));
         assertTrue(sql.contains("sortDepartment"));
+        assertTrue(sql.contains("first_round_interview_time"));
     }
 
     @Test
@@ -482,10 +484,54 @@ class QtInterviewRoundFlowTest
                 QtInterviewScoreBody.class);
         Method preview = QtInterviewAdminController.class.getMethod("noticePreview", Long.class);
         Method notice = QtInterviewAdminController.class.getMethod("notice", Long.class, MultipartFile.class);
+        Method interviewTime = QtInterviewAdminController.class.getMethod("interviewTime", Long.class, Long.class,
+                QtInterviewTimeBody.class);
         assertTrue(decision.getAnnotation(PreAuthorize.class).value().contains("qt:interview:admin:offer"));
         assertTrue(score.getAnnotation(PreAuthorize.class).value().contains("qt:interview:admin:evaluate"));
         assertTrue(preview.getAnnotation(PreAuthorize.class).value().contains("qt:interview:admin:offer"));
         assertTrue(notice.getAnnotation(PreAuthorize.class).value().contains("qt:interview:admin:offer"));
+        assertTrue(interviewTime.getAnnotation(PreAuthorize.class).value().contains("qt:interview:admin:list"));
+    }
+
+    @Test
+    void firstRoundInterviewTimeIsSharedByBothChoices()
+    {
+        loginAsCeo();
+        Map<String, Object> data = service.saveFirstRoundInterviewTime(APP_ID, 1L, "2026-09-22 18:30:00", "ceo");
+        assertEquals("2026-09-22 18:30:00", data.get("interviewTime"));
+        QtInterviewResult first = results.get(key(101L, FIRST));
+        QtInterviewResult second = results.get(key(101L, SECOND));
+        assertEquals(QtInterviewStatuses.PENDING, first.getResultStatus());
+        assertEquals(QtInterviewStatuses.PENDING, second.getResultStatus());
+        assertEquals(first.getInterviewTime(), second.getInterviewTime());
+        assertNotNull(first.getInterviewTime());
+    }
+
+    @Test
+    void firstRoundInterviewTimeKeepsExistingDecision()
+    {
+        loginAsCeo();
+        put(101L, FIRST, status("PASS"));
+        put(101L, SECOND, status("OUT"));
+        service.saveFirstRoundInterviewTime(APP_ID, 1L, "2026-09-23 18:30:00", "ceo");
+        assertEquals("PASS", results.get(key(101L, FIRST)).getResultStatus());
+        assertEquals("OUT", results.get(key(101L, SECOND)).getResultStatus());
+        assertNotNull(results.get(key(101L, FIRST)).getInterviewTime());
+        assertEquals(results.get(key(101L, FIRST)).getInterviewTime(),
+                results.get(key(101L, SECOND)).getInterviewTime());
+    }
+
+    @Test
+    void firstRoundInterviewTimeRejectsInvalidSlotAndSecondRound()
+    {
+        loginAsCeo();
+        ServiceException invalid = assertThrows(ServiceException.class,
+                () -> service.saveFirstRoundInterviewTime(APP_ID, 1L, "2026-09-24 18:30:00", "ceo"));
+        assertTrue(invalid.getMessage().contains("一面面试时间"));
+        ServiceException roundTwo = assertThrows(ServiceException.class,
+                () -> service.saveFirstRoundInterviewTime(APP_ID, 2L, "2026-09-22 18:30:00", "ceo"));
+        assertTrue(roundTwo.getMessage().contains("一面面试时间"));
+        verify(qtInterviewMapper, never()).insertInterviewResult(any());
     }
 
     private void stubConvert()

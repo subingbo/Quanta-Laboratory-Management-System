@@ -34,6 +34,9 @@ public interface IQtInterviewAdminService
     Map<String, Object> saveDecision(Long applicationId, Long roundNo, String department, String decision,
             String operator);
 
+    Map<String, Object> saveFirstRoundInterviewTime(Long applicationId, Long roundNo, String interviewTime,
+            String operator);
+
     Map<String, Object> saveScore(Long applicationId, String department, Integer score, String operator);
 
     Map<String, Object> previewNotice(Long applicationId);

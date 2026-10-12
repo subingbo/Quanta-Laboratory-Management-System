@@ -146,4 +146,20 @@ describe('recruitment mock handlers', () => {
 
     expect(response.code).toBe(403)
   })
+
+  it('saves a shared first-round interview time', () => {
+    const path = '/qt/interview/admin/applications/1001/rounds/1/interview-time'
+    const response = handler('put', path).handle(
+      config('mock-token-ceo', {
+        path,
+        data: { interviewTime: '2026-09-22 18:30:00' },
+      }),
+    )
+    const application = findMockApplication(1001)
+
+    expect(response.code).toBe(200)
+    expect(response.data.interviewTime).toBe('2026-09-22 18:30:00')
+    expect(application.firstRoundInterviewTime).toBe('2026-09-22 18:30:00')
+    expect(application.tracks.every((track) => track.rounds[1].interviewTime === '2026-09-22 18:30:00')).toBe(true)
+  })
 })

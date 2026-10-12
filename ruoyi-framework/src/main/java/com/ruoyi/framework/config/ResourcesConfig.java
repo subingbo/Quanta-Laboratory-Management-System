@@ -71,6 +71,7 @@ public class ResourcesConfig implements WebMvcConfigurer
         config.addAllowedMethod("*");
         // blob 下载时前端要读取附件文件名（管理端 requestBlob 解析 Content-Disposition）
         config.addExposedHeader("Content-Disposition");
+        config.addExposedHeader("X-Trace-Id");
         // 有效期 1800秒
         config.setMaxAge(1800L);
         // 添加映射路径，拦截一切请求

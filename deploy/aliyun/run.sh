@@ -30,6 +30,22 @@ MAIL_PASSWORD="$(strip_cr "${MAIL_PASSWORD:-}")"
 
 mkdir -p "$UPLOAD_PATH" "$APP_HOME/logs"
 
+wait_port() {
+  local host="$1" port="$2" name="$3"
+  local i=0
+  while (( i < 60 )); do
+    if (echo >/dev/tcp/"$host"/"$port") >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 2
+    i=$((i + 1))
+  done
+  echo "!! ${name} ${host}:${port} 未就绪" >&2
+  exit 1
+}
+wait_port "$MYSQL_HOST" "$MYSQL_PORT" mysql
+wait_port "$REDIS_HOST" "$REDIS_PORT" redis
+
 # 若你的 MySQL 未启用 TLS，allowPublicKeyRetrieval 必须开
 JDBC_URL="jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/ry-vue?useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_general_ci&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8"
 

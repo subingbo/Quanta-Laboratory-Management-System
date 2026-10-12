@@ -85,10 +85,10 @@ public class RedisConfig extends CachingConfigurerSupport
     }
 
     /**
-     * 缓存值序列化器：带类型信息以便还原实体/集合，但只放行若依自身与 JDK 集合包，
+     * 缓存值序列化器：带类型信息以便还原实体/集合，但只放行若依自身与 JDK 集合/数值包，
      * 防止反序列化 gadget。
      */
-    private GenericJackson2JsonRedisSerializer cacheValueSerializer()
+    public static GenericJackson2JsonRedisSerializer cacheValueSerializer()
     {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setVisibility(PropertyAccessor.ALL, Visibility.ANY);
@@ -96,6 +96,7 @@ public class RedisConfig extends CachingConfigurerSupport
                 .allowIfSubType("com.ruoyi.")
                 .allowIfSubType("java.util.")
                 .allowIfSubType("java.lang.")
+                .allowIfSubType("java.math.")
                 .allowIfSubType("java.time.")
                 .allowIfSubType("java.sql.")
                 .build();

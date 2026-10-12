@@ -12,6 +12,7 @@ import org.springframework.core.Ordered;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.filter.RefererFilter;
 import com.ruoyi.common.filter.RepeatableFilter;
+import com.ruoyi.common.filter.TraceIdFilter;
 import com.ruoyi.common.filter.XssFilter;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.framework.metrics.AccessMetricsCollector;
@@ -47,7 +48,7 @@ public class FilterConfig
         registration.setFilter(new XssFilter());
         registration.addUrlPatterns(StringUtils.split(urlPatterns, ","));
         registration.setName("xssFilter");
-        registration.setOrder(FilterRegistrationBean.HIGHEST_PRECEDENCE);
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
         Map<String, String> initParameters = new HashMap<String, String>();
         initParameters.put("excludes", excludes);
         registration.setInitParameters(initParameters);
@@ -64,10 +65,22 @@ public class FilterConfig
         registration.setFilter(new RefererFilter());
         registration.addUrlPatterns(Constants.RESOURCE_PREFIX + "/*");
         registration.setName("refererFilter");
-        registration.setOrder(FilterRegistrationBean.HIGHEST_PRECEDENCE);
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
         Map<String, String> initParameters = new HashMap<String, String>();
         initParameters.put("allowedDomains", allowedDomains);
         registration.setInitParameters(initParameters);
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<TraceIdFilter> traceIdFilterRegistration()
+    {
+        FilterRegistrationBean<TraceIdFilter> registration = new FilterRegistrationBean<TraceIdFilter>();
+        registration.setDispatcherTypes(DispatcherType.REQUEST);
+        registration.setFilter(new TraceIdFilter());
+        registration.addUrlPatterns("/*");
+        registration.setName("traceIdFilter");
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return registration;
     }
 

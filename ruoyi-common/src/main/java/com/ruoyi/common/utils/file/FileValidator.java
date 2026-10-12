@@ -2,18 +2,14 @@ package com.ruoyi.common.utils.file;
 
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Locale;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import org.springframework.web.multipart.MultipartFile;
 import com.ruoyi.common.exception.ServiceException;
 import com.ruoyi.common.exception.file.InvalidExtensionException;
 import com.ruoyi.common.utils.StringUtils;
 
 /**
- * 文件内容校验：大小档位、魔数（真实类型）、图片像素上限。
+ * 文件内容校验：大小档位、魔数（真实类型）。不限制图片宽高。
  * <p>
  * 只看文件后缀是可绕过的（把 html 改名成 png 即可上传成功），因此这里统一以文件头字节为准，
  * 并要求后缀与真实类型一致。
@@ -28,22 +24,17 @@ public class FileValidator
     /** 文档类档位：学习资料（pdf / word / excel / ppt / 压缩包） */
     public static final long SIZE_DOCUMENT = 20L * 1024 * 1024;
 
+    /** 招新证件照：微信原图常见 3～8MB */
+    public static final long SIZE_INTERVIEW_PHOTO = 10L * 1024 * 1024;
+
     /** 招新 PDF 简历 */
     public static final long SIZE_RESUME = 10L * 1024 * 1024;
 
     /** 表格导入档位 */
     public static final long SIZE_IMPORT = 5L * 1024 * 1024;
 
-    /** 图片单边像素上限 */
-    public static final int MAX_IMAGE_EDGE = 4096;
-
-    /** 图片总像素上限（防止高压缩比巨图打爆解码内存） */
-    public static final long MAX_IMAGE_PIXELS = 20_000_000L;
-
-    private static final String[] IMAGE_KINDS = { "bmp", "gif", "jpg", "jpeg", "png" };
-
     /**
-     * 校验大小、真实类型与图片像素。
+     * 校验大小与真实类型。
      *
      * @param file 上传文件
      * @param allowedExtension 允许的后缀白名单
@@ -79,15 +70,10 @@ public class FileValidator
             throw new ServiceException(StringUtils.format("文件内容不是合法的 {} 格式（疑似改名文件），已拒绝上传",
                     lower.toUpperCase(Locale.ROOT)));
         }
-
-        if (isImage(lower))
-        {
-            assertImageDimension(file);
-        }
     }
 
     /**
-     * 只校验「内容与后缀一致 + 图片像素」，不做大小与白名单判断。
+     * 只校验内容与后缀一致，不做大小与白名单判断。
      * 供 {@link FileUploadUtils#assertAllowed} 在其自身校验之后调用。
      */
     public static void validateContent(MultipartFile file, String[] allowedExtension)
@@ -108,10 +94,6 @@ public class FileValidator
             throw new ServiceException(StringUtils.format("文件内容不是合法的 {} 格式（疑似改名文件），已拒绝上传",
                     lower.toUpperCase(Locale.ROOT)));
         }
-        if (isImage(lower))
-        {
-            assertImageDimension(file);
-        }
     }
 
     /** 仅校验大小（供已在别处做类型校验的入口复用） */
@@ -123,64 +105,45 @@ public class FileValidator
         }
     }
 
-    private static boolean isImage(String extension)
+    private static boolean isAnyAllowedImage(byte[] head)
     {
-        for (String image : IMAGE_KINDS)
-        {
-            if (image.equals(extension))
-            {
-                return true;
-            }
-        }
-        return false;
+        return isJpeg(head) || isPng(head) || isGif(head) || isBmp(head) || isWebp(head) || isHeic(head);
     }
 
-    /**
-     * 图片像素上限校验。只读文件头拿宽高，不做整图解码。
-     */
-    private static void assertImageDimension(MultipartFile file)
+    private static boolean isJpeg(byte[] head)
     {
-        try (InputStream in = file.getInputStream(); ImageInputStream iis = ImageIO.createImageInputStream(in))
+        return startsWith(head, 0xFF, 0xD8, 0xFF);
+    }
+
+    private static boolean isPng(byte[] head)
+    {
+        return startsWith(head, 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A);
+    }
+
+    private static boolean isGif(byte[] head)
+    {
+        return text(head, 0, "GIF8");
+    }
+
+    private static boolean isBmp(byte[] head)
+    {
+        return text(head, 0, "BM");
+    }
+
+    private static boolean isWebp(byte[] head)
+    {
+        return text(head, 0, "RIFF") && text(head, 8, "WEBP");
+    }
+
+    private static boolean isHeic(byte[] head)
+    {
+        if (!text(head, 4, "ftyp") || head.length < 12)
         {
-            if (iis == null)
-            {
-                return;
-            }
-            Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
-            if (!readers.hasNext())
-            {
-                return;
-            }
-            ImageReader reader = readers.next();
-            try
-            {
-                reader.setInput(iis, true, true);
-                int width = reader.getWidth(0);
-                int height = reader.getHeight(0);
-                if (width > MAX_IMAGE_EDGE || height > MAX_IMAGE_EDGE)
-                {
-                    throw new ServiceException(StringUtils.format("图片尺寸过大（{}×{}），单边最大 {} 像素", width, height,
-                            MAX_IMAGE_EDGE));
-                }
-                if ((long) width * height > MAX_IMAGE_PIXELS)
-                {
-                    throw new ServiceException(StringUtils.format("图片像素过多（{}×{}），请先压缩后再上传", width, height));
-                }
-            }
-            finally
-            {
-                reader.dispose();
-            }
+            return false;
         }
-        catch (ServiceException e)
-        {
-            throw e;
-        }
-        catch (Exception e)
-        {
-            // 图片解析不了本身就是可疑内容
-            throw new ServiceException(StringUtils.format("图片内容无法解析，已拒绝上传：{}", e.getMessage()));
-        }
+        String brand = new String(head, 8, Math.min(4, head.length - 8), java.nio.charset.StandardCharsets.US_ASCII)
+                .toLowerCase(Locale.ROOT);
+        return brand.startsWith("hei") || "mif1".equals(brand) || "msf1".equals(brand);
     }
 
     /**
@@ -192,13 +155,12 @@ public class FileValidator
         {
             case "jpg":
             case "jpeg":
-                return startsWith(head, 0xFF, 0xD8, 0xFF);
             case "png":
-                return startsWith(head, 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A);
             case "gif":
-                return text(head, 0, "GIF8");
             case "bmp":
-                return text(head, 0, "BM");
+            case "webp":
+                // 微信会把相册图转成 WebP/HEIC 仍带 .jpg 后缀，按真实文件头放行即可
+                return isAnyAllowedImage(head);
             case "pdf":
                 return text(head, 0, "%PDF");
             // 压缩容器：docx/xlsx/pptx 本质是 zip

@@ -30,6 +30,7 @@ import com.ruoyi.qt.domain.QtInterviewEvaluation;
 import com.ruoyi.qt.domain.QtInterviewOfferBody;
 import com.ruoyi.qt.domain.QtInterviewProfile;
 import com.ruoyi.qt.domain.QtInterviewScoreBody;
+import com.ruoyi.qt.domain.QtInterviewTimeBody;
 import com.ruoyi.qt.domain.QtStatusBody;
 import com.ruoyi.qt.service.IQtInterviewAdminService;
 import com.ruoyi.qt.util.QtAuthUtils;
@@ -127,6 +128,18 @@ public class QtInterviewAdminController extends BaseController
     {
         String decision = body == null ? null : body.getDecision();
         return success(qtInterviewAdminService.saveDecision(applicationId, roundNo, department, decision, getUsername()));
+    }
+
+    @PreAuthorize("@ss.hasPermi('qt:interview:admin:list')")
+    @Log(title = "一面面试时间", businessType = BusinessType.UPDATE)
+    @PutMapping("/applications/{applicationId}/rounds/{roundNo}/interview-time")
+    public AjaxResult interviewTime(@PathVariable Long applicationId, @PathVariable Long roundNo,
+            @RequestBody QtInterviewTimeBody body)
+    {
+        QtAuthUtils.requireQuantaMember();
+        String interviewTime = body == null ? null : body.getInterviewTime();
+        return success(qtInterviewAdminService.saveFirstRoundInterviewTime(applicationId, roundNo, interviewTime,
+                getUsername()));
     }
 
     @PreAuthorize("@ss.hasPermi('qt:interview:admin:evaluate')")

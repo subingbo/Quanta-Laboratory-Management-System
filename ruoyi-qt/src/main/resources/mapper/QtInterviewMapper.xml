@@ -37,6 +37,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="firstChoiceSecondRoundScoreUpdateTime" column="first_choice_second_round_score_update_time"/>
         <result property="secondChoiceSecondRoundScoreUpdateBy" column="second_choice_second_round_score_update_by"/>
         <result property="secondChoiceSecondRoundScoreUpdateTime" column="second_choice_second_round_score_update_time"/>
+        <result property="firstRoundInterviewTime" column="first_round_interview_time"/>
         <result property="createBy" column="create_by"/>
         <result property="createTime" column="create_time"/>
         <result property="updateBy" column="update_by"/>
@@ -93,7 +94,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                a.resume_url, a.resume_file_name, a.apply_status,
                a.offered_department, a.join_status, a.final_status, a.notice_status,
                a.create_by, a.create_time, a.update_by, a.update_time,
-               u.student_no, u.phonenumber, u.email, u.major, u.nick_name
+               u.student_no, u.phonenumber, u.email, u.major, u.nick_name,
+               (select r.interview_time from qt_interview_result r
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = 1 and r.interview_time is not null
+                order by case when r.department = a.first_choice then 0 else 1 end
+                limit 1) as first_round_interview_time
         from qt_interview_application a
         left join sys_user u on a.user_id = u.user_id
         where a.application_id = #{applicationId}
@@ -269,6 +275,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                (select r.update_time from qt_interview_result r
                 join qt_interview_round rd on r.round_id = rd.round_id
                 where r.application_id = a.application_id and rd.round_no = 2 and r.department = a.second_choice limit 1) as second_choice_second_round_score_update_time
+               ,
+               (select r.interview_time from qt_interview_result r
+                join qt_interview_round rd on r.round_id = rd.round_id
+                where r.application_id = a.application_id and rd.round_no = 1 and r.interview_time is not null
+                order by case when r.department = a.first_choice then 0 else 1 end
+                limit 1) as first_round_interview_time
                <if test="roundId != null">
                ,
                (select case when r.result_status = 'FAIL' then 'OUT' else r.result_status end from qt_interview_result r

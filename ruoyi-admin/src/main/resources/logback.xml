@@ -3,7 +3,7 @@
     <!-- 日志存放路径 -->
 	<property name="log.path" value="${LOG_PATH:-/home/ruoyi/logs}" />
     <!-- 日志输出格式 -->
-	<property name="log.pattern" value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{20} - [%method,%line] - %msg%n" />
+	<property name="log.pattern" value="%d{HH:mm:ss.SSS} [%thread] %-5level [traceId=%X{traceId}] %logger{20} - [%method,%line] - %msg%n" />
 
 	<!-- 控制台输出 -->
 	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
@@ -70,24 +70,34 @@
             <pattern>${log.pattern}</pattern>
         </encoder>
     </appender>
+
+	<!-- 全量日志：INFO/WARN/ERROR 都写入，便于一次看完 -->
+	<appender name="file_all" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${log.path}/sys-all.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${log.path}/sys-all.%d{yyyy-MM-dd}.log</fileNamePattern>
+			<maxHistory>60</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>${log.pattern}</pattern>
+		</encoder>
+	</appender>
 	
 	<!-- 系统模块日志级别控制  -->
 	<logger name="com.ruoyi" level="info" />
 	<!-- Spring日志级别控制  -->
 	<logger name="org.springframework" level="warn" />
 
+	<!-- 一份 root：控制台 + 全量文件 + 分类文件，避免两个 root 把 console 丢掉 -->
 	<root level="info">
 		<appender-ref ref="console" />
+		<appender-ref ref="file_all" />
+		<appender-ref ref="file_info" />
+		<appender-ref ref="file_error" />
 	</root>
 	
-	<!--系统操作日志-->
-    <root level="info">
-        <appender-ref ref="file_info" />
-        <appender-ref ref="file_error" />
-    </root>
-	
-	<!--系统用户操作日志-->
-    <logger name="sys-user" level="info">
+	<!--系统用户操作日志：单独文件，同时向上传递到 root（docker logs / sys-all.log）-->
+    <logger name="sys-user" level="info" additivity="true">
         <appender-ref ref="sys-user"/>
     </logger>
 </configuration> 

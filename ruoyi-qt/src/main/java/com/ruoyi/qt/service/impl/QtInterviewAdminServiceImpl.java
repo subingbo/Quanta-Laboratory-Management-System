@@ -1,10 +1,15 @@
 package com.ruoyi.qt.service.impl;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -41,6 +46,11 @@ import com.ruoyi.system.service.ISysUserService;
 @Service
 public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
 {
+    private static final DateTimeFormatter FIRST_ROUND_INTERVIEW_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final Set<String> FIRST_ROUND_INTERVIEW_SLOTS = Set.of("2026-09-22 18:30:00",
+            "2026-09-23 18:30:00");
+
     @Autowired
     private QtInterviewMapper qtInterviewMapper;
 
@@ -255,6 +265,28 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         data.put("resultStatus", resultStatus);
         data.put("department", department);
         data.put("roundNo", roundNumber);
+        return data;
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(cacheNames = CacheConstants.CACHE_QT_MY_RESULTS, allEntries = true)
+    public Map<String, Object> saveFirstRoundInterviewTime(Long applicationId, Long roundNo, String interviewTime,
+            String operator)
+    {
+        if (roundNo == null || roundNo.longValue() != 1L)
+        {
+            throw new ServiceException("仅支持设置一面面试时间");
+        }
+        Date slot = requireFirstRoundInterviewSlot(interviewTime);
+        QtInterviewApplication application = selectApplication(applicationId);
+        QtInterviewRound round = QtInterviewRounds.require(qtInterviewMapper, 1L);
+        upsertFirstRoundInterviewTime(application, round, application.getFirstChoice(), slot, operator);
+        upsertFirstRoundInterviewTime(application, round, application.getSecondChoice(), slot, operator);
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("applicationId", application.getApplicationId());
+        data.put("roundNo", Integer.valueOf(1));
+        data.put("interviewTime", interviewTime.trim());
         return data;
     }
 
@@ -568,6 +600,52 @@ public class QtInterviewAdminServiceImpl implements IQtInterviewAdminService
         {
             throw new ServiceException("只能修改自己部门的数据");
         }
+    }
+
+    private Date requireFirstRoundInterviewSlot(String interviewTime)
+    {
+        String value = interviewTime == null ? null : interviewTime.trim();
+        if (StringUtils.isEmpty(value) || !FIRST_ROUND_INTERVIEW_SLOTS.contains(value))
+        {
+            throw new ServiceException("请选择有效的一面面试时间");
+        }
+        try
+        {
+            LocalDateTime local = LocalDateTime.parse(value, FIRST_ROUND_INTERVIEW_TIME_FORMAT);
+            return Date.from(local.atZone(ZoneId.systemDefault()).toInstant());
+        }
+        catch (DateTimeParseException ex)
+        {
+            throw new ServiceException("请选择有效的一面面试时间");
+        }
+    }
+
+    private void upsertFirstRoundInterviewTime(QtInterviewApplication application, QtInterviewRound round,
+            String department, Date interviewTime, String operator)
+    {
+        if (StringUtils.isEmpty(department))
+        {
+            return;
+        }
+        QtInterviewResult current = qtInterviewMapper.selectResultByAppRoundDept(application.getApplicationId(),
+                round.getRoundId(), department);
+        if (current == null)
+        {
+            current = new QtInterviewResult();
+            current.setApplicationId(application.getApplicationId());
+            current.setUserId(application.getUserId());
+            current.setRoundId(round.getRoundId());
+            current.setDepartment(department);
+            current.setResultStatus(QtInterviewStatuses.PENDING);
+            current.setInterviewTime(interviewTime);
+            current.setCreateBy(operator);
+            current.setUpdateBy(operator);
+            qtInterviewMapper.insertInterviewResult(current);
+            return;
+        }
+        current.setInterviewTime(interviewTime);
+        current.setUpdateBy(operator);
+        qtInterviewMapper.updateInterviewResult(current);
     }
 
     private String requireChoiceDepartment(String department, QtInterviewApplication application)

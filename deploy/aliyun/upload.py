@@ -6,7 +6,7 @@ Windows OpenSSH 的 scp 不能非交互传密码，所以统一用 paramiko。
 子命令：
   sync       把本地文件同步到 ECS（run.sh / *.service / *.conf / docker-compose / .env / initdb / jar）
   provision  在 ECS 上执行 provision.sh (装 Docker/JDK/起 mysql+redis)
-  start      在 ECS 上重启 ruoyi systemd 服务
+  start      停 systemd ruoyi，用 docker compose up -d app --no-deps 拉起后端
   verify     在 ECS 上 curl 本地 /captchaImage 检查
 
 前置：
@@ -56,12 +56,13 @@ class ECS:
         app_home = env.get("APP_HOME", "/opt/ruoyi")
         cli = paramiko.SSHClient()
         cli.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        sock = socket.socket(); sock.settimeout(5)
+        sock = socket.socket(); sock.settimeout(20)
         try: sock.connect((host, port))
         except Exception as e:
             print(f"!! 无法连接 {host}:{port} → {e}", file=sys.stderr); sys.exit(3)
         sock.close()
-        kw = {"hostname": host, "port": port, "username": user, "timeout": 20,
+        kw = {"hostname": host, "port": port, "username": user, "timeout": 60,
+              "banner_timeout": 60, "auth_timeout": 60,
               "allow_agent": False, "look_for_keys": False}
         if key:
             kw["key_filename"] = str(Path(key).expanduser())
@@ -72,6 +73,9 @@ class ECS:
             must(pw, "请在 .env 里给 ECS_PASSWORD 或 ECS_KEY_FILE")
             kw["password"] = pw
         cli.connect(**kw)
+        transport = cli.get_transport()
+        if transport:
+            transport.set_keepalive(15)
         self.cli = cli
         self.app_home = app_home
         self.deploy_dir = posixpath.join(app_home, "deploy")
@@ -83,6 +87,7 @@ class ECS:
             HERE / "run.sh":               posixpath.join(app_home,        "run.sh"),
             HERE / "provision.sh":         posixpath.join(self.deploy_dir, "provision.sh"),
             HERE / "ruoyi.service":        posixpath.join(self.deploy_dir, "ruoyi.service"),
+            HERE / "backup.sh":            posixpath.join(self.deploy_dir, "backup.sh"),
         }
         # nginx 配置已拆成多份（common/http/https/redirect/ip），全部同步
         for conf in sorted((HERE / "nginx").glob("*.conf")):
@@ -111,7 +116,8 @@ class ECS:
         self.run(f"mkdir -p {shlex.quote(self.deploy_dir + '/nginx')} "
                  f"{shlex.quote(self.deploy_dir + '/initdb')} "
                  f"{shlex.quote(self.app_home + '/logs')} "
-                 f"{shlex.quote(self.app_home + '/uploadPath')}")
+                 f"{shlex.quote(self.app_home + '/uploadPath')} "
+                 f"{shlex.quote(self.app_home + '/backups')}")
 
     def upload(self, lpath: Path, rpath: str):
         sftp = self.cli.open_sftp()
@@ -120,10 +126,18 @@ class ECS:
             # paramiko 没有 progress；大文件给个尺寸提示
             size = lpath.stat().st_size
             print(f"    size: {size/1024/1024:.1f} MiB" if size > 1_000_000 else f"    size: {size} B")
-            sftp.put(str(lpath), rpath)
+            dest = rpath + ".uploading" if rpath.endswith("/ruoyi-admin.jar") else rpath
+            sftp.put(str(lpath), dest)
+            if dest != rpath:
+                sftp.close()
+                self.run(f"mv -f {shlex.quote(dest)} {shlex.quote(rpath)}")
+                sftp = self.cli.open_sftp()
             # 保留可执行位
             if lpath.suffix == ".sh" or rpath.endswith("/ruoyi-admin.jar"):
-                sftp.chmod(rpath, 0o755 if lpath.suffix == ".sh" else 0o644)
+                try:
+                    sftp.chmod(rpath, 0o755 if lpath.suffix == ".sh" else 0o644)
+                except OSError:
+                    pass
         finally:
             sftp.close()
 
@@ -146,8 +160,15 @@ def cmd_sync(args):
     e.run(f"cp -f {shlex.quote(e.deploy_dir + '/.env')} {shlex.quote(e.app_home + '/.env')}")
     e.run(f"chmod 600 {shlex.quote(e.app_home + '/.env')} {shlex.quote(e.deploy_dir + '/.env')}")
     e.run(f"if id ruoyi >/dev/null 2>&1; then chown -R ruoyi:ruoyi {shlex.quote(e.app_home)}; fi")
+    e.run(f"mkdir -p {shlex.quote(e.app_home + '/backups')}; "
+          f"chown -R root:root {shlex.quote(e.app_home + '/backups')}; "
+          f"chmod 700 {shlex.quote(e.app_home + '/backups')}; "
+          f"chmod 600 {shlex.quote(e.app_home + '/backups')}/* 2>/dev/null || true")
     e.run(f"chmod +x {shlex.quote(e.app_home)}/run.sh {shlex.quote(e.deploy_dir)}/provision.sh "
-          f"{shlex.quote(e.deploy_dir)}/apply-nginx.sh {shlex.quote(e.deploy_dir)}/ensure-cert.sh")
+          f"{shlex.quote(e.deploy_dir)}/apply-nginx.sh {shlex.quote(e.deploy_dir)}/ensure-cert.sh "
+          f"{shlex.quote(e.deploy_dir)}/backup.sh")
+    e.run(f"sed -i 's/\\r$//' {shlex.quote(e.app_home)}/run.sh {shlex.quote(e.deploy_dir)}/*.sh "
+          f"{shlex.quote(e.deploy_dir)}/docker-compose.yml || true")
     e.close()
     print("OK sync done")
 
@@ -185,15 +206,53 @@ def cmd_provision(args):
 def cmd_start(args):
     env = load_env(HERE / ".env")
     e = ECS(env)
-    # 顺序无关的兜底：provision 之后 ruoyi 用户才存在，这里再修一次属主/权限
     e.run("id ruoyi >/dev/null 2>&1 && mkdir -p /home/ruoyi/logs && chown -R ruoyi:ruoyi /home/ruoyi || true")
     e.run(f"id ruoyi >/dev/null 2>&1 && chown -R ruoyi:ruoyi {shlex.quote(e.app_home)} "
           f"&& chmod 600 {shlex.quote(e.app_home + '/.env')} {shlex.quote(e.deploy_dir + '/.env')} || true")
-    e.run("systemctl daemon-reload || true")
-    e.run(f"test -f /etc/systemd/system/ruoyi.service && echo service_ok "
-          f"|| cp {e.deploy_dir}/ruoyi.service /etc/systemd/system/ruoyi.service")
-    e.run("systemctl enable --now ruoyi; systemctl restart ruoyi")
-    e.run("sleep 6; systemctl status ruoyi --no-pager | head -n 20 || true", check=False)
+    e.run(f"mkdir -p {shlex.quote(e.app_home + '/backups')}; "
+          f"chown -R root:root {shlex.quote(e.app_home + '/backups')}; "
+          f"chmod 700 {shlex.quote(e.app_home + '/backups')}; "
+          f"chmod 600 {shlex.quote(e.app_home + '/backups')}/* 2>/dev/null || true")
+    # 先拉镜像，再停 systemd，避免 8080 空窗里还在 pull
+    e.run("docker image inspect eclipse-temurin:17-jre >/dev/null 2>&1 || docker pull eclipse-temurin:17-jre")
+    # 切 Docker：先停 systemd 释放 8080。失败则停容器、把 systemd 拉回来。
+    e.run("systemctl stop ruoyi || true")
+    code, _, _ = e.run(
+        "set -euo pipefail\n"
+        "uid=$(id -u ruoyi 2>/dev/null || echo 108)\n"
+        "gid=$(id -g ruoyi 2>/dev/null || echo 112)\n"
+        f"cd {shlex.quote(e.deploy_dir)}\n"
+        "export RUOYI_UID=$uid RUOYI_GID=$gid\n"
+        "docker compose up -d app --no-deps\n"
+        "docker ps --filter name=quanta- --format 'table {{.Names}}\\t{{.Status}}'",
+        check=False)
+    if code != 0:
+        print("!! 容器未拉起，回滚 systemd", file=sys.stderr)
+        e.run("docker stop quanta-app || true", check=False)
+        e.run("systemctl start ruoyi || true", check=False)
+        sys.exit(code)
+    code, _, _ = e.run(
+        "ok=0\n"
+        "for i in $(seq 1 24); do\n"
+        "  if curl -fsS --max-time 5 http://127.0.0.1:8080/captchaImage >/tmp/cap.json 2>/dev/null; then\n"
+        "    grep -q '\"code\":200' /tmp/cap.json && ok=1 && break\n"
+        "  fi\n"
+        "  echo wait_$i\n"
+        "  sleep 5\n"
+        "done\n"
+        "if [ \"$ok\" != 1 ]; then\n"
+        "  echo FAIL_CAPTCHA\n"
+        "  docker logs --tail 40 quanta-app || true\n"
+        "  tail -n 40 /opt/ruoyi/logs/stderr.log || true\n"
+        "  docker stop quanta-app || true\n"
+        "  systemctl start ruoyi || true\n"
+        "  exit 1\n"
+        "fi\n"
+        "systemctl disable ruoyi || true\n"
+        "echo OK docker-app; head -c 180 /tmp/cap.json; echo",
+        check=False)
+    if code != 0:
+        sys.exit(code)
     e.close()
 
 def cmd_verify(args):
@@ -205,7 +264,9 @@ def cmd_verify(args):
     if code == 0: print("OK backend")
     else:
         print("backend 未起来或路径不对。最近日志：")
-        e.run("journalctl -u ruoyi -n 60 --no-pager || tail -n 80 " + e.app_home + "/logs/stderr.log",
+        e.run("docker logs --tail 60 quanta-app || true; "
+              "tail -n 80 " + e.app_home + "/logs/stderr.log || true; "
+              "journalctl -u ruoyi -n 20 --no-pager || true",
               check=False)
     e.close()
 

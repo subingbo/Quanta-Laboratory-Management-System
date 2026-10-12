@@ -44,9 +44,9 @@ const resumeError = ref('')
 const photoPreviewFailed = ref(false)
 let localPhotoUrl = ''
 
-const allowedPhotoTypes = new Set(['image/jpeg', 'image/png'])
-const allowedPhotoExtensions = new Set(['jpg', 'jpeg', 'png'])
-const maxPhotoSize = 5 * 1024 * 1024
+const allowedPhotoTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
+const allowedPhotoExtensions = new Set(['jpg', 'jpeg', 'png', 'webp'])
+const maxPhotoSize = 10 * 1024 * 1024
 const maxResumeSize = 10 * 1024 * 1024
 const maxLongTextLength = 500
 const hasPhotoPreview = computed(() => Boolean(model.photoUrl) && !photoPreviewFailed.value)
@@ -89,12 +89,12 @@ function selectPhoto(event) {
   if (!file) return
   const extension = file.name.split('.').pop()?.toLowerCase() || ''
   if (!allowedPhotoTypes.has(file.type) && !allowedPhotoExtensions.has(extension)) {
-    photoError.value = '请选择 JPG 或 PNG 格式的图片'
+    photoError.value = '请选择 JPG、PNG 或 WebP 格式的图片'
     event.target.value = ''
     return
   }
   if (file.size > maxPhotoSize) {
-    photoError.value = '证件照大小不能超过 5 MB'
+    photoError.value = '证件照不能超过 10 MB，请压缩后重试'
     event.target.value = ''
     return
   }
@@ -295,8 +295,8 @@ function handleSubmit() {
             <p>照片仅用于本次招新资料与面试身份核对。</p>
           </div>
           <div class="application-form__photo-rules" aria-label="上传要求">
-            <span>JPG / PNG</span>
-            <span>最大 5 MB</span>
+            <span>JPG / PNG / WebP</span>
+            <span>最大 10 MB</span>
           </div>
           <p class="application-form__photo-name" :class="{ 'is-ready': hasPhotoFile }" data-testid="photo-file-name">
             <i aria-hidden="true"></i>{{ photoFileName }}
@@ -309,7 +309,7 @@ function handleSubmit() {
             class="sr-only"
             name="photoFile"
             type="file"
-            accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+            accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
             :required="!model.storedPhotoUrl && !model.photoUrl"
             @change="selectPhoto"
           />

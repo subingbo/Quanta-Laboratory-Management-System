@@ -60,13 +60,14 @@ fi
 mkdir -p /home/ruoyi/logs
 chown -R ruoyi:ruoyi /home/ruoyi
 
-echo "==> deps up (mysql + redis)"
+echo "==> deps up (mysql + redis only; never start app here, never down -v)"
 cd "$DEPLOY_DIR/deploy"
 # docker compose 会读同目录 .env
 [ -f .env ] || { echo "!! 未找到 .env, 先复制 .env.example 并填值再执行"; exit 1; }
-docker compose up -d
+docker compose up -d mysql redis
 
 echo "==> done. 接下来："
 echo "  1) 放置 ruoyi-admin.jar 到 $DEPLOY_DIR/ruoyi-admin.jar"
-echo "  2) cp deploy/ruoyi.service /etc/systemd/system/ && systemctl daemon-reload && systemctl enable --now ruoyi"
-echo "  3) bash $DEPLOY_DIR/deploy/apply-nginx.sh   # 落 nginx 配置；证书就绪后自动切 HTTPS"
+echo "  2) cd $DEPLOY_DIR/deploy && docker compose up -d app --no-deps"
+echo "  3) bash $DEPLOY_DIR/deploy/apply-nginx.sh"
+echo "  4) bash $DEPLOY_DIR/deploy/backup.sh --install-cron"

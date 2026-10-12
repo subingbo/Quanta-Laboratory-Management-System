@@ -81,6 +81,11 @@ function serializeApplication(application, roundId = 1) {
     secondChoiceFirstRoundStatus: statusAt(second, 1),
     firstChoiceSecondRoundStatus: statusAt(first, 2),
     secondChoiceSecondRoundStatus: statusAt(second, 2),
+    firstRoundInterviewTime:
+      application.firstRoundInterviewTime ||
+      first?.rounds?.[1]?.interviewTime ||
+      second?.rounds?.[1]?.interviewTime ||
+      '',
   }
 }
 
@@ -262,6 +267,28 @@ function sendOffer(config) {
   }
 }
 
+function saveInterviewTime(config) {
+  const account = accountOf(config)
+  if (!account) return unauthorized()
+  if (!hasPermission(account, 'qt:interview:admin:list')) return forbidden()
+  const matched = String(config.path || '').match(
+    /^\/qt\/interview\/admin\/applications\/(\d+)\/rounds\/(\d+)\/interview-time$/,
+  )
+  const application = findMockApplication(matched?.[1])
+  const denied = requireApplicationAccess(account, application, Number(matched?.[2]) || 1)
+  if (denied) return denied
+  if (Number(matched?.[2]) !== 1) return { code: 400, msg: '仅支持设置一面面试时间' }
+  const interviewTime = String(config.data?.interviewTime || '').trim()
+  if (!['2026-09-22 18:30:00', '2026-09-23 18:30:00'].includes(interviewTime)) {
+    return { code: 400, msg: '请选择有效的一面面试时间' }
+  }
+  application.firstRoundInterviewTime = interviewTime
+  application.tracks.forEach((track) => {
+    if (track.rounds?.[1]) track.rounds[1].interviewTime = interviewTime
+  })
+  return { code: 200, msg: '操作成功', data: { applicationId: application.applicationId, roundNo: 1, interviewTime } }
+}
+
 export const recruitmentHandlers = [
   { method: 'get', path: '/qt/interview/admin/statistics', handle: statistics },
   { method: 'get', path: '/qt/interview/admin/applications', handle: listApplications },
@@ -296,5 +323,10 @@ export const recruitmentHandlers = [
         data: { fileName: '招新名单.xlsx', content: 'Mock recruitment export' },
       }
     },
+  },
+  {
+    method: 'put',
+    match: (path) => /^\/qt\/interview\/admin\/applications\/\d+\/rounds\/\d+\/interview-time$/.test(path),
+    handle: saveInterviewTime,
   },
 ]

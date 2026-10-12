@@ -65,6 +65,8 @@ public class QtInterviewApplication extends BaseEntity
     private String secondChoiceSecondRoundScoreUpdateBy;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date secondChoiceSecondRoundScoreUpdateTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date firstRoundInterviewTime;
     /** 查询用：数据范围部门 */
     private String scopedDepartment;
     /** 查询用：二面排序部门，空则按已晋级志愿最高分 */
@@ -414,6 +416,16 @@ public class QtInterviewApplication extends BaseEntity
     public void setSecondChoiceSecondRoundScoreUpdateTime(Date secondChoiceSecondRoundScoreUpdateTime)
     {
         this.secondChoiceSecondRoundScoreUpdateTime = secondChoiceSecondRoundScoreUpdateTime;
+    }
+
+    public Date getFirstRoundInterviewTime()
+    {
+        return firstRoundInterviewTime;
+    }
+
+    public void setFirstRoundInterviewTime(Date firstRoundInterviewTime)
+    {
+        this.firstRoundInterviewTime = firstRoundInterviewTime;
     }
 
     public String getSortDepartment()
